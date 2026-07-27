@@ -57,6 +57,16 @@ export class OrdersService {
       ? Number(template.discount_price)
       : Number(template.price);
 
+    let validUserId: number | null = null;
+    if (user && user.id && !isNaN(Number(user.id))) {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { id: Number(user.id) },
+      });
+      if (existingUser) {
+        validUserId = existingUser.id;
+      }
+    }
+
     // 1. Create order record in Database
     let savedOrder: any = await this.prisma.order.create({
       data: {
@@ -64,7 +74,7 @@ export class OrdersService {
         user_data: userData,
         status: 'processing',
         total_price: totalPrice,
-        userId: user?.id ? Number(user.id) : null,
+        userId: validUserId,
       },
       include: {
         template: true,
