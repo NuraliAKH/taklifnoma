@@ -49,7 +49,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { WebsiteTemplateDispatcher } from './templates/sites';
 import { HeroThreeCanvas } from './components/HeroThreeCanvas';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 // ----------------- THEME CONTEXT -----------------
 type ThemeMode = 'dark' | 'light';

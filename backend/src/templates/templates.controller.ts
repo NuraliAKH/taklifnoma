@@ -32,6 +32,18 @@ export class TemplatesController {
     return this.templatesService.findAll();
   }
 
+  @Get('seed')
+  async seedGet() {
+    await this.templatesService.seed();
+    return { message: 'Templates seeded successfully' };
+  }
+
+  @Post('seed')
+  async seedPost() {
+    await this.templatesService.seed();
+    return { message: 'Templates seeded successfully' };
+  }
+
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<Template> {
     const template = await this.templatesService.findOne(id);
