@@ -1768,14 +1768,52 @@ function EditorPage() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-6 w-full">
-                  <div className="relative w-[150px] aspect-[3/4] rounded-xl overflow-hidden border border-white/10 bg-slate-950 grayscale opacity-60">
-                    {template.media_url.endsWith('.mp4') ? (
-                      <video src={getMediaUrl(template.media_url)} className="w-full h-full object-cover" muted autoPlay loop playsInline />
+                  <div className="relative w-[160px] h-[220px] rounded-2xl overflow-hidden border border-amber-500/30 bg-slate-950/95 flex flex-col items-center justify-center p-4 shadow-2xl shadow-amber-500/10">
+                    {/* Pulsing ambient gradient background */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/15 via-indigo-500/10 to-emerald-500/10 animate-pulse pointer-events-none" />
+
+                    {/* Scanning laser line */}
+                    <div className="scan-line z-20" />
+
+                    {/* Background template media preview with blur and fallback */}
+                    {template.type === 'website' ? (
+                      <div className="absolute inset-0 scale-[0.35] origin-center opacity-25 pointer-events-none filter blur-[1px]">
+                        <TemplatePreview 
+                          template={template} 
+                          formData={currentOrder.user_data || formData || {}} 
+                          autoScrollOnHover={false} 
+                        />
+                      </div>
+                    ) : template.media_url.endsWith('.mp4') ? (
+                      <video 
+                        src={getMediaUrl(template.media_url)} 
+                        className="absolute inset-0 w-full h-full object-cover opacity-25 filter blur-[1px]" 
+                        muted 
+                        autoPlay 
+                        loop 
+                        playsInline 
+                      />
                     ) : (
-                      <img src={getMediaUrl(template.media_url)} className="w-full h-full object-cover" alt="" />
+                      <img 
+                        src={getMediaUrl(template.media_url)} 
+                        className="absolute inset-0 w-full h-full object-cover opacity-25 filter blur-[1px]" 
+                        alt=""
+                        onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                      />
                     )}
-                    {/* Glowing scanning laser bar */}
-                    <div className="scan-line"></div>
+
+                    {/* Central High-Tech Animated Loading Badge */}
+                    <div className="relative z-10 flex flex-col items-center gap-3">
+                      <div className="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-900/90 border border-amber-500/40 text-amber-400 backdrop-blur-md shadow-lg shadow-amber-500/20">
+                        <Sparkles className="w-7 h-7 text-amber-400 animate-spin" style={{ animationDuration: '4s' }} />
+                        <div className="absolute -inset-1 rounded-2xl border border-amber-400/30 animate-ping pointer-events-none" />
+                      </div>
+
+                      <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/90 border border-white/15 text-[10px] font-bold text-slate-200 font-mono tracking-wider shadow-md">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                        <span>AI РЕНДЕРИНГ</span>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex flex-col gap-2">
