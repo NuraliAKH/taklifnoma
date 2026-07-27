@@ -34,7 +34,7 @@ model Template {
 }
 
 model Order {
-  id              String   @id(map: "PK_710e2d4957aa5878dfe94e4ac2f") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id              String   @id(map: "PK_710e2d4957aa5878dfe94e4ac2f") @default(uuid()) @db.Uuid
   user_data       Json
   status          String   @default("pending") @db.VarChar(50)
   final_asset_url String?  @db.VarChar(255)
