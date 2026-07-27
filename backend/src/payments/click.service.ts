@@ -204,12 +204,25 @@ export class ClickService {
     });
 
     // 7. Update Order status to paid / completed
-    await this.prisma.order.update({
+    const paidOrder = await this.prisma.order.update({
       where: { id: dto.merchant_trans_id },
       data: {
         status: 'paid',
       },
     });
+
+    if (paidOrder.promocodeId) {
+      try {
+        await this.prisma.promocode.update({
+          where: { id: paidOrder.promocodeId },
+          data: {
+            uses_count: { increment: 1 },
+          },
+        });
+      } catch (e) {
+        // Ignore if deleted
+      }
+    }
 
     this.logger.log(`[Click Complete Success] Order ${dto.merchant_trans_id} marked as paid`);
 

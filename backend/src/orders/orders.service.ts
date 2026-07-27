@@ -38,24 +38,44 @@ function formatPhoneNumber(value: string): string {
   return numberPart.length === 0 ? value : result;
 }
 
+import { PromocodesService } from '../promocodes/promocodes.service';
+
 @Injectable()
 export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly templatesService: TemplatesService,
+    private readonly promocodesService: PromocodesService,
     @InjectQueue('video-rendering')
     private readonly videoRenderingQueue: Queue,
   ) {}
 
-  async create(templateId: number, userData: any, user: any): Promise<any> {
+  async create(templateId: number, userData: any, user: any, promocodeCode?: string): Promise<any> {
     const template = await this.templatesService.findOne(templateId);
     if (!template) {
       throw new NotFoundException(`Template with ID ${templateId} not found`);
     }
 
-    const totalPrice = template.discount_price !== null && template.discount_price !== undefined
+    const basePrice = template.discount_price !== null && template.discount_price !== undefined
       ? Number(template.discount_price)
       : Number(template.price);
+
+    let finalPrice = basePrice;
+    let discountAmount = 0;
+    let promocodeId: number | null = null;
+
+    if (promocodeCode && promocodeCode.trim()) {
+      try {
+        const promoResult = await this.promocodesService.validate(promocodeCode, basePrice);
+        if (promoResult.valid) {
+          discountAmount = promoResult.discountAmount;
+          finalPrice = promoResult.finalPrice;
+          promocodeId = promoResult.promocodeId;
+        }
+      } catch (err) {
+        // If promo code invalid, ignore or continue with base price
+      }
+    }
 
     let validUserId: number | null = null;
     if (user && user.id && !isNaN(Number(user.id))) {
@@ -73,12 +93,16 @@ export class OrdersService {
         templateId: templateId,
         user_data: userData,
         status: 'processing',
-        total_price: totalPrice,
+        total_price: finalPrice,
+        original_price: basePrice,
+        discount_amount: discountAmount,
         userId: validUserId,
+        promocodeId: promocodeId,
       },
       include: {
         template: true,
         user: true,
+        promocode: true,
       },
     });
 

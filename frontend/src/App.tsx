@@ -43,7 +43,8 @@ import {
   Music,
   ChevronDown,
   Star,
-  MessageSquare
+  MessageSquare,
+  Tag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WebsiteTemplateDispatcher } from './templates/sites';
@@ -925,6 +926,41 @@ function EditorPage() {
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [previewTab, setPreviewTab] = useState<'opened' | 'cover'>('opened');
 
+  // Promocode state
+  const [promocodeInput, setPromocodeInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<any>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [isValidatingPromo, setIsValidatingPromo] = useState(false);
+
+  const handleApplyPromocode = async () => {
+    if (!promocodeInput.trim() || !template) return;
+    setIsValidatingPromo(true);
+    setPromoError(null);
+    try {
+      const basePrice = template.discount_price !== null && template.discount_price !== undefined
+        ? Number(template.discount_price)
+        : Number(template.price);
+
+      const res = await fetch(`${API_URL}/promocodes/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promocodeInput, orderAmount: basePrice }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Ошибка применения промокода');
+      }
+
+      setAppliedPromo(data);
+    } catch (err: any) {
+      setPromoError(err.message);
+      setAppliedPromo(null);
+    } finally {
+      setIsValidatingPromo(false);
+    }
+  };
+
   const uploadMediaFile = async (file: File): Promise<string> => {
     const data = new FormData();
     data.append('file', file);
@@ -1125,6 +1161,7 @@ function EditorPage() {
             ...formData,
             _customFields: customFields
           },
+          promocode: appliedPromo?.code,
         }),
       });
 
@@ -1482,10 +1519,63 @@ function EditorPage() {
                 </div>
               )}
               
+              {/* Promocode Input Section */}
+              <div className="flex flex-col gap-2 bg-white/5 border border-white/10 p-3.5 rounded-xl">
+                <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-amber-400" /> Промокод на скидку
+                </span>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Например: TOY2026"
+                    className="flex-1 bg-slate-950/60 border border-white/10 px-3 py-2 rounded-lg text-xs outline-none focus:border-amber-500 uppercase tracking-wider font-mono text-slate-200"
+                    value={promocodeInput}
+                    onChange={(e) => {
+                      setPromocodeInput(e.target.value);
+                      setPromoError(null);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyPromocode}
+                    disabled={isValidatingPromo || !promocodeInput.trim()}
+                    className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 text-xs font-bold rounded-lg transition-all shrink-0 flex items-center gap-1"
+                  >
+                    {isValidatingPromo ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Применить'}
+                  </button>
+                </div>
+
+                {promoError && (
+                  <p className="text-[11px] text-rose-400 mt-1 font-medium">{promoError}</p>
+                )}
+
+                {appliedPromo && (
+                  <div className="flex items-center justify-between bg-emerald-500/15 border border-emerald-500/30 p-2.5 rounded-lg mt-1 text-xs text-emerald-400 font-semibold">
+                    <span>Скидка "{appliedPromo.code}": -{appliedPromo.discountAmount.toLocaleString('ru-RU')} сум</span>
+                    <button 
+                      type="button" 
+                      onClick={() => { setAppliedPromo(null); setPromocodeInput(''); }}
+                      className="text-rose-400 hover:underline text-[10px] ml-2"
+                    >
+                      Отменить
+                    </button>
+                  </div>
+                )}
+              </div>
+              
               <div className="flex justify-between items-center">
                 <span className="text-xs text-slate-400">Стоимость заказа:</span>
                 <div className="flex flex-col items-end">
-                  {template.discount_price !== null && template.discount_price !== undefined ? (
+                  {appliedPromo ? (
+                    <>
+                      <span className="text-xs text-slate-500 line-through font-mono">
+                        {appliedPromo.originalPrice.toLocaleString('ru-RU')} сум
+                      </span>
+                      <span className="text-xl font-bold text-emerald-400 font-mono">
+                        {appliedPromo.finalPrice.toLocaleString('ru-RU')} сум
+                      </span>
+                    </>
+                  ) : template.discount_price !== null && template.discount_price !== undefined ? (
                     <>
                       <span className="text-xs text-slate-500 line-through font-mono">
                         {Number(template.price).toLocaleString('ru-RU')} сум
@@ -2397,7 +2487,7 @@ function CabinetPage() {
 // ----------------- ADMIN PAGE -----------------
 function AdminPage() {
   const { token } = useAuth();
-  const [activeTab, setActiveTab] = useState<'orders' | 'templates'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'templates' | 'promocodes'>('orders');
   
   // Orders State
   const [orders, setOrders] = useState<Order[]>([]);
@@ -2406,6 +2496,34 @@ function AdminPage() {
   // Templates State
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
+
+  // Promocodes State
+  const [promocodes, setPromocodes] = useState<any[]>([]);
+  const [loadingPromocodes, setLoadingPromocodes] = useState(false);
+  const [isPromoModalOpen, setIsPromoModalOpen] = useState(false);
+  const [newPromoCode, setNewPromoCode] = useState('');
+  const [newPromoType, setNewPromoType] = useState<'percentage' | 'fixed'>('percentage');
+  const [newPromoValue, setNewPromoValue] = useState('15');
+  const [newPromoMinOrder, setNewPromoMinOrder] = useState('0');
+  const [newPromoMaxUses, setNewPromoMaxUses] = useState('100');
+  const [newPromoPartner, setNewPromoPartner] = useState('');
+
+  const refreshPromocodes = () => {
+    setLoadingPromocodes(true);
+    fetch(`${API_URL}/promocodes`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setPromocodes(data);
+        setLoadingPromocodes(false);
+      })
+      .catch(() => setLoadingPromocodes(false));
+  };
+
+  useEffect(() => {
+    if (activeTab === 'promocodes') {
+      refreshPromocodes();
+    }
+  }, [activeTab]);
 
   // Modal / Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -2675,6 +2793,53 @@ function AdminPage() {
     }
   };
 
+  const handleCreatePromocodeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API_URL}/promocodes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: newPromoCode,
+          discount_type: newPromoType,
+          discount_value: Number(newPromoValue),
+          min_order_amount: Number(newPromoMinOrder) || 0,
+          max_uses: Number(newPromoMaxUses) || 100,
+          partner_name: newPromoPartner || null,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Ошибка создания промокода');
+
+      setIsPromoModalOpen(false);
+      setNewPromoCode('');
+      setNewPromoPartner('');
+      refreshPromocodes();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeletePromocode = async (id: number) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этот промокод?')) return;
+    try {
+      await fetch(`${API_URL}/promocodes/${id}`, { method: 'DELETE' });
+      refreshPromocodes();
+    } catch (err) {}
+  };
+
+  const handleTogglePromocodeActive = async (id: number, currentActive: boolean) => {
+    try {
+      await fetch(`${API_URL}/promocodes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: !currentActive }),
+      });
+      refreshPromocodes();
+    } catch (err) {}
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-5">
@@ -2682,7 +2847,7 @@ function AdminPage() {
           <h2 className="text-xl font-bold tracking-wide flex items-center gap-2">
             <Shield className="w-5.5 h-5.5 text-amber-400" /> Панель Администратора
           </h2>
-          <p className="text-xs text-slate-400 mt-1">Управление каталогом шаблонов, ценообразованием и заказами клиентов</p>
+          <p className="text-xs text-slate-400 mt-1">Управление каталогом шаблонов, ценообразованием и промокодами</p>
         </div>
 
         {/* Tab Controls */}
@@ -2699,10 +2864,16 @@ function AdminPage() {
           >
             Каталог шаблонов
           </button>
+          <button
+            onClick={() => setActiveTab('promocodes')}
+            className={`px-4 py-2 rounded-lg text-xs font-bold tracking-wide transition-all ${activeTab === 'promocodes' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'}`}
+          >
+            Промокоды
+          </button>
         </div>
       </div>
 
-      {activeTab === 'orders' ? (
+      {activeTab === 'orders' && (
         // ORDERS TAB
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
@@ -2828,7 +2999,9 @@ function AdminPage() {
             </div>
           </div>
         </div>
-      ) : (
+      )}
+
+      {activeTab === 'templates' && (
         // TEMPLATES CATALOG TAB
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
@@ -2939,6 +3112,232 @@ function AdminPage() {
           </div>
         </div>
       )}
+
+      {activeTab === 'promocodes' && (
+        // PROMOCODES TAB
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Маркетинговые Промокоды</h3>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={refreshPromocodes}
+                className="px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-semibold text-slate-300 flex items-center gap-1.5"
+              >
+                {loadingPromocodes && <Loader2 className="w-3 h-3 animate-spin" />} Обновить
+              </button>
+              <button 
+                onClick={() => setIsPromoModalOpen(true)}
+                className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/15"
+              >
+                <Plus className="w-4 h-4" /> Создать промокод
+              </button>
+            </div>
+          </div>
+
+          <div className="glass-panel rounded-2xl overflow-hidden border border-white/5">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10 bg-white/5 text-xs text-slate-400 tracking-wider uppercase font-semibold">
+                    <th className="py-4 px-6 font-semibold">Промокод</th>
+                    <th className="py-4 px-6 font-semibold">Тип скидки</th>
+                    <th className="py-4 px-6 font-semibold">Размер скидки</th>
+                    <th className="py-4 px-6 font-semibold">Мин. чек</th>
+                    <th className="py-4 px-6 font-semibold">Использования</th>
+                    <th className="py-4 px-6 font-semibold">Партнер / Блогер</th>
+                    <th className="py-4 px-6 font-semibold">Статус</th>
+                    <th className="py-4 px-6 font-semibold text-center">Действия</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loadingPromocodes ? (
+                    <tr>
+                      <td colSpan={8} className="py-12 text-center">
+                        <Loader2 className="w-8 h-8 text-amber-500 animate-spin mx-auto" />
+                      </td>
+                    </tr>
+                  ) : promocodes.length > 0 ? (
+                    promocodes.map(promo => (
+                      <tr key={promo.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td className="py-4 px-6 font-mono text-xs font-bold text-amber-400">
+                          {promo.code}
+                        </td>
+                        <td className="py-4 px-6 text-xs text-slate-300">
+                          {promo.discount_type === 'percentage' ? 'Процентный (%)' : 'Фиксированный (сум)'}
+                        </td>
+                        <td className="py-4 px-6 text-xs font-bold text-emerald-400 font-mono">
+                          {promo.discount_type === 'percentage' 
+                            ? `${promo.discount_value}%` 
+                            : `${Number(promo.discount_value).toLocaleString('ru-RU')} сум`}
+                        </td>
+                        <td className="py-4 px-6 text-xs font-mono text-slate-300">
+                          {Number(promo.min_order_amount) > 0 
+                            ? `${Number(promo.min_order_amount).toLocaleString('ru-RU')} сум` 
+                            : 'Без лимита'}
+                        </td>
+                        <td className="py-4 px-6 text-xs font-mono text-slate-300">
+                          <span className="font-bold text-slate-200">{promo.uses_count}</span> / {promo.max_uses}
+                        </td>
+                        <td className="py-4 px-6 text-xs text-slate-400">
+                          {promo.partner_name || '—'}
+                        </td>
+                        <td className="py-4 px-6">
+                          <button
+                            onClick={() => handleTogglePromocodeActive(promo.id, promo.is_active)}
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${
+                              promo.is_active 
+                                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400' 
+                                : 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                            }`}
+                          >
+                            {promo.is_active ? 'Активен' : 'Отключен'}
+                          </button>
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          <button
+                            onClick={() => handleDeletePromocode(promo.id)}
+                            className="p-1.5 bg-white/5 hover:bg-rose-500/10 border border-white/10 hover:border-rose-500/30 rounded text-slate-400 hover:text-rose-400 transition-colors"
+                            title="Удалить"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={8} className="py-12 px-6 text-center text-slate-500">
+                        Промокоды отсутствуют
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PROMOCODE FORM MODAL */}
+      <AnimatePresence>
+        {isPromoModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
+          >
+            <motion.form
+              onSubmit={handleCreatePromocodeSubmit}
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              className="glass-panel-heavy p-6 md:p-8 rounded-3xl max-w-md w-full border border-white/10 flex flex-col gap-5 shadow-2xl relative"
+            >
+              <button
+                type="button"
+                onClick={() => setIsPromoModalOpen(false)}
+                className="absolute top-5 right-5 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div>
+                <h3 className="text-xl font-bold tracking-wide gold-gradient-text">Создание промокода</h3>
+                <p className="text-xs text-slate-400 mt-1">Задайте условия маркетинговой скидки</p>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-slate-300">Код промокода</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Например: WEDDING2026"
+                    className="w-full bg-white/5 border border-white/10 px-3.5 py-2.5 rounded-xl outline-none focus:border-amber-500 uppercase tracking-wider font-mono text-sm text-slate-100"
+                    value={newPromoCode}
+                    onChange={(e) => setNewPromoCode(e.target.value)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-slate-300">Тип скидки</label>
+                    <select
+                      className="w-full bg-slate-900 border border-white/10 px-3 py-2.5 rounded-xl outline-none focus:border-amber-500 text-xs text-slate-200"
+                      value={newPromoType}
+                      onChange={(e) => setNewPromoType(e.target.value as any)}
+                    >
+                      <option value="percentage">Процент (%)</option>
+                      <option value="fixed">Сумма (сум)</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-slate-300">Размер скидки</label>
+                    <input
+                      type="number"
+                      required
+                      className="w-full bg-white/5 border border-white/10 px-3.5 py-2.5 rounded-xl outline-none focus:border-amber-500 text-xs font-mono text-slate-100"
+                      value={newPromoValue}
+                      onChange={(e) => setNewPromoValue(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-slate-300">Мин. чек (сум)</label>
+                    <input
+                      type="number"
+                      className="w-full bg-white/5 border border-white/10 px-3.5 py-2.5 rounded-xl outline-none focus:border-amber-500 text-xs font-mono text-slate-100"
+                      value={newPromoMinOrder}
+                      onChange={(e) => setNewPromoMinOrder(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-slate-300">Лимит использований</label>
+                    <input
+                      type="number"
+                      className="w-full bg-white/5 border border-white/10 px-3.5 py-2.5 rounded-xl outline-none focus:border-amber-500 text-xs font-mono text-slate-100"
+                      value={newPromoMaxUses}
+                      onChange={(e) => setNewPromoMaxUses(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-slate-300">Партнер / Блогер (опционально)</label>
+                  <input
+                    type="text"
+                    placeholder="Например: Event-агентство, Блогер Азиза"
+                    className="w-full bg-white/5 border border-white/10 px-3.5 py-2.5 rounded-xl outline-none focus:border-amber-500 text-xs text-slate-100"
+                    value={newPromoPartner}
+                    onChange={(e) => setNewPromoPartner(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsPromoModalOpen(false)}
+                  className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 py-3 rounded-xl text-xs font-semibold text-slate-300 transition-all"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3 rounded-xl text-xs shadow-lg shadow-amber-500/15 transition-all"
+                >
+                  Сохранить
+                </button>
+              </div>
+            </motion.form>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* TEMPLATE FORM MODAL */}
       <AnimatePresence>

@@ -15,9 +15,10 @@ export class OrdersController {
   async create(
     @Body('templateId') templateId: number,
     @Body('formData') formData: any,
+    @Body('promocode') promocode: string,
     @Request() req: any,
   ): Promise<Order> {
-    return this.ordersService.create(templateId, formData, req.user);
+    return this.ordersService.create(templateId, formData, req.user, promocode);
   }
 
   @Get('my')
