@@ -18,7 +18,7 @@ import { basename, extname, join } from 'path';
 import * as fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import { TemplatesService } from './templates.service';
-import { Template } from './entities/template.entity';
+import { Template } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';

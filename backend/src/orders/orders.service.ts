@@ -1,9 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Repository } from 'typeorm';
 import { Queue } from 'bullmq';
-import { Order } from './entities/order.entity';
+import { PrismaService } from '../prisma/prisma.service';
+import { Order } from '@prisma/client';
 import { TemplatesService } from '../templates/templates.service';
 import sharp from 'sharp';
 
@@ -42,59 +41,82 @@ function formatPhoneNumber(value: string): string {
 @Injectable()
 export class OrdersService {
   constructor(
-    @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
+    private readonly prisma: PrismaService,
     private readonly templatesService: TemplatesService,
     @InjectQueue('video-rendering')
     private readonly videoRenderingQueue: Queue,
   ) {}
 
-  async create(templateId: number, userData: any, user: any): Promise<Order> {
+  async create(templateId: number, userData: any, user: any): Promise<any> {
     const template = await this.templatesService.findOne(templateId);
     if (!template) {
       throw new NotFoundException(`Template with ID ${templateId} not found`);
     }
 
+    const totalPrice = template.discount_price !== null && template.discount_price !== undefined
+      ? Number(template.discount_price)
+      : Number(template.price);
+
     // 1. Create order record in Database
-    const order = this.orderRepository.create({
-      template,
-      user_data: userData,
-      status: 'processing',
-      total_price: template.discount_price !== null && template.discount_price !== undefined
-        ? Number(template.discount_price)
-        : Number(template.price),
-      user: { id: user.id } as any, // Link order to creator
+    let savedOrder: any = await this.prisma.order.create({
+      data: {
+        templateId: templateId,
+        user_data: userData,
+        status: 'processing',
+        total_price: totalPrice,
+        userId: user?.id ? Number(user.id) : null,
+      },
+      include: {
+        template: true,
+        user: true,
+      },
     });
 
-    const savedOrder = await this.orderRepository.save(order);
-
     // 2. Perform rendering based on template type
-    if (template.type === 'website' as any) {
+    if (template.type === 'website') {
       // Website template (immediate, no rendering needed)
-      savedOrder.status = 'completed';
-      savedOrder.final_asset_url = `/invite/${savedOrder.id}`;
-      await this.orderRepository.save(savedOrder);
+      savedOrder = await this.prisma.order.update({
+        where: { id: savedOrder.id },
+        data: {
+          status: 'completed',
+          final_asset_url: `/invite/${savedOrder.id}`,
+        },
+        include: {
+          template: true,
+          user: true,
+        },
+      });
     } else if (template.type === 'virtual' || template.type === 'physical') {
       // Photo template rendering (immediate)
       try {
-        await this.renderImageOrder(savedOrder);
+        savedOrder = await this.renderImageOrder(savedOrder);
       } catch (error) {
         console.error('Error rendering image order:', error);
-        savedOrder.status = 'failed';
-        await this.orderRepository.save(savedOrder);
+        await this.prisma.order.update({
+          where: { id: savedOrder.id },
+          data: { status: 'failed' },
+        });
         throw new BadRequestException('Failed to render invitation template');
       }
     } else {
       // Video template rendering (queued)
-      savedOrder.status = 'pending'; // Set to pending, to be processed by BullMQ
-      await this.orderRepository.save(savedOrder);
+      savedOrder = await this.prisma.order.update({
+        where: { id: savedOrder.id },
+        data: { status: 'pending' },
+        include: {
+          template: true,
+          user: true,
+        },
+      });
       
       try {
         await this.videoRenderingQueue.add('render', { orderId: savedOrder.id });
       } catch (queueError) {
         console.error('Error adding to video queue:', queueError);
-        savedOrder.status = 'failed';
-        await this.orderRepository.save(savedOrder);
+        await this.prisma.order.update({
+          where: { id: savedOrder.id },
+          data: { status: 'failed' },
+        });
         throw new BadRequestException('Failed to queue video rendering task');
       }
     }
@@ -102,9 +124,14 @@ export class OrdersService {
     return savedOrder;
   }
 
-
   async findOne(id: string): Promise<Order> {
-    const order = await this.orderRepository.findOneBy({ id });
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        template: true,
+        user: true,
+      },
+    });
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
@@ -112,20 +139,27 @@ export class OrdersService {
   }
 
   async findAll(): Promise<Order[]> {
-    return this.orderRepository.find({
-      order: { createdAt: 'DESC' },
+    return this.prisma.order.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        template: true,
+        user: true,
+      },
     });
   }
 
   async findByUser(userId: number): Promise<Order[]> {
-    return this.orderRepository.find({
-      where: { user: { id: userId } },
-      order: { createdAt: 'DESC' },
+    return this.prisma.order.findMany({
+      where: { userId: userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        template: true,
+        user: true,
+      },
     });
   }
 
-
-  private async renderImageOrder(order: Order): Promise<void> {
+  private async renderImageOrder(order: any): Promise<Order> {
     const template = order.template;
     const config = template.text_config;
     const dimensions = config.dimensions;
@@ -143,6 +177,12 @@ export class OrdersService {
     const outputFilename = `order_${order.id}.png`;
     const outputPath = join(process.cwd(), 'uploads', 'orders', outputFilename);
 
+    // Ensure orders directory exists
+    const ordersDir = join(process.cwd(), 'uploads', 'orders');
+    if (!fs.existsSync(ordersDir)) {
+      fs.mkdirSync(ordersDir, { recursive: true });
+    }
+
     // Compositing the SVG over the template image using Sharp
     await sharp(baseImagePath)
       .resize(dimensions.width, dimensions.height)
@@ -155,11 +195,18 @@ export class OrdersService {
       ])
       .toFile(outputPath);
 
-
     // Update order status in DB
-    order.status = 'completed';
-    order.final_asset_url = `/uploads/orders/${outputFilename}`;
-    await this.orderRepository.save(order);
+    return this.prisma.order.update({
+      where: { id: order.id },
+      data: {
+        status: 'completed',
+        final_asset_url: `/uploads/orders/${outputFilename}`,
+      },
+      include: {
+        template: true,
+        user: true,
+      },
+    });
   }
 
   private generateSvgOverlay(dimensions: { width: number; height: number }, fields: any[], userData: any): string {
@@ -175,7 +222,6 @@ export class OrdersService {
       const y = field.y;
       const fontSize = field.fontSize;
       
-      // Fallback font families standard to OS to prevent blank rendering
       let fontFamily = field.fontFamily || 'sans-serif';
       if (fontFamily.includes('Playfair Display')) {
         fontFamily = "'Playfair Display', Georgia, serif";
@@ -190,8 +236,6 @@ export class OrdersService {
 
       const escapedValue = this.escapeXml(value);
 
-      // Multi-line text fallback is not fully supported in standard SVG <text>,
-      // but simple single line positioning using x and y works great for invitations.
       textElements += `
         <text 
           x="${x}" 
@@ -239,15 +283,8 @@ export class OrdersService {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (!order.user_data) {
-      order.user_data = {};
-    }
-    if (!order.user_data.rsvps) {
-      order.user_data.rsvps = [];
-    }
-
-    // Force clone to ensure TypeORM detects change in jsonb column
-    const rsvps = [...order.user_data.rsvps];
+    const currentData = (order.user_data as any) || {};
+    const rsvps = [...(currentData.rsvps || [])];
     rsvps.push({
       name: rsvpData.name,
       attending: rsvpData.attending,
@@ -255,11 +292,18 @@ export class OrdersService {
       createdAt: new Date().toISOString(),
     });
 
-    order.user_data = {
-      ...order.user_data,
+    const updatedUserData = {
+      ...currentData,
       rsvps,
     };
 
-    return this.orderRepository.save(order);
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { user_data: updatedUserData },
+      include: {
+        template: true,
+        user: true,
+      },
+    });
   }
 }

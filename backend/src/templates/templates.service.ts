@@ -1,50 +1,46 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Template } from './entities/template.entity';
+import { PrismaService } from '../prisma/prisma.service';
+import { Template } from '@prisma/client';
 
 @Injectable()
 export class TemplatesService implements OnModuleInit {
-  constructor(
-    @InjectRepository(Template)
-    private readonly templateRepository: Repository<Template>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async onModuleInit() {
     await this.seed();
   }
 
   async findAll(): Promise<Template[]> {
-    return this.templateRepository.find();
+    return this.prisma.template.findMany();
   }
 
   async findOne(id: number): Promise<Template | null> {
-    return this.templateRepository.findOneBy({ id });
+    return this.prisma.template.findUnique({
+      where: { id },
+    });
   }
 
-  async create(templateData: Partial<Template>): Promise<Template> {
-    const template = this.templateRepository.create(templateData);
-    return this.templateRepository.save(template);
+  async create(templateData: any): Promise<Template> {
+    return this.prisma.template.create({
+      data: templateData,
+    });
   }
 
-  async update(id: number, templateData: Partial<Template>): Promise<Template> {
-    const template = await this.findOne(id);
-    if (!template) {
-      throw new Error(`Template with ID ${id} not found`);
-    }
-    Object.assign(template, templateData);
-    return this.templateRepository.save(template);
+  async update(id: number, templateData: any): Promise<Template> {
+    return this.prisma.template.update({
+      where: { id },
+      data: templateData,
+    });
   }
 
   async remove(id: number): Promise<void> {
-    const result = await this.templateRepository.delete(id);
-    if (result.affected === 0) {
-      throw new Error(`Template with ID ${id} not found`);
-    }
+    await this.prisma.template.delete({
+      where: { id },
+    });
   }
 
   async seed() {
-    const defaultTemplates: Partial<Template>[] = [
+    const defaultTemplates: any[] = [
       {
         id: 1,
         type: 'virtual',
@@ -813,18 +809,26 @@ export class TemplatesService implements OnModuleInit {
     ];
 
     for (const t of defaultTemplates as any[]) {
-      const existing = await this.templateRepository.findOneBy({ id: t.id });
-      if (!existing) {
-        await this.templateRepository.save(this.templateRepository.create(t));
-      } else {
-        existing.type = t.type;
-        existing.category = t.category;
-        existing.media_url = t.media_url;
-        existing.price = t.price;
-        existing.discount_price = t.discount_price;
-        existing.text_config = t.text_config;
-        await this.templateRepository.save(existing);
-      }
+      await this.prisma.template.upsert({
+        where: { id: t.id },
+        update: {
+          type: t.type,
+          category: t.category,
+          media_url: t.media_url,
+          price: t.price,
+          discount_price: t.discount_price,
+          text_config: t.text_config,
+        },
+        create: {
+          id: t.id,
+          type: t.type,
+          category: t.category,
+          media_url: t.media_url,
+          price: t.price,
+          discount_price: t.discount_price,
+          text_config: t.text_config,
+        },
+      });
     }
   }
 }

@@ -1,8 +1,6 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Order } from './entities/order.entity';
+import { PrismaService } from '../prisma/prisma.service';
 import ffmpeg from 'fluent-ffmpeg';
 import { join } from 'path';
 import * as fs from 'fs';
@@ -38,14 +36,9 @@ function formatPhoneNumber(value: string): string {
 
 @Processor('video-rendering')
 export class VideoRenderingProcessor extends WorkerHost {
-  constructor(
-    @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
-  ) {
+  constructor(private readonly prisma: PrismaService) {
     super();
     
-    // Explicitly check and assign FFmpeg path if it exists in local paths
-    // this helps in case the path variables are not updated in the current running process yet
     const localFfmpegPath = 'C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe';
     if (fs.existsSync(localFfmpegPath)) {
       ffmpeg.setFfmpegPath(localFfmpegPath);
@@ -56,21 +49,22 @@ export class VideoRenderingProcessor extends WorkerHost {
     const { orderId } = job.data;
     console.log(`[Queue] Starting video rendering for Order: ${orderId}`);
 
-    const order = await this.orderRepository.findOne({
+    const order = await this.prisma.order.findUnique({
       where: { id: orderId },
-      relations: { template: true },
+      include: { template: true },
     });
 
-
-    if (!order) {
-      console.error(`[Queue] Order ${orderId} not found in DB`);
+    if (!order || !order.template) {
+      console.error(`[Queue] Order or Template ${orderId} not found in DB`);
       return;
     }
 
     try {
       // 1. Update status to processing
-      order.status = 'processing';
-      await this.orderRepository.save(order);
+      await this.prisma.order.update({
+        where: { id: orderId },
+        data: { status: 'processing' },
+      });
 
       // 2. Resolve input and output paths
       const template = order.template;
@@ -89,8 +83,9 @@ export class VideoRenderingProcessor extends WorkerHost {
       }
 
       // 3. Compile FFmpeg filtergraph string for all text fields
-      const fields = template.text_config.fields || [];
-      const userData = order.user_data;
+      const textConfig = template.text_config as any;
+      const fields = textConfig?.fields || [];
+      const userData = (order.user_data as any) || {};
 
       const filters = fields.map((field: any) => {
         let textValue = userData[field.id] || field.placeholder || '';
@@ -98,8 +93,6 @@ export class VideoRenderingProcessor extends WorkerHost {
           textValue = formatPhoneNumber(textValue);
         }
         
-        // Escape special chars for FFmpeg drawtext
-        // Escapes backslash, single quote, colon, and percent sign
         const escapedText = textValue
           .replace(/\\/g, '\\\\')
           .replace(/'/g, "'\\''")
@@ -111,7 +104,6 @@ export class VideoRenderingProcessor extends WorkerHost {
         const x = field.x;
         const y = field.y;
 
-        // Position calculations
         let xExpr = String(x);
         if (field.align === 'center') {
           xExpr = `(${x}-text_w/2)`;
@@ -121,8 +113,6 @@ export class VideoRenderingProcessor extends WorkerHost {
 
         const yExpr = `(${y}-th/2)`;
 
-        // Check standard fonts. Gyan.FFmpeg handles system font name fallback in most environments,
-        // but absolute path on Windows is most reliable.
         let fontPath = 'C\\:/Windows/Fonts/arial.ttf';
         if (field.fontFamily && field.fontFamily.includes('Playfair Display')) {
           fontPath = 'C\\:/Windows/Fonts/georgia.ttf';
@@ -138,7 +128,6 @@ export class VideoRenderingProcessor extends WorkerHost {
         ffmpeg(inputPath)
           .videoFilters(filterString)
           .output(outputPath)
-          // Keep audio codec copy
           .audioCodec('copy')
           .on('start', (commandLine) => {
             console.log(`[FFmpeg] Spawned command: ${commandLine}`);
@@ -155,15 +144,21 @@ export class VideoRenderingProcessor extends WorkerHost {
       });
 
       // 5. Update Order status to completed
-      order.status = 'completed';
-      order.final_asset_url = `/uploads/orders/${outputFilename}`;
-      await this.orderRepository.save(order);
+      await this.prisma.order.update({
+        where: { id: orderId },
+        data: {
+          status: 'completed',
+          final_asset_url: `/uploads/orders/${outputFilename}`,
+        },
+      });
       console.log(`[Queue] Completed order: ${orderId}`);
 
     } catch (error) {
       console.error(`[Queue] Rendering failed for Order ${orderId}:`, error);
-      order.status = 'failed';
-      await this.orderRepository.save(order);
+      await this.prisma.order.update({
+        where: { id: orderId },
+        data: { status: 'failed' },
+      });
     }
   }
 }
