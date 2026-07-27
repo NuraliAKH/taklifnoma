@@ -1805,13 +1805,13 @@ function EditorPage() {
                     {/* Central High-Tech Animated Loading Badge */}
                     <div className="relative z-10 flex flex-col items-center gap-3">
                       <div className="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-900/90 border border-amber-500/40 text-amber-400 backdrop-blur-md shadow-lg shadow-amber-500/20">
-                        <Sparkles className="w-7 h-7 text-amber-400 animate-spin" style={{ animationDuration: '4s' }} />
+                        <Loader2 className="w-7 h-7 text-amber-400 animate-spin" />
                         <div className="absolute -inset-1 rounded-2xl border border-amber-400/30 animate-ping pointer-events-none" />
                       </div>
 
                       <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/90 border border-white/15 text-[10px] font-bold text-slate-200 font-mono tracking-wider shadow-md">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                        <span>AI РЕНДЕРИНГ</span>
+                        <span>ОБРАБОТКА МАКЕТА</span>
                       </div>
                     </div>
                   </div>
