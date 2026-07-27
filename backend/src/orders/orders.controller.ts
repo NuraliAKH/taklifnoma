@@ -2,6 +2,7 @@ import { Controller, Post, Get, Body, Param, ParseUUIDPipe, UseGuards, Request }
 import { OrdersService } from './orders.service';
 import { Order } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
@@ -10,7 +11,7 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   async create(
     @Body('templateId') templateId: number,
     @Body('formData') formData: any,

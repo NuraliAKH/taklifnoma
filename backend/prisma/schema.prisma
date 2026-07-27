@@ -10,8 +10,11 @@ datasource db {
 model User {
   id            Int     @id(map: "PK_a3ffb1c0c8416b9fc6f907b7433") @default(autoincrement())
   email         String  @unique(map: "UQ_97672ac88f789774dd47f7c8be3") @db.VarChar(150)
-  password_hash String  @db.VarChar(255)
+  password_hash String? @db.VarChar(255)
   role          String  @default("user") @db.VarChar(50)
+  googleId      String? @unique @map("google_id") @db.VarChar(255)
+  name          String? @db.VarChar(150)
+  avatar        String? @db.VarChar(255)
   orders        Order[]
 
   @@map("users")

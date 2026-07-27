@@ -12,7 +12,7 @@ export class AuthService {
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
-    if (user && await bcrypt.compare(pass, user.password_hash)) {
+    if (user && user.password_hash && await bcrypt.compare(pass, user.password_hash)) {
       const { password_hash, ...result } = user;
       return result;
     }
@@ -26,6 +26,8 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
+        name: user.name,
+        avatar: user.avatar,
         role: user.role,
       },
     };
@@ -38,5 +40,12 @@ export class AuthService {
     }
     const user = await this.usersService.create(email, pass, 'user');
     return this.login(user);
+  }
+
+  async googleLogin(req: any) {
+    if (!req.user) {
+      throw new UnauthorizedException('No user from google');
+    }
+    return this.login(req.user);
   }
 }

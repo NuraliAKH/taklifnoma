@@ -23,6 +23,12 @@ export class UsersService implements OnModuleInit {
     });
   }
 
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { googleId },
+    });
+  }
+
   async create(email: string, passwordPlain: string, role: 'admin' | 'user' = 'user'): Promise<User> {
     const password_hash = await bcrypt.hash(passwordPlain, 10);
     return this.prisma.user.create({
@@ -30,6 +36,35 @@ export class UsersService implements OnModuleInit {
         email,
         password_hash,
         role,
+      },
+    });
+  }
+
+  async findOrCreateGoogleUser(profile: { googleId: string; email: string; name?: string; avatar?: string }): Promise<User> {
+    let user = await this.findByGoogleId(profile.googleId);
+    if (user) {
+      return user;
+    }
+
+    user = await this.findByEmail(profile.email);
+    if (user) {
+      return this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          googleId: profile.googleId,
+          name: profile.name || user.name,
+          avatar: profile.avatar || user.avatar,
+        },
+      });
+    }
+
+    return this.prisma.user.create({
+      data: {
+        email: profile.email,
+        googleId: profile.googleId,
+        name: profile.name,
+        avatar: profile.avatar,
+        role: 'user',
       },
     });
   }
