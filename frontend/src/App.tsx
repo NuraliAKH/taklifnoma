@@ -1675,7 +1675,7 @@ function EditorPage() {
                     </p>
                   </div>
 
-                  {currentOrder.status !== 'paid' && (
+                  {currentOrder.status !== 'paid' && Number(currentOrder.total_price || 0) > 0 && (
                     <div className="w-full mt-2">
                       <ClickPayButtons
                         orderId={currentOrder.id}
@@ -1684,10 +1684,10 @@ function EditorPage() {
                     </div>
                   )}
 
-                  {currentOrder.status === 'paid' && (
+                  {(currentOrder.status === 'paid' || Number(currentOrder.total_price || 0) === 0) && (
                     <div className="w-full p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center justify-center gap-2">
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>Заказ успешно оплачен через Click!</span>
+                      <span>{Number(currentOrder.total_price || 0) === 0 ? 'Бесплатное приглашение' : 'Заказ успешно оплачен через Click!'}</span>
                     </div>
                   )}
 

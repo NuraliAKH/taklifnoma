@@ -77,6 +77,14 @@ export class OrdersService {
       }
     }
 
+    // Enforce Click minimum payment threshold (1000 SUM if > 0)
+    if (finalPrice > 0 && finalPrice < 1000) {
+      finalPrice = 1000;
+    }
+
+    // If 0 SUM (100% discount or free), auto mark order status as paid
+    const initialStatus = finalPrice === 0 ? 'paid' : 'processing';
+
     let validUserId: number | null = null;
     if (user && user.id && !isNaN(Number(user.id))) {
       const existingUser = await this.prisma.user.findUnique({
@@ -92,7 +100,7 @@ export class OrdersService {
       data: {
         templateId: templateId,
         user_data: userData,
-        status: 'processing',
+        status: initialStatus,
         total_price: finalPrice,
         original_price: basePrice,
         discount_amount: discountAmount,
@@ -105,6 +113,10 @@ export class OrdersService {
         promocode: true,
       },
     });
+
+    if (finalPrice === 0 && promocodeId) {
+      await this.promocodesService.incrementUses(promocodeId);
+    }
 
     // 2. Perform rendering based on template type
     if (template.type === 'website') {

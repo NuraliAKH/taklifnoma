@@ -65,7 +65,13 @@ export class PromocodesService {
       discountAmount = Math.min(discountVal, orderAmount);
     }
 
-    const finalPrice = Math.max(0, orderAmount - discountAmount);
+    let finalPrice = Math.max(0, orderAmount - discountAmount);
+
+    // Enforce Click minimum payment limit (1000 SUM)
+    if (finalPrice > 0 && finalPrice < 1000) {
+      finalPrice = 1000;
+      discountAmount = Math.max(0, orderAmount - finalPrice);
+    }
 
     return {
       valid: true,
