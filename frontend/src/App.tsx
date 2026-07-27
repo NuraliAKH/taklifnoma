@@ -48,6 +48,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { WebsiteTemplateDispatcher } from './templates/sites';
 import { HeroThreeCanvas } from './components/HeroThreeCanvas';
+import { ClickPayButtons } from './components/ClickPayButtons';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -283,8 +284,11 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 
 // Helper to resolve media URLs
 const getMediaUrl = (url: string) => {
+  if (!url) return '';
   if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
-  return `${API_URL}${url}`;
+  const serverHost = API_URL.replace(/\/api\/?$/, '');
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  return `${serverHost}${cleanPath}`;
 };
 
 const getTemplateName = (t: Template) => {
@@ -492,7 +496,7 @@ function CatalogPage() {
     // Exclude video templates completely
     if (t.media_url?.endsWith('.mp4')) return false;
 
-    const matchCategory = categoryFilter === 'all' || t.category === categoryFilter;
+    const matchCategory = categoryFilter === 'all' || t.category === categoryFilter || t.type === 'website';
     const matchType = 
       typeFilter === 'all' || 
       (typeFilter === 'virtual_photo' && t.type === 'virtual') ||
@@ -1542,17 +1546,19 @@ function EditorPage() {
                   <div className="relative w-fit">
                     {/* Glowing outer ring */}
                     <div className="absolute inset-0 bg-emerald-500/20 rounded-2xl blur-xl animate-pulse"></div>
-                    <div className="relative border border-emerald-500/30 rounded-2xl overflow-hidden shadow-2xl p-2 bg-slate-950/80">
+                    <div className="relative border border-emerald-500/30 rounded-2xl overflow-hidden shadow-2xl p-2 bg-slate-950/80 w-[180px] h-[240px] flex items-center justify-center">
                       {template.type === 'website' ? (
-                        <img 
-                          src={getMediaUrl(template.media_url)} 
-                          className="w-[180px] h-[240px] object-cover rounded-xl"
-                          alt="Finalized Invite" 
-                        />
+                        <div className="scale-[0.45] origin-center shrink-0 pointer-events-none">
+                          <TemplatePreview 
+                            template={template} 
+                            formData={currentOrder.user_data || formData || {}} 
+                            autoScrollOnHover={true} 
+                          />
+                        </div>
                       ) : template.media_url.endsWith('.mp4') ? (
                         <video 
-                          src={getMediaUrl(currentOrder.final_asset_url || '')} 
-                          className="w-[180px] h-[240px] object-cover rounded-xl"
+                          src={getMediaUrl(currentOrder.final_asset_url || template.media_url)} 
+                          className="w-full h-full object-cover rounded-xl"
                           autoPlay 
                           loop 
                           muted 
@@ -1560,8 +1566,8 @@ function EditorPage() {
                         />
                       ) : (
                         <img 
-                          src={getMediaUrl(currentOrder.final_asset_url || '')} 
-                          className="w-[180px] h-[240px] object-cover rounded-xl"
+                          src={getMediaUrl(currentOrder.final_asset_url || template.media_url)} 
+                          className="w-full h-full object-cover rounded-xl"
                           alt="Finalized Invite" 
                         />
                       )}
@@ -1579,39 +1585,67 @@ function EditorPage() {
                     </p>
                   </div>
 
-                  <div className="flex flex-col gap-2.5 w-full mt-2">
-                    {template.type === 'website' ? (
-                      <>
-                        <button 
-                          onClick={() => {
-                            const fullUrl = `${window.location.origin}/invite/${currentOrder.id}`;
-                            navigator.clipboard.writeText(fullUrl);
-                            alert('Ссылка скопирована!');
-                          }}
-                          className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/15 flex items-center justify-center gap-2"
-                        >
-                          Скопировать ссылку
-                        </button>
+                  {currentOrder.status !== 'paid' && (
+                    <div className="w-full mt-2">
+                      <ClickPayButtons
+                        orderId={currentOrder.id}
+                        amount={Number(currentOrder.total_price || template.price || 0)}
+                      />
+                    </div>
+                  )}
+
+                  {currentOrder.status === 'paid' && (
+                    <div className="w-full p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center justify-center gap-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Заказ успешно оплачен через Click!</span>
+                    </div>
+                  )}
+
+                  {(currentOrder.status === 'paid' || Number(currentOrder.total_price || template.price || 0) === 0) ? (
+                    <div className="flex flex-col gap-2.5 w-full mt-2">
+                      {template.type === 'website' ? (
+                        <>
+                          <button 
+                            onClick={() => {
+                              const fullUrl = `${window.location.origin}/invite/${currentOrder.id}`;
+                              navigator.clipboard.writeText(fullUrl);
+                              alert('Ссылка скопирована!');
+                            }}
+                            className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/15 flex items-center justify-center gap-2"
+                          >
+                            Скопировать ссылку
+                          </button>
+                          <a 
+                            href={`/invite/${currentOrder.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-teal-500/15 flex items-center justify-center gap-2"
+                          >
+                            Открыть приглашение
+                          </a>
+                        </>
+                      ) : (
                         <a 
-                          href={`/invite/${currentOrder.id}`}
+                          href={getMediaUrl(currentOrder.final_asset_url || '')}
+                          download 
                           target="_blank"
                           rel="noreferrer"
-                          className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-teal-500/15 flex items-center justify-center gap-2"
+                          className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/15 flex items-center justify-center gap-2"
                         >
-                          Открыть приглашение
+                          <Download className="w-4 h-4" /> Скачать макет
                         </a>
-                      </>
-                    ) : (
-                      <a 
-                        href={getMediaUrl(currentOrder.final_asset_url || '')}
-                        download 
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3 rounded-xl transition-all shadow-lg shadow-amber-500/15 flex items-center justify-center gap-2"
-                      >
-                        <Download className="w-4 h-4" /> Скачать макет
-                      </a>
-                    )}
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-xl text-center mt-2 w-full">
+                      <p className="text-xs text-amber-400 font-semibold flex items-center justify-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                        <span>Ссылка и файлы будут доступны сразу после оплаты Click</span>
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2.5 w-full mt-2">
                     <button 
                       onClick={() => { setIsSubmitting(false); navigate('/cabinet'); }}
                       className="w-full bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded-xl transition-all text-xs font-semibold text-slate-300"
@@ -2721,6 +2755,11 @@ function AdminPage() {
                           {JSON.stringify(order.user_data)}
                         </td>
                         <td className="py-4 px-6">
+                          {order.status === 'paid' && (
+                            <span className="text-[11px] text-emerald-400 bg-emerald-500/15 border border-emerald-400/20 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 w-fit">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Оплачено
+                            </span>
+                          )}
                           {order.status === 'completed' && (
                             <span className="text-[11px] text-emerald-400 bg-emerald-500/15 border border-emerald-400/20 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 w-fit">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Готов
@@ -2744,16 +2783,35 @@ function AdminPage() {
                         </td>
                         <td className="py-4 px-6">
                           {order.final_asset_url ? (
+                            <div className="flex flex-col gap-1">
+                              <a 
+                                href={getMediaUrl(order.final_asset_url)} 
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 transition-all text-xs"
+                              >
+                                Скачать <Download className="w-3.5 h-3.5" />
+                              </a>
+                              {order.status !== 'paid' && (
+                                <a 
+                                  href={`https://my.click.uz/services/pay?service_id=108456&merchant_id=63342&amount=${order.total_price}&transaction_param=${order.id}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-sky-400 hover:text-sky-300 text-[11px] font-bold underline"
+                                >
+                                  Оплатить Click
+                                </a>
+                              )}
+                            </div>
+                          ) : (
                             <a 
-                              href={getMediaUrl(order.final_asset_url)} 
+                              href={`https://my.click.uz/services/pay?service_id=108456&merchant_id=63342&amount=${order.total_price}&transaction_param=${order.id}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 transition-all text-xs"
+                              className="text-sky-400 hover:text-sky-300 text-xs font-bold underline"
                             >
-                              Скачать <Download className="w-3.5 h-3.5" />
+                              Оплатить Click
                             </a>
-                          ) : (
-                            <span className="text-slate-600 text-xs">В процессе</span>
                           )}
                         </td>
                       </tr>
@@ -3412,6 +3470,30 @@ export function InvitationPage() {
         <Link to="/" className="mt-6 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-xs font-semibold hover:bg-white/10">
           На главную
         </Link>
+      </div>
+    );
+  }
+
+  if (order.status !== 'paid' && Number(order.total_price || 0) > 0) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-100 p-6 text-center">
+        <div className="max-w-md w-full glass-panel p-8 rounded-3xl border border-amber-500/30 flex flex-col items-center gap-6 shadow-2xl">
+          <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-amber-400">
+            <Lock className="w-10 h-10" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold tracking-wide">Приглашение не оплачено</h2>
+            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+              Доступ к веб-приглашению блокируется до подтверждения оплаты через Click.
+            </p>
+          </div>
+          <div className="w-full">
+            <ClickPayButtons orderId={order.id} amount={Number(order.total_price)} />
+          </div>
+          <Link to="/" className="text-xs text-slate-500 hover:text-slate-400 mt-2">
+            Вернуться на главную
+          </Link>
+        </div>
       </div>
     );
   }

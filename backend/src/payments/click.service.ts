@@ -224,10 +224,9 @@ export class ClickService {
 
   generatePaymentUrls(orderId: string, amount: number) {
     const clickUpUrl = `https://my.click.uz/services/pay?service_id=${this.serviceId}&merchant_id=${this.merchantId}&amount=${amount}&transaction_param=${orderId}`;
-    const clickCardUrl = `${clickUpUrl}&card_type=all`;
     return {
       clickUpUrl,
-      clickCardUrl,
+      clickCardUrl: clickUpUrl,
     };
   }
 }

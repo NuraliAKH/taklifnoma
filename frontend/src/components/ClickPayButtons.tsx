@@ -20,7 +20,7 @@ export const ClickPayButtons: React.FC<ClickPayButtonsProps> = ({
   const merchantId = '63342';
 
   const defaultUpUrl = clickUpUrl || `https://my.click.uz/services/pay?service_id=${serviceId}&merchant_id=${merchantId}&amount=${amount}&transaction_param=${orderId}`;
-  const defaultCardUrl = clickCardUrl || `${defaultUpUrl}&card_type=all`;
+  const defaultCardUrl = clickCardUrl || defaultUpUrl;
 
   const formattedAmount = new Intl.NumberFormat('ru-RU').format(amount);
 
