@@ -6,6 +6,7 @@ import {
   X, Globe, Upload, SlidersHorizontal, Eye
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
+import { useCountdownTimer } from '../../utils/timer';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -28,6 +29,7 @@ export const SimpleWeddingSite: React.FC<WebsiteTemplateProps> = ({
   onToggleSection,
   onLanguageChange
 }) => {
+  const currentDifference = useCountdownTimer(data.date, data.time, timeLeft);
   const [currentLang, setCurrentLang] = useState<'ru' | 'uz' | 'en'>(lang || 'ru');
   const [hiddenSections, setHiddenSections] = useState<string[]>(data.hiddenSections || []);
 
@@ -555,15 +557,15 @@ export const SimpleWeddingSite: React.FC<WebsiteTemplateProps> = ({
 
               <span className="text-[10px] uppercase tracking-widest text-amber-400 font-bold">{t.countdownTitle}</span>
 
-              {timeLeft.isPassed ? (
+              {currentDifference.isPassed ? (
                 <p className="text-sm font-bold text-amber-400">{t.passed}</p>
               ) : (
                 <div className="grid grid-cols-4 gap-2 w-full">
                   {[
-                    { label: t.days, val: timeLeft.days },
-                    { label: t.hours, val: timeLeft.hours },
-                    { label: t.minutes, val: timeLeft.minutes },
-                    { label: t.seconds, val: timeLeft.seconds },
+                    { label: t.days, val: currentDifference.days },
+                    { label: t.hours, val: currentDifference.hours },
+                    { label: t.minutes, val: currentDifference.minutes },
+                    { label: t.seconds, val: currentDifference.seconds },
                   ].map((item, idx) => (
                     <div key={idx} className="bg-stone-950 rounded-xl p-2 flex flex-col items-center">
                       <span className="text-lg font-bold text-amber-400 font-mono">{item.val}</span>

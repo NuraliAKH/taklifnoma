@@ -50,6 +50,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { WebsiteTemplateDispatcher } from './templates/sites';
 import { HeroThreeCanvas } from './components/HeroThreeCanvas';
 import { ClickPayButtons } from './components/ClickPayButtons';
+import { parseEventDateTime, calculateTimeLeft, useCountdownTimer } from './utils/timer';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -1045,7 +1046,26 @@ function EditorPage() {
       })
       .then(data => {
         setTemplate(data);
-        setCustomFields(data.text_config?.fields || []);
+        const fields = data.text_config?.fields || [];
+        if (data.type === 'website') {
+          const hasPhoto = fields.some((f: any) => f.id === 'photoUrl' || f.type === 'image');
+          const hasGallery = fields.some((f: any) => f.id === 'photos' || f.type === 'gallery');
+          const extraFields = [...fields];
+          if (!hasPhoto) {
+            extraFields.push({ id: 'photoUrl', label: 'Главное фото молодожёнов', type: 'image' });
+          }
+          if (!hasGallery) {
+            extraFields.push({
+              id: 'photos',
+              label: 'Галерея фотографий',
+              type: 'gallery',
+              max: (data.id === 9 || data.id === '9') ? 6 : 10
+            });
+          }
+          setCustomFields(extraFields);
+        } else {
+          setCustomFields(fields);
+        }
         
         // Restore formData from sessionStorage if user was redirected from auth flow
         const savedForm = sessionStorage.getItem(`draft_order_${id}`);
@@ -1292,48 +1312,166 @@ function EditorPage() {
             </div>
 
             <div className="flex flex-col gap-5">
-              {customFields.map(field => (
-                <div key={field.id} className="flex flex-col gap-2 relative">
-                  <label className="text-xs font-semibold text-slate-300 tracking-wide flex justify-between items-center">
-                    <span>{field.label}</span>
-                    <div className="flex items-center gap-2">
-                      {field.maxLength && (
-                        <span className="text-[10px] text-slate-500">
-                          {(formData[field.id] || '').length}/{field.maxLength}
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveUserField(field.id)}
-                        className="text-slate-500 hover:text-rose-500 transition-colors p-1"
-                        title="Удалить поле"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+              {customFields.map(field => {
+                const isImageField = field.type === 'image' || field.id === 'photoUrl' || field.id === 'heroPhoto';
+                const isGalleryField = field.type === 'gallery' || field.id === 'photos';
+                const isVideoField = field.type === 'video' || field.id === 'videoUrl';
+
+                if (isImageField) {
+                  return (
+                    <div key={field.id} className="flex flex-col gap-2 relative">
+                      <label className="text-xs font-semibold text-slate-300 flex justify-between items-center">
+                        <span>{field.label || 'Главное фото'}</span>
+                        {formData.photoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, photoUrl: '' }))}
+                            className="text-[10px] text-rose-400 hover:underline"
+                          >
+                            Удалить
+                          </button>
+                        )}
+                      </label>
+                      <div className="flex gap-2 items-center">
+                        {formData.photoUrl ? (
+                          <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/20 shrink-0 bg-slate-900">
+                            <img src={getMediaUrl(formData.photoUrl)} alt="Hero" className="w-full h-full object-cover" />
+                          </div>
+                        ) : null}
+                        <label className="flex-1 cursor-pointer py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-dashed border-white/20 hover:border-amber-400 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-2 transition-all">
+                          {uploadingMedia ? (
+                            <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />
+                          ) : (
+                            <Upload className="w-4 h-4 text-amber-400" />
+                          )}
+                          <span>{formData.photoUrl ? 'Заменить главное фото' : 'Загрузить фото'}</span>
+                          <input type="file" accept="image/*" onChange={handleHeroPhotoUpload} className="hidden" />
+                        </label>
+                      </div>
                     </div>
-                  </label>
-                  
-                  {field.id === 'loveStory' ? (
-                    <textarea 
-                      rows={3}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 hover:border-white/20 focus:border-amber-500 focus:bg-white/10 rounded-xl outline-none text-sm transition-all placeholder:text-slate-600 resize-none font-sans"
-                      placeholder={field.placeholder}
-                      value={formData[field.id] || ''}
-                      maxLength={field.maxLength}
-                      onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    />
-                  ) : (
-                    <input 
-                      type="text"
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 hover:border-white/20 focus:border-amber-500 focus:bg-white/10 rounded-xl outline-none text-sm transition-all placeholder:text-slate-600"
-                      placeholder={field.placeholder}
-                      value={formData[field.id] || ''}
-                      maxLength={field.maxLength}
-                      onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    />
-                  )}
-                </div>
-              ))}
+                  );
+                }
+
+                if (isGalleryField) {
+                  const maxCount = field.max || ((template?.id === 9 || template?.id === '9') ? 6 : 10);
+                  return (
+                    <div key={field.id} className="flex flex-col gap-2 relative">
+                      <label className="text-xs font-semibold text-slate-300 flex justify-between items-center">
+                        <span>{field.label || 'Галерея фотографий'}</span>
+                        <span className="text-[10px] text-amber-400 font-mono">
+                          {Array.isArray(formData.photos) ? formData.photos.length : 0} / {maxCount}
+                        </span>
+                      </label>
+                      {Array.isArray(formData.photos) && formData.photos.length > 0 && (
+                        <div className="grid grid-cols-4 gap-2 my-1">
+                          {formData.photos.map((pUrl: string, idx: number) => (
+                            <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group">
+                              <img src={getMediaUrl(pUrl)} alt="" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    photos: (prev.photos as any || []).filter((_: any, i: number) => i !== idx)
+                                  }));
+                                }}
+                                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 hover:bg-rose-600 text-white flex items-center justify-center transition-all"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <label className="cursor-pointer py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-dashed border-white/20 hover:border-amber-400 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-2 transition-all">
+                        {uploadingMedia ? (
+                          <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />
+                        ) : (
+                          <Plus className="w-4 h-4 text-amber-400" />
+                        )}
+                        <span>Добавить фото в галерею</span>
+                        <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} className="hidden" />
+                      </label>
+                    </div>
+                  );
+                }
+
+                if (isVideoField) {
+                  return (
+                    <div key={field.id} className="flex flex-col gap-2 relative">
+                      <label className="text-xs font-semibold text-slate-300 flex justify-between items-center">
+                        <span>{field.label || 'Видео-ролик / Заставка'}</span>
+                        {formData.videoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, videoUrl: '' }))}
+                            className="text-[10px] text-rose-400 hover:underline"
+                          >
+                            Удалить
+                          </button>
+                        )}
+                      </label>
+                      {formData.videoUrl ? (
+                        <div className="relative rounded-xl overflow-hidden border border-white/10 aspect-video bg-black flex items-center justify-center">
+                          <video src={getMediaUrl(formData.videoUrl)} controls className="w-full h-full object-contain" />
+                        </div>
+                      ) : null}
+                      <label className="cursor-pointer py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-dashed border-white/20 hover:border-amber-400 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-2 transition-all">
+                        {uploadingMedia ? (
+                          <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
+                        ) : (
+                          <VideoIcon className="w-4 h-4 text-indigo-400" />
+                        )}
+                        <span>{formData.videoUrl ? 'Заменить видео-файл' : 'Загрузить видео (MP4 / WebM)'}</span>
+                        <input type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
+                      </label>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={field.id} className="flex flex-col gap-2 relative">
+                    <label className="text-xs font-semibold text-slate-300 tracking-wide flex justify-between items-center">
+                      <span>{field.label}</span>
+                      <div className="flex items-center gap-2">
+                        {field.maxLength && (
+                          <span className="text-[10px] text-slate-500">
+                            {(formData[field.id] || '').length}/{field.maxLength}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveUserField(field.id)}
+                          className="text-slate-500 hover:text-rose-500 transition-colors p-1"
+                          title="Удалить поле"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </label>
+                    
+                    {field.id === 'loveStory' || field.type === 'textarea' ? (
+                      <textarea 
+                        rows={3}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 hover:border-white/20 focus:border-amber-500 focus:bg-white/10 rounded-xl outline-none text-sm transition-all placeholder:text-slate-600 resize-none font-sans"
+                        placeholder={field.placeholder}
+                        value={formData[field.id] || ''}
+                        maxLength={field.maxLength}
+                        onChange={(e) => handleInputChange(field.id, e.target.value)}
+                      />
+                    ) : (
+                      <input 
+                        type="text"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 hover:border-white/20 focus:border-amber-500 focus:bg-white/10 rounded-xl outline-none text-sm transition-all placeholder:text-slate-600"
+                        placeholder={field.placeholder}
+                        value={formData[field.id] || ''}
+                        maxLength={field.maxLength}
+                        onChange={(e) => handleInputChange(field.id, e.target.value)}
+                      />
+                    )}
+                  </div>
+                );
+              })}
 
               <button
                 type="button"
@@ -1342,108 +1480,6 @@ function EditorPage() {
               >
                 <Plus className="w-4 h-4" /> Добавить новое текстовое поле
               </button>
-
-              {/* MEDIA UPLOADS SECTION: PHOTO & VIDEO */}
-              <div className="border-t border-white/10 pt-4 mt-2 flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                    <Upload className="w-4 h-4 text-amber-400" /> Медиа-файлы (Фото & Видео)
-                  </span>
-                  {uploadingMedia && <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />}
-                </div>
-
-                {/* 1. Hero / Main Photo */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-slate-300 flex justify-between items-center">
-                    <span>Главное фото молодожёнов</span>
-                    {formData.photoUrl && (
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, photoUrl: '' }))}
-                        className="text-[10px] text-rose-400 hover:underline"
-                      >
-                        Удалить
-                      </button>
-                    )}
-                  </label>
-                  <div className="flex gap-2 items-center">
-                    {formData.photoUrl ? (
-                      <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/20 shrink-0 bg-slate-900">
-                        <img src={getMediaUrl(formData.photoUrl)} alt="Hero" className="w-full h-full object-cover" />
-                      </div>
-                    ) : null}
-                    <label className="flex-1 cursor-pointer py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-dashed border-white/20 hover:border-amber-400 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-2 transition-all">
-                      <Upload className="w-4 h-4 text-amber-400" />
-                      <span>{formData.photoUrl ? 'Заменить главное фото' : 'Загрузить фото'}</span>
-                      <input type="file" accept="image/*" onChange={handleHeroPhotoUpload} className="hidden" />
-                    </label>
-                  </div>
-                </div>
-
-                {/* 2. Photo Gallery Upload */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-slate-300 flex justify-between items-center">
-                    <span>Галерея фотографий</span>
-                    <span className="text-[10px] text-amber-400 font-mono">
-                      {Array.isArray(formData.photos) ? formData.photos.length : 0} / {(template?.id === 9 || template?.id === '9') ? 6 : 10}
-                    </span>
-                  </label>
-                  {Array.isArray(formData.photos) && formData.photos.length > 0 && (
-                    <div className="grid grid-cols-4 gap-2 my-1">
-                      {formData.photos.map((pUrl: string, idx: number) => (
-                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group">
-                          <img src={getMediaUrl(pUrl)} alt="" className="w-full h-full object-cover" />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setFormData(prev => ({
-                                ...prev,
-                                photos: (prev.photos as any || []).filter((_: any, i: number) => i !== idx)
-                              }));
-                            }}
-                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 hover:bg-rose-600 text-white flex items-center justify-center transition-all"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <label className="cursor-pointer py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-dashed border-white/20 hover:border-amber-400 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-2 transition-all">
-                    <Plus className="w-4 h-4 text-amber-400" />
-                    <span>Добавить фото в галерею</span>
-                    <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} className="hidden" />
-                  </label>
-                </div>
-
-                {/* 3. Video Upload (Only for templates that support video) */}
-                {template?.id !== 9 && template?.id !== '9' && (
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-semibold text-slate-300 flex justify-between items-center">
-                      <span>Видео-ролик / Заставка</span>
-                      {formData.videoUrl && (
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, videoUrl: '' }))}
-                          className="text-[10px] text-rose-400 hover:underline"
-                        >
-                          Удалить
-                        </button>
-                      )}
-                    </label>
-                    {formData.videoUrl ? (
-                      <div className="relative rounded-xl overflow-hidden border border-white/10 aspect-video bg-black flex items-center justify-center">
-                        <video src={getMediaUrl(formData.videoUrl)} controls className="w-full h-full object-contain" />
-                      </div>
-                    ) : null}
-                    <label className="cursor-pointer py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-dashed border-white/20 hover:border-amber-400 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-2 transition-all">
-                      <VideoIcon className="w-4 h-4 text-indigo-400" />
-                      <span>{formData.videoUrl ? 'Заменить видео-файл' : 'Загрузить видео (MP4 / WebM)'}</span>
-                      <input type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
-                    </label>
-                  </div>
-                )}
-              </div>
 
               {/* SECTION VISIBILITY MANAGER */}
               <div className="border-t border-white/10 pt-4 mt-2 flex flex-col gap-3">
@@ -1992,6 +2028,8 @@ function TemplatePreview({
       });
     }
 
+    const previewTimeLeft = useCountdownTimer(previewData.date, previewData.time);
+
     return (
       <div 
         onMouseEnter={() => setIsHovered(true)}
@@ -2011,6 +2049,7 @@ function TemplatePreview({
             isPreview={true}
             isOpened={isOpened}
             onToggleSection={onToggleSection}
+            timeLeft={previewTimeLeft}
           />
         </div>
       </div>
@@ -3817,23 +3856,10 @@ export function InvitationPage() {
     
     const targetDateStr = order.user_data.date;
     const targetTimeStr = order.user_data.time || "18:00";
-    const targetDate = new Date(`${targetDateStr}T${targetTimeStr}:00`);
 
     const updateTimer = () => {
-      const now = new Date();
-      const difference = targetDate.getTime() - now.getTime();
-
-      if (difference <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isPassed: true });
-        return;
-      }
-
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-      setTimeLeft({ days, hours, minutes, seconds, isPassed: false });
+      const targetDate = parseEventDateTime(targetDateStr, targetTimeStr);
+      setTimeLeft(calculateTimeLeft(targetDate));
     };
 
     updateTimer();

@@ -7,6 +7,7 @@ import {
   MapPin, Music, CheckCircle2, UserCheck, MessageSquare
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
+import { useCountdownTimer } from '../../utils/timer';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -194,36 +195,8 @@ export const MalikaUlugbekWeddingSite: React.FC<WebsiteTemplateProps> = ({
   const maxPhotosLimit = 6;
   const [activeModalPhoto, setActiveModalPhoto] = useState<string | null>(null);
 
-  // Live Timer fallback
-  const [internalTimeLeft, setInternalTimeLeft] = useState({
-    days: 58,
-    hours: 2,
-    minutes: 17,
-    seconds: 58,
-  });
-
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const targetDate = new Date(`${weddingDate}T${weddingTime}:00`).getTime();
-      const now = new Date().getTime();
-      const difference = targetDate - now;
-
-      if (difference > 0) {
-        setInternalTimeLeft({
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-        });
-      }
-    };
-
-    calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 1000);
-    return () => clearInterval(timer);
-  }, [weddingDate, weddingTime]);
-
-  const timerDisplay = externalTimeLeft || internalTimeLeft;
+  // Live Timer
+  const timerDisplay = useCountdownTimer(weddingDate, weddingTime, externalTimeLeft);
 
   // Calendar Export (.ics)
   const handleAddToCalendar = () => {

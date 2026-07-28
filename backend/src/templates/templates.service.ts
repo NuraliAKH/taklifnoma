@@ -281,6 +281,17 @@ export class TemplatesService implements OnModuleInit {
               y: 1250,
               align: 'center',
               maxLength: 20,
+            },
+            {
+              id: 'photoUrl',
+              label: 'Главное фото молодожёнов',
+              type: 'image',
+            },
+            {
+              id: 'photos',
+              label: 'Галерея фотографий',
+              type: 'gallery',
+              max: 10,
             }
           ],
         },

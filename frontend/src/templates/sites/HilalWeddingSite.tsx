@@ -8,6 +8,7 @@ import {
   Play, Pause, MapPin, User, Users, CheckCircle2, Share2
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
+import { useCountdownTimer } from '../../utils/timer';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -358,20 +359,8 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
     }
   };
 
-  // Countdown timer calculations fallback
-  const calculatedTimeLeft = useMemo(() => {
-    if (timeLeft) return timeLeft;
-    const target = new Date('2026-07-08T14:00:00');
-    const now = new Date();
-    const diff = target.getTime() - now.getTime();
-    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, isPassed: true };
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((diff / 1000 / 60) % 60);
-    const seconds = Math.floor((diff / 1000) % 60);
-    return { days, hours, minutes, seconds, isPassed: false };
-  }, [timeLeft]);
+  // Countdown timer calculations
+  const calculatedTimeLeft = useCountdownTimer(data.date, data.time, timeLeft);
 
   // Calendar Day Highlight setup (July 2026 -> 8th day)
   const calendarDays = useMemo(() => {
