@@ -276,6 +276,14 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
   const [isOpening, setIsOpening] = useState(false);
   const [burstActive, setBurstActive] = useState(false);
 
+  useEffect(() => {
+    setInternalOpened(externalIsOpened);
+    if (!externalIsOpened) {
+      setIsOpening(false);
+      setBurstActive(false);
+    }
+  }, [externalIsOpened]);
+
   const isOpened = externalIsOpened || internalOpened;
 
   const handleOpenClick = () => {

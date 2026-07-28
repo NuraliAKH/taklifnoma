@@ -552,7 +552,7 @@ export const MarmarWeddingSite: React.FC<WebsiteTemplateProps> = ({
 
   const t = translations[currentLang] || translations.ru;
 
-  if (!isOpened && !isPreview) {
+  if (!isOpened) {
     return (
       <EnvelopeEntranceAnimation 
         groomName={groomName} 

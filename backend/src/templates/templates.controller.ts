@@ -86,7 +86,6 @@ export class TemplatesController {
   }
 
   @Post('upload')
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({

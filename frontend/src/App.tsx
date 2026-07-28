@@ -41,6 +41,8 @@ import {
   Zap,
   MapPin,
   Music,
+  Play,
+  Pause,
   ChevronDown,
   Star,
   MessageSquare,
@@ -1356,6 +1358,7 @@ function EditorPage() {
               template={template} 
               formData={formData} 
               isOpened={previewTab === 'opened'}
+              onOpenEnvelope={() => setPreviewTab('opened')}
               onToggleSection={handleToggleSection} 
             />
           </div>
@@ -2112,12 +2115,14 @@ function TemplatePreview({
   formData,
   autoScrollOnHover = false,
   isOpened = true,
+  onOpenEnvelope,
   onToggleSection
 }: { 
   template: Template; 
   formData: Record<string, any>; 
   autoScrollOnHover?: boolean;
   isOpened?: boolean;
+  onOpenEnvelope?: () => void;
   onToggleSection?: (sectionKey: string) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -2251,6 +2256,7 @@ function TemplatePreview({
             customFields={customDynamicFields}
             isPreview={true}
             isOpened={isOpened}
+            onOpenEnvelope={onOpenEnvelope}
             onToggleSection={onToggleSection}
             timeLeft={previewTimeLeft}
           />

@@ -169,6 +169,11 @@ export const MalikaUlugbekWeddingSite: React.FC<WebsiteTemplateProps> = ({
 }) => {
   // Opening state
   const [internalOpened, setInternalOpened] = useState(isOpened);
+
+  useEffect(() => {
+    setInternalOpened(isOpened);
+  }, [isOpened]);
+
   const isOpenedState = isOpened || internalOpened;
 
   const handleOpen = () => {
