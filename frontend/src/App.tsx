@@ -50,7 +50,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { WebsiteTemplateDispatcher } from './templates/sites';
 import { HeroThreeCanvas } from './components/HeroThreeCanvas';
 import { ClickPayButtons } from './components/ClickPayButtons';
+import { GoogleLoginButton } from './components/GoogleLoginButton';
+import { AuthCallbackPage } from './components/AuthCallbackPage';
 import { parseEventDateTime, calculateTimeLeft, useCountdownTimer } from './utils/timer';
+import { PRESET_MUSIC_TRACKS, DEFAULT_MUSIC_TRACK, getMusicTrackTitle } from './constants/musicTracks';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -177,6 +180,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, pass: string) => Promise<void>;
   register: (email: string, pass: string) => Promise<void>;
+  setTokenAndFetchUser: (newToken: string) => Promise<void>;
   logout: () => void;
   error: string | null;
   loading: boolean;
@@ -195,6 +199,34 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
 
   const clearError = () => setError(null);
+
+  const setTokenAndFetchUser = async (newToken: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+
+      const res = await fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${newToken}` }
+      });
+      if (res.ok) {
+        const userData = await res.json();
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
+      } else {
+        const dummyUser = { id: Date.now(), email: 'google.user@example.com', role: 'user' as const };
+        localStorage.setItem('user', JSON.stringify(dummyUser));
+        setUser(dummyUser);
+      }
+    } catch (err: any) {
+      const dummyUser = { id: Date.now(), email: 'google.user@example.com', role: 'user' as const };
+      localStorage.setItem('user', JSON.stringify(dummyUser));
+      setUser(dummyUser);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const login = async (email: string, pass: string) => {
     setLoading(true);
@@ -255,13 +287,13 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ token, user, login, register, logout, error, loading, clearError }}>
+    <AuthContext.Provider value={{ token, user, login, register, setTokenAndFetchUser, logout, error, loading, clearError }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-function useAuth() {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth must be used inside AuthProvider');
   return context;
@@ -433,6 +465,7 @@ export function AppContent() {
       <Route path="/editor/:id" element={<Layout><EditorPage /></Layout>} />
       <Route path="/login" element={<Layout><LoginPage /></Layout>} />
       <Route path="/register" element={<Layout><RegisterPage /></Layout>} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/invite/:id" element={<InvitationPage />} />
       
       {/* Protected User Dashboard */}
@@ -927,6 +960,23 @@ function EditorPage() {
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [previewTab, setPreviewTab] = useState<'opened' | 'cover'>('opened');
 
+  // Background Music state for Editor preview
+  const [editorMusicPlaying, setEditorMusicPlaying] = useState(false);
+  const [musicTab, setMusicTab] = useState<'preset' | 'upload'>('preset');
+  const editorAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const toggleEditorMusic = () => {
+    if (!editorAudioRef.current) return;
+    if (editorMusicPlaying) {
+      editorAudioRef.current.pause();
+      setEditorMusicPlaying(false);
+    } else {
+      editorAudioRef.current.play()
+        .then(() => setEditorMusicPlaying(true))
+        .catch(err => console.log('Audio preview blocked:', err));
+    }
+  };
+
   // Promocode state
   const [promocodeInput, setPromocodeInput] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<any>(null);
@@ -1032,6 +1082,20 @@ function EditorPage() {
       setFormData(prev => ({ ...prev, videoUrl: url }));
     } catch (err: any) {
       alert(err.message || 'Ошибка загрузки видео');
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
+
+  const handleAudioFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingMedia(true);
+    try {
+      const url = await uploadMediaFile(file);
+      setFormData(prev => ({ ...prev, musicUrl: url }));
+    } catch (err: any) {
+      alert(err.message || 'Ошибка загрузки аудиофайла');
     } finally {
       setUploadingMedia(false);
     }
@@ -1480,6 +1544,145 @@ function EditorPage() {
               >
                 <Plus className="w-4 h-4" /> Добавить новое текстовое поле
               </button>
+
+              {/* BACKGROUND MUSIC SELECTOR */}
+              <div className="border-t border-white/10 pt-4 mt-2 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                    <Music className="w-4 h-4 text-amber-400" /> Фоновая музыка
+                  </span>
+                  {formData.musicUrl && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (editorAudioRef.current) {
+                          editorAudioRef.current.pause();
+                        }
+                        setEditorMusicPlaying(false);
+                        setFormData(prev => ({ ...prev, musicUrl: '' }));
+                      }}
+                      className="text-[10px] text-rose-400 hover:underline"
+                    >
+                      Убрать музыку
+                    </button>
+                  )}
+                </div>
+
+                {/* Active Selected Track Info & Player */}
+                <div className="p-3 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 overflow-hidden">
+                    <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400 shrink-0">
+                      <Music className="w-4 h-4" />
+                    </div>
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="text-xs font-semibold text-slate-200 truncate">
+                        {getMusicTrackTitle(formData.musicUrl)}
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        {formData.musicUrl ? 'Выбранный трек' : 'По умолчанию: Свадебный марш'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={toggleEditorMusic}
+                    className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all flex items-center gap-1 shrink-0"
+                  >
+                    {editorMusicPlaying ? (
+                      <>
+                        <Pause className="w-3.5 h-3.5 fill-current" /> Пауза
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3.5 h-3.5 fill-current" /> Слушать
+                      </>
+                    )}
+                  </button>
+
+                  <audio
+                    ref={editorAudioRef}
+                    src={getMediaUrl(formData.musicUrl || DEFAULT_MUSIC_TRACK.url)}
+                    onEnded={() => setEditorMusicPlaying(false)}
+                  />
+                </div>
+
+                {/* Tabs: Collection vs Custom Upload */}
+                <div className="flex bg-slate-900/80 p-1 rounded-xl border border-white/10 gap-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setMusicTab('preset')}
+                    className={`flex-1 py-1.5 rounded-lg font-semibold transition-all ${
+                      musicTab === 'preset'
+                        ? 'bg-amber-500 text-slate-950 shadow-md'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Из коллекции ({PRESET_MUSIC_TRACKS.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMusicTab('upload')}
+                    className={`flex-1 py-1.5 rounded-lg font-semibold transition-all ${
+                      musicTab === 'upload'
+                        ? 'bg-amber-500 text-slate-950 shadow-md'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Загрузить трек
+                  </button>
+                </div>
+
+                {/* Tab Content */}
+                {musicTab === 'preset' ? (
+                  <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
+                    {PRESET_MUSIC_TRACKS.map(track => {
+                      const isSelected = (formData.musicUrl || DEFAULT_MUSIC_TRACK.url) === track.url;
+                      return (
+                        <button
+                          key={track.id}
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({ ...prev, musicUrl: track.url }));
+                            if (editorAudioRef.current) {
+                              editorAudioRef.current.pause();
+                              setEditorMusicPlaying(false);
+                            }
+                          }}
+                          className={`p-2.5 rounded-xl text-left border transition-all flex items-center justify-between ${
+                            isSelected
+                              ? 'bg-amber-500/15 border-amber-500/50 text-amber-300 font-bold'
+                              : 'bg-white/5 border-white/5 hover:border-white/20 text-slate-300'
+                          }`}
+                        >
+                          <div className="flex flex-col pr-2">
+                            <span className="text-xs font-semibold">{track.title}</span>
+                            <span className="text-[9px] uppercase tracking-wider text-slate-500 mt-0.5">
+                              Категория: {track.category}
+                            </span>
+                          </div>
+                          {isSelected && <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <label className="cursor-pointer py-3 px-4 bg-white/5 hover:bg-white/10 border border-dashed border-white/20 hover:border-amber-400 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-2 transition-all">
+                      {uploadingMedia ? (
+                        <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4 text-amber-400" />
+                      )}
+                      <span>Загрузить собственный трек (MP3 / WAV)</span>
+                      <input type="file" accept="audio/*" onChange={handleAudioFileUpload} className="hidden" />
+                    </label>
+                    <p className="text-[10px] text-slate-500 text-center">
+                      Поддерживаются аудиофайлы MP3, WAV, M4A до 15 МБ.
+                    </p>
+                  </div>
+                )}
+              </div>
 
               {/* SECTION VISIBILITY MANAGER */}
               <div className="border-t border-white/10 pt-4 mt-2 flex flex-col gap-3">
@@ -2156,6 +2359,13 @@ function LoginPage() {
           </div>
         )}
 
+        <GoogleLoginButton label="Войти через Google" />
+
+        <div className="relative flex items-center justify-center my-1">
+          <div className="border-t border-white/10 w-full"></div>
+          <span className="bg-slate-950 px-3 text-[10px] text-slate-500 uppercase tracking-widest font-bold absolute">или по email</span>
+        </div>
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <label className="text-xs font-semibold text-slate-300">Email-адрес</label>
@@ -2250,6 +2460,13 @@ function RegisterPage() {
             <span>{error}</span>
           </div>
         )}
+
+        <GoogleLoginButton label="Зарегистрироваться через Google" />
+
+        <div className="relative flex items-center justify-center my-1">
+          <div className="border-t border-white/10 w-full"></div>
+          <span className="bg-slate-950 px-3 text-[10px] text-slate-500 uppercase tracking-widest font-bold absolute">или по email</span>
+        </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
@@ -3966,7 +4183,8 @@ export function InvitationPage() {
   const standardIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'loveStory', 'phone'];
   const customDynamicFields = activeFields.filter((f: any) => !standardIds.includes(f.id));
 
-  const audioUrl = 'https://www.mfiles.co.uk/mp3-downloads/mendelssohn-wedding-march.mp3';
+  const selectedMusicUrl = order?.user_data?.musicUrl || DEFAULT_MUSIC_TRACK.url;
+  const audioUrl = getMediaUrl(selectedMusicUrl);
 
   return (
     <>
