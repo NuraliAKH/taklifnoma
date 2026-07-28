@@ -8,7 +8,7 @@ import {
   Play, Pause, MapPin, User, Users, CheckCircle2, Share2
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
-import { useCountdownTimer } from '../../utils/timer';
+import { useCountdownTimer, parseEventDateTime } from '../../utils/timer';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -370,15 +370,21 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
   // Countdown timer calculations
   const calculatedTimeLeft = useCountdownTimer(data.date, data.time, timeLeft);
 
-  // Calendar Day Highlight setup (July 2026 -> 8th day)
+  // Dynamic Calendar Day Highlight setup based on event date
+  const parsedEventDate = parseEventDateTime(data.date || '2026-07-08', data.time);
+  const targetYear = parsedEventDate ? parsedEventDate.getFullYear() : 2026;
+  const targetMonth = parsedEventDate ? parsedEventDate.getMonth() : 6;
+  const targetDay = parsedEventDate ? parsedEventDate.getDate() : 8;
+
   const calendarDays = useMemo(() => {
-    const totalDays = 31;
-    const startPadding = 2; 
-    const days = [];
+    const totalDays = new Date(targetYear, targetMonth + 1, 0).getDate();
+    const firstDayIndex = new Date(targetYear, targetMonth, 1).getDay();
+    const startPadding = (firstDayIndex + 6) % 7; 
+    const days: (number | null)[] = [];
     for (let i = 0; i < startPadding; i++) days.push(null);
     for (let d = 1; d <= totalDays; d++) days.push(d);
     return days;
-  }, []);
+  }, [targetYear, targetMonth]);
 
   return (
     <div className="relative min-h-screen bg-[#0A120D] text-[#E5E9E6] font-serif overflow-x-hidden selection:bg-[#D4AF37] selection:text-[#0A120D]">
@@ -771,7 +777,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
               </div>
               <div className="grid grid-cols-7 text-center text-xs gap-y-2 text-gray-300">
                 {calendarDays.map((d, i) => {
-                  const isWeddingDay = d === 8;
+                  const isWeddingDay = d === targetDay;
                   return (
                     <div key={i} className="h-8 flex items-center justify-center">
                       {d && (

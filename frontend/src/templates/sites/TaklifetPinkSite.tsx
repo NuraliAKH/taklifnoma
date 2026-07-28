@@ -9,7 +9,7 @@ import {
   MessageSquareHeart, ArrowDown
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
-import { useCountdownTimer } from '../../utils/timer';
+import { useCountdownTimer, parseEventDateTime } from '../../utils/timer';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -329,15 +329,22 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
   // Countdown timer calculations
   const calculatedTimeLeft = useCountdownTimer(data.date, data.time, timeLeft);
 
-  // Calendar Day Highlight setup (September 2026 -> 18th day)
+  // Dynamic Calendar Day Highlight setup based on event date
+  const parsedEventDate = parseEventDateTime(data.date || '2026-09-18', data.time);
+  const targetYear = parsedEventDate ? parsedEventDate.getFullYear() : 2026;
+  const targetMonth = parsedEventDate ? parsedEventDate.getMonth() : 8; // 0-indexed
+  const targetDay = parsedEventDate ? parsedEventDate.getDate() : 18;
+
   const calendarDays = useMemo(() => {
-    const totalDays = 30; // Sept has 30 days
-    const startPadding = 1; // Sept 1 2026 is Tuesday
-    const days = [];
+    const totalDays = new Date(targetYear, targetMonth + 1, 0).getDate();
+    const firstDayIndex = new Date(targetYear, targetMonth, 1).getDay();
+    const startPadding = (firstDayIndex + 6) % 7; // Monday-start padding
+
+    const days: (number | null)[] = [];
     for (let i = 0; i < startPadding; i++) days.push(null);
     for (let d = 1; d <= totalDays; d++) days.push(d);
     return days;
-  }, []);
+  }, [targetYear, targetMonth]);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-[#FAF5FF] via-[#F3E8FF] to-[#FCE7F3] text-[#4C1D95] font-serif overflow-x-hidden selection:bg-[#C084FC] selection:text-white">
@@ -690,7 +697,7 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
               </div>
               <div className="grid grid-cols-7 text-center text-xs gap-y-2 text-purple-950">
                 {calendarDays.map((d, i) => {
-                  const isWeddingDay = d === 18;
+                  const isWeddingDay = d === targetDay;
                   return (
                     <div key={i} className="h-8 flex items-center justify-center">
                       {d && (

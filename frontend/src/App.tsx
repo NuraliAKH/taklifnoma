@@ -1117,16 +1117,23 @@ function EditorPage() {
           const hasPhoto = fields.some((f: any) => f.id === 'photoUrl' || f.type === 'image');
           const hasGallery = fields.some((f: any) => f.id === 'photos' || f.type === 'gallery');
           const extraFields = [...fields];
-          if (!hasPhoto) {
-            extraFields.push({ id: 'photoUrl', label: 'Главное фото молодожёнов', type: 'image' });
-          }
-          if (!hasGallery) {
-            extraFields.push({
+          if (!hasPhoto && !hasGallery) {
+            let insertIdx = extraFields.findIndex((f: any) => f.id === 'loveStory');
+            if (insertIdx === -1) insertIdx = extraFields.findIndex((f: any) => f.id === 'brideName');
+            if (insertIdx === -1) insertIdx = extraFields.findIndex((f: any) => f.id === 'groomName');
+
+            const galleryField = {
               id: 'photos',
-              label: 'Галерея фотографий',
+              label: 'Галерея фотографий (Suratlar)',
               type: 'gallery',
               max: (data.id === 9 || data.id === '9') ? 6 : 10
-            });
+            };
+
+            if (insertIdx !== -1) {
+              extraFields.splice(insertIdx + 1, 0, galleryField);
+            } else {
+              extraFields.push(galleryField);
+            }
           }
           setCustomFields(extraFields);
         } else {
