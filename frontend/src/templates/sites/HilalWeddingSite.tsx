@@ -306,7 +306,13 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
   }, [data.hiddenSections]);
   const [showSectionManager, setShowSectionManager] = useState(false);
 
-  const isSectionVisible = (sectionKey: string) => !hiddenSections.includes(sectionKey);
+  const isSectionVisible = (sectionKey: string) => {
+    if (hiddenSections.includes(sectionKey)) return false;
+    if ((sectionKey === 'gift' || sectionKey === 'giftCard') && (hiddenSections.includes('gift') || hiddenSections.includes('giftCard'))) return false;
+    if ((sectionKey === 'venue' || sectionKey === 'calendar') && hiddenSections.includes('dateVenue')) return false;
+    if ((sectionKey === 'quran') && hiddenSections.includes('loveStory')) return false;
+    return true;
+  };
 
   // Dynamic Data & Media Fallbacks
   const groomName = data.groomName || 'DIYORBEK';

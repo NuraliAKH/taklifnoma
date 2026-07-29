@@ -71,7 +71,13 @@ export const AnorWeddingSite: React.FC<WebsiteTemplateProps> = ({
   const giftCardNumber = data.giftCardNumber || '8600 7710 4420 8911';
   const giftCardOwner = data.giftCardOwner || `${groomName} С.`;
 
-  const isSectionVisible = (sectionKey: string) => !hiddenSections.includes(sectionKey);
+  const isSectionVisible = (sectionKey: string) => {
+    if (hiddenSections.includes(sectionKey)) return false;
+    if ((sectionKey === 'giftCard' || sectionKey === 'gift') && (hiddenSections.includes('giftCard') || hiddenSections.includes('gift'))) return false;
+    if ((sectionKey === 'dateVenue' || sectionKey === 'venue' || sectionKey === 'calendar') && (hiddenSections.includes('dateVenue') || hiddenSections.includes('venue') || hiddenSections.includes('calendar'))) return false;
+    if ((sectionKey === 'photo' || sectionKey === 'couple') && (hiddenSections.includes('photo') || hiddenSections.includes('couple') || hiddenSections.includes('showHeroPhoto'))) return false;
+    return true;
+  };
 
   const toggleHideSection = (sectionKey: string) => {
     setHiddenSections(prev => {

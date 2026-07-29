@@ -281,7 +281,14 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
   }, [data.hiddenSections]);
   const [showSectionManager, setShowSectionManager] = useState(false);
 
-  const isSectionVisible = (sectionKey: string) => !hiddenSections.includes(sectionKey);
+  const isSectionVisible = (sectionKey: string) => {
+    if (hiddenSections.includes(sectionKey)) return false;
+    if ((sectionKey === 'venue' || sectionKey === 'calendar') && hiddenSections.includes('dateVenue')) return false;
+    if ((sectionKey === 'greeting') && hiddenSections.includes('loveStory')) return false;
+    if ((sectionKey === 'couple') && (hiddenSections.includes('photo') || hiddenSections.includes('showHeroPhoto'))) return false;
+    if ((sectionKey === 'giftCard' || sectionKey === 'gift') && (hiddenSections.includes('giftCard') || hiddenSections.includes('gift'))) return false;
+    return true;
+  };
 
   // Dynamic Data & Media Fallbacks
   const groomName = data.groomName || 'Farhod';
@@ -291,6 +298,8 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
   const venueName = data.venue || 'BAXT TO\'YXONASI';
   const venueAddress = data.address || "Toshkent shahri, Yunusobod tumani, Ahmad Yassaviy 34C";
   const wishFrom = data.loveStory || 'Shomurodovlar';
+  const giftCardNumber = data.giftCardNumber || '8600 7710 4420 8911';
+  const giftCardOwner = data.giftCardOwner || 'Сардор С.';
 
   // Gallery Photos
   const defaultGallery = useMemo(() => {
@@ -947,6 +956,43 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
                 </button>
               </form>
             )}
+          </motion.section>
+        )}
+
+        {/* SECTION 9: GIFT CARD / DONATION */}
+        {isSectionVisible('giftCard') && (
+          <motion.section
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="p-6 rounded-3xl bg-white/80 border border-purple-200 shadow-xl text-center space-y-4 font-sans"
+          >
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-[#7E22CE] font-semibold flex items-center justify-center gap-1">
+                <Gift className="w-3.5 h-3.5" /> ПОДАРКИ И ПОЖЕЛАНИЯ
+              </span>
+              <h3 className="text-xl font-serif font-bold text-[#581C87]">Денежный подарок</h3>
+              <p className="text-xs text-purple-800 font-light max-w-xs mx-auto leading-relaxed">
+                Ваше присутствие — лучший подарок для нас! Если вы хотите сделать подарок в виде денежного перевода:
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-purple-50/90 border border-purple-200 flex flex-col items-center gap-2 max-w-xs mx-auto shadow-sm">
+              <span className="text-base font-mono font-bold text-[#581C87] tracking-widest">{giftCardNumber}</span>
+              <span className="text-[11px] text-purple-800 font-medium">Получатель: {giftCardOwner}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(giftCardNumber.replace(/\s+/g, ''));
+                  alert('Номер карты скопирован!');
+                }}
+                className="mt-1 px-4 py-2 rounded-xl bg-[#7E22CE] text-white font-bold text-xs hover:bg-[#6B21A8] transition-all shadow-md shadow-purple-500/10 flex items-center gap-1.5 cursor-pointer active:scale-95"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Скопировать номер карты
+              </button>
+            </div>
           </motion.section>
         )}
 

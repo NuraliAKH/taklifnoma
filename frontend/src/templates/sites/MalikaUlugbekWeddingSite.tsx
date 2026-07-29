@@ -181,6 +181,16 @@ export const MalikaUlugbekWeddingSite: React.FC<WebsiteTemplateProps> = ({
     if (onOpenEnvelope) onOpenEnvelope();
   };
 
+  // Section visibility control
+  const hiddenSections = data.hiddenSections || [];
+  const isSectionVisible = (sectionKey: string) => {
+    if (hiddenSections.includes(sectionKey)) return false;
+    if ((sectionKey === 'venue' || sectionKey === 'calendar') && hiddenSections.includes('dateVenue')) return false;
+    if ((sectionKey === 'couple') && (hiddenSections.includes('photo') || hiddenSections.includes('showHeroPhoto'))) return false;
+    if ((sectionKey === 'giftCard' || sectionKey === 'gift') && (hiddenSections.includes('giftCard') || hiddenSections.includes('gift'))) return false;
+    return true;
+  };
+
   // Content state with fallback defaults matching reference video
   const groomName = data.groomName || "Ulug'bek";
   const brideName = data.brideName || "Malika";
@@ -188,6 +198,8 @@ export const MalikaUlugbekWeddingSite: React.FC<WebsiteTemplateProps> = ({
   const weddingTime = data.time || "18:00";
   const venueName = data.venue || "Baxtiyor restorani";
   const addressText = data.address || "Toshkent sh., Yunusobod tumani, Amir Temur ko'chasi 108";
+  const giftCardNumber = data.giftCardNumber || '8600 7710 4420 8911';
+  const giftCardOwner = data.giftCardOwner || 'Сардор С.';
 
   // Gallery Photos Display (No public inputs)
   const photos = useMemo(() => {

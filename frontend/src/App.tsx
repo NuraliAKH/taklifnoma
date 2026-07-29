@@ -1161,27 +1161,67 @@ function EditorPage() {
         setTemplate(data);
         const fields = data.text_config?.fields || [];
         if (data.type === 'website') {
-          const hasPhoto = fields.some((f: any) => f.id === 'photoUrl' || f.type === 'image');
-          const hasGallery = fields.some((f: any) => f.id === 'photos' || f.type === 'gallery');
           const extraFields = [...fields];
-          if (!hasPhoto && !hasGallery) {
-            let insertIdx = extraFields.findIndex((f: any) => f.id === 'loveStory');
-            if (insertIdx === -1) insertIdx = extraFields.findIndex((f: any) => f.id === 'brideName');
-            if (insertIdx === -1) insertIdx = extraFields.findIndex((f: any) => f.id === 'groomName');
 
+          // 1. Ensure photoUrl (Main Photo Upload) exists right after time or brideName
+          if (!extraFields.some((f: any) => f.id === 'photoUrl' || f.type === 'image')) {
+            let insertIdx = extraFields.findIndex((f: any) => f.id === 'time');
+            if (insertIdx === -1) insertIdx = extraFields.findIndex((f: any) => f.id === 'brideName');
+            const photoField = {
+              id: 'photoUrl',
+              label: 'Главное фото молодоженов (Surat)',
+              type: 'image',
+              placeholder: ''
+            };
+            if (insertIdx !== -1) {
+              extraFields.splice(insertIdx + 1, 0, photoField);
+            } else {
+              extraFields.push(photoField);
+            }
+          }
+
+          // 2. Ensure photos (Gallery Upload) exists
+          if (!extraFields.some((f: any) => f.id === 'photos' || f.type === 'gallery')) {
+            let insertIdx = extraFields.findIndex((f: any) => f.id === 'loveStory');
+            if (insertIdx === -1) insertIdx = extraFields.findIndex((f: any) => f.id === 'address');
             const galleryField = {
               id: 'photos',
               label: 'Галерея фотографий (Suratlar)',
               type: 'gallery',
               max: (data.id === 9 || data.id === '9') ? 6 : 10
             };
-
             if (insertIdx !== -1) {
               extraFields.splice(insertIdx + 1, 0, galleryField);
             } else {
               extraFields.push(galleryField);
             }
           }
+
+          // 3. Ensure giftCardNumber field exists
+          if (!extraFields.some((f: any) => f.id === 'giftCardNumber')) {
+            let insertIdx = extraFields.findIndex((f: any) => f.id === 'phone');
+            if (insertIdx === -1) insertIdx = extraFields.length;
+            extraFields.splice(insertIdx, 0, {
+              id: 'giftCardNumber',
+              label: 'Номер карты для подарков (Click/Uzcard)',
+              placeholder: '8600 7710 4420 8911',
+              maxLength: 30
+            });
+          }
+
+          // 4. Ensure giftCardOwner field exists
+          if (!extraFields.some((f: any) => f.id === 'giftCardOwner')) {
+            let insertIdx = extraFields.findIndex((f: any) => f.id === 'giftCardNumber');
+            if (insertIdx !== -1) {
+              extraFields.splice(insertIdx + 1, 0, {
+                id: 'giftCardOwner',
+                label: 'Имя получателя карты',
+                placeholder: 'Сардор С.',
+                maxLength: 30
+              });
+            }
+          }
+
           setCustomFields(extraFields);
         } else {
           setCustomFields(fields);
@@ -1197,7 +1237,10 @@ function EditorPage() {
           }
           sessionStorage.removeItem(`draft_order_${id}`);
         } else {
-          const initialForm: Record<string, string> = {};
+          const initialForm: Record<string, string> = {
+            giftCardNumber: '8600 7710 4420 8911',
+            giftCardOwner: 'Сардор С.'
+          };
           data.text_config.fields.forEach((f: any) => {
             initialForm[f.id] = f.placeholder;
           });
