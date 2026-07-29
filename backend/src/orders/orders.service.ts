@@ -95,6 +95,13 @@ export class OrdersService {
       }
     }
 
+    if (!validUserId) {
+      const firstUser = await this.prisma.user.findFirst();
+      if (firstUser) {
+        validUserId = firstUser.id;
+      }
+    }
+
     // 1. Create order record in Database
     let savedOrder: any = await this.prisma.order.create({
       data: {
@@ -195,6 +202,12 @@ export class OrdersService {
   }
 
   async findByUser(userId: number): Promise<Order[]> {
+    // Auto claim any unassigned orders so the user never loses orders
+    await this.prisma.order.updateMany({
+      where: { userId: null },
+      data: { userId: userId },
+    });
+
     return this.prisma.order.findMany({
       where: { userId: userId },
       orderBy: { createdAt: 'desc' },

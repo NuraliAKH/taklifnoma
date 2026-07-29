@@ -2635,11 +2635,16 @@ function CabinetPage() {
     })
       .then(res => res.json())
       .then(data => {
-        setOrdersList(data);
+        if (Array.isArray(data)) {
+          setOrdersList(data);
+        } else {
+          setOrdersList([]);
+        }
         setLoading(false);
       })
       .catch(err => {
         console.error(err);
+        setOrdersList([]);
         setLoading(false);
       });
   }, [token]);
