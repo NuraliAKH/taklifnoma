@@ -609,7 +609,7 @@ END:VCALENDAR`;
               {[
                 { time: '18:00', icon: Heart, label: 'Mehmonlarni kutib olish' },
                 { time: '19:00', icon: Crown, label: 'Nikoh marosimi' },
-                { time: '20:00', icon: Sparkles, label: 'Ziyofat boshlanishi' },
+                { time: '20:00', icon: Crown, label: 'Ziyofat boshlanishi' },
                 { time: '22:00', icon: Music, label: 'Marosim yakuni' },
               ].map((item, idx) => {
                 const IconComp = item.icon;

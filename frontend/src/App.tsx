@@ -622,7 +622,7 @@ function CatalogPage() {
                 ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' 
                 : 'bg-amber-100 text-amber-800 border-amber-400/50'
             }`}>
-              <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" /> Электронная Таклифнома #1 в Узбекистане
+              <img src="/logo_icon.png" alt="" className="w-4 h-4 object-contain" /> Электронная Таклифнома #1 в Узбекистане
             </span>
           </div>
 
