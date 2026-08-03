@@ -1007,7 +1007,7 @@ function EditorPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [uploadingMedia, setUploadingMedia] = useState(false);
-  const [previewTab, setPreviewTab] = useState<'opened' | 'cover'>('opened');
+  const [previewTab, setPreviewTab] = useState<'opened' | 'cover'>('cover');
 
   // Background Music state for Editor preview
   const [editorMusicPlaying, setEditorMusicPlaying] = useState(false);
@@ -1358,6 +1358,16 @@ function EditorPage() {
 
       setTimeout(() => {
         setCurrentOrder(orderData);
+        if (orderData && orderData.id) {
+          try {
+            const saved = JSON.parse(localStorage.getItem('my_order_ids') || '[]');
+            if (!saved.includes(orderData.id)) {
+              localStorage.setItem('my_order_ids', JSON.stringify([...saved, orderData.id]));
+            }
+          } catch (e) {
+            console.error('Failed to save order ID locally:', e);
+          }
+        }
         if (orderData.status === 'pending' || orderData.status === 'processing') {
           pollOrderStatus(orderData.id);
         }
@@ -2211,7 +2221,7 @@ function TemplatePreview({
   template, 
   formData,
   autoScrollOnHover = false,
-  isOpened = true,
+  isOpened = false,
   onOpenEnvelope,
   onToggleSection
 }: { 
@@ -2630,13 +2640,25 @@ function CabinetPage() {
   const [selectedRsvpOrderId, setSelectedRsvpOrderId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/orders/my`, {
+    let savedIds: string[] = [];
+    try {
+      savedIds = JSON.parse(localStorage.getItem('my_order_ids') || '[]');
+    } catch (e) {
+      savedIds = [];
+    }
+
+    const query = savedIds.length > 0 ? `?orderIds=${encodeURIComponent(savedIds.join(','))}` : '';
+
+    fetch(`${API_URL}/orders/my${query}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
           setOrdersList(data);
+          const fetchedIds = data.map((o: Order) => o.id);
+          const merged = Array.from(new Set([...savedIds, ...fetchedIds]));
+          localStorage.setItem('my_order_ids', JSON.stringify(merged));
         } else {
           setOrdersList([]);
         }

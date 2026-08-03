@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, ParseUUIDPipe, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Query, ParseUUIDPipe, UseGuards, Request } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { Order } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -23,8 +23,12 @@ export class OrdersController {
 
   @Get('my')
   @UseGuards(JwtAuthGuard)
-  async findMyOrders(@Request() req: any): Promise<Order[]> {
-    return this.ordersService.findByUser(req.user.id);
+  async findMyOrders(
+    @Request() req: any,
+    @Query('orderIds') orderIdsQuery?: string,
+  ): Promise<Order[]> {
+    const orderIds = orderIdsQuery ? orderIdsQuery.split(',').filter(Boolean) : [];
+    return this.ordersService.findByUser(req.user.id, orderIds);
   }
 
   @Get(':id')

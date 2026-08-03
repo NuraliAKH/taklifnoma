@@ -21,12 +21,15 @@ const getMediaUrl = (url?: string) => {
 export const AnorWeddingSite: React.FC<WebsiteTemplateProps> = ({
   data,
   lang = 'ru',
+  isOpened = false,
+  onOpenEnvelope,
   isPlaying = false,
   onToggleAudio,
   timeLeft,
   rsvpState,
   isPreview = false,
   onToggleSection,
+  onLanguageChange
 }) => {
   const currentDifference = useCountdownTimer(data.date, data.time, timeLeft);
   const [currentLang, setCurrentLang] = useState<'ru' | 'uz' | 'en'>(lang || 'ru');
@@ -295,6 +298,33 @@ export const AnorWeddingSite: React.FC<WebsiteTemplateProps> = ({
   };
 
   const t = translations[currentLang] || translations.ru;
+
+  if (!isOpened) {
+    return (
+      <div className="min-h-[100dvh] bg-stone-950 text-rose-100 flex flex-col items-center justify-center p-6 relative overflow-hidden select-none text-center">
+        <div className="w-full max-w-sm bg-gradient-to-b from-stone-900/95 via-stone-900/90 to-rose-950/95 border-2 border-amber-500/50 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-6 relative">
+          <div className="w-20 h-20 rounded-full bg-stone-950 border-2 border-amber-400 flex items-center justify-center text-amber-400 shadow-xl">
+            <Crown className="w-8 h-8 text-amber-400" />
+          </div>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-amber-400 font-serif font-bold">
+            {t.invitationTitle}
+          </span>
+          <h1 className="text-3xl font-serif font-bold text-amber-100">
+            {groomName} <span className="text-amber-400 font-light">&</span> {brideName}
+          </h1>
+          <p className="text-xs text-rose-200/70 font-serif italic">
+            "{t.welcomeText}"
+          </p>
+          <button
+            onClick={onOpenEnvelope}
+            className="w-full py-3.5 bg-gradient-to-r from-rose-700 via-amber-600 to-rose-700 text-white font-bold rounded-2xl text-xs uppercase tracking-widest shadow-lg shadow-amber-500/20 active:scale-95 transition-all mt-2 cursor-pointer"
+          >
+            {t.openEnvelopeBtn}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const containerClasses = isPreview
     ? 'w-full h-full overflow-y-auto bg-stone-950 text-rose-100 p-4 font-sans select-none scrollbar-thin relative'

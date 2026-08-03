@@ -21,6 +21,8 @@ const getMediaUrl = (url?: string) => {
 export const SimpleWeddingSite: React.FC<WebsiteTemplateProps> = ({
   data,
   lang = 'ru',
+  isOpened = false,
+  onOpenEnvelope,
   isPlaying = false,
   onToggleAudio,
   timeLeft,
@@ -234,6 +236,30 @@ export const SimpleWeddingSite: React.FC<WebsiteTemplateProps> = ({
   };
 
   const t = translations[currentLang] || translations.ru;
+
+  if (!isOpened) {
+    return (
+      <div className="min-h-[100dvh] bg-stone-950 text-amber-50 flex flex-col items-center justify-center p-6 relative overflow-hidden select-none text-center">
+        <div className="w-full max-w-sm bg-stone-900/90 border-2 border-amber-400/50 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-6 relative">
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-400 flex items-center justify-center text-amber-400 shadow-xl">
+            <Heart className="w-7 h-7 fill-amber-400 text-amber-400" />
+          </div>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-amber-400 font-bold">
+            {t.invitationTitle || 'Торжественное Приглашение'}
+          </span>
+          <h1 className="text-3xl font-serif font-bold text-amber-100">
+            {groomName} <span className="text-amber-400 font-light">&</span> {brideName}
+          </h1>
+          <button
+            onClick={onOpenEnvelope}
+            className="w-full py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-2xl text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all mt-2 cursor-pointer"
+          >
+            {t.openEnvelopeBtn || 'Открыть Приглашение'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const containerClasses = isPreview
     ? 'w-full h-full overflow-y-auto bg-stone-950 text-stone-100 p-4 font-sans select-none scrollbar-thin relative'

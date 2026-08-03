@@ -249,7 +249,7 @@ export const MarmarWeddingSite: React.FC<WebsiteTemplateProps> = ({
   data,
   customFields = [],
   lang = 'ru',
-  isOpened = true,
+  isOpened = false,
   onOpenEnvelope,
   isPlaying = false,
   onToggleAudio,
