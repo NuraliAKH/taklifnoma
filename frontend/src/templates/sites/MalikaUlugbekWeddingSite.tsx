@@ -115,8 +115,8 @@ const SwipeToOpenButton = ({ onOpen }: { onOpen: () => void }) => {
       />
 
       {/* Centered Text */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 pl-6">
-        <span className="text-xs sm:text-sm font-sans font-bold uppercase tracking-[0.25em] text-amber-200 group-hover:text-amber-100 transition-colors drop-shadow-md">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 pl-16 pr-4">
+        <span className="text-[10px] sm:text-xs font-sans font-bold uppercase tracking-[0.14em] sm:tracking-[0.18em] whitespace-nowrap text-amber-200 group-hover:text-amber-100 transition-colors drop-shadow-md">
           OCHISH UCHUN SURING
         </span>
       </div>

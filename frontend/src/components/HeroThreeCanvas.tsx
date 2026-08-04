@@ -11,6 +11,8 @@ export const HeroThreeCanvas: React.FC<HeroThreeCanvasProps> = ({ isDark = true 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isCompactScreen = window.innerWidth < 768;
 
     // 1. Scene, Camera, Renderer
     const scene = new THREE.Scene();
@@ -28,7 +30,7 @@ export const HeroThreeCanvas: React.FC<HeroThreeCanvasProps> = ({ isDark = true 
       powerPreference: 'high-performance' 
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isCompactScreen ? 1.25 : 2));
 
     container.appendChild(renderer.domElement);
 
@@ -45,7 +47,7 @@ export const HeroThreeCanvas: React.FC<HeroThreeCanvasProps> = ({ isDark = true 
     scene.add(mouseLight);
 
     // 3. Interactive Golden/Celestial Constellation Particles & Lines (NO 3D shape/mesh)
-    const particleCount = 750;
+    const particleCount = isCompactScreen ? 280 : 750;
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
 
@@ -82,7 +84,7 @@ export const HeroThreeCanvas: React.FC<HeroThreeCanvasProps> = ({ isDark = true 
     scene.add(particleSystem);
 
     // Constellation lines geometry
-    const maxLineConnections = 350;
+    const maxLineConnections = isCompactScreen ? 120 : 350;
     const linePositions = new Float32Array(maxLineConnections * 6);
     const lineGeo = new THREE.BufferGeometry();
     lineGeo.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
@@ -127,8 +129,8 @@ export const HeroThreeCanvas: React.FC<HeroThreeCanvasProps> = ({ isDark = true 
     window.addEventListener('resize', handleResize);
 
     // 6. Animation Loop
-    let animationFrameId: number;
-    let clock = new THREE.Clock();
+    let animationFrameId = 0;
+    const clock = new THREE.Clock();
 
     const animate = () => {
       const elapsedTime = clock.getElapsedTime();
@@ -184,7 +186,11 @@ export const HeroThreeCanvas: React.FC<HeroThreeCanvasProps> = ({ isDark = true 
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    animate();
+    if (prefersReducedMotion) {
+      renderer.render(scene, camera);
+    } else {
+      animate();
+    }
 
     // 7. Cleanup
     return () => {

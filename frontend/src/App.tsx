@@ -46,7 +46,8 @@ import {
   ChevronDown,
   Star,
   MessageSquare,
-  Tag
+  Tag,
+  Menu
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WebsiteTemplateDispatcher } from './templates/sites';
@@ -347,6 +348,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isDark = theme === 'dark';
 
@@ -358,96 +360,137 @@ function Layout({ children }: { children: React.ReactNode }) {
       <HeroThreeCanvas isDark={isDark} />
 
       {/* Header */}
-      <header className={`sticky top-0 z-40 border-b py-4 px-6 md:px-12 flex justify-between items-center transition-colors duration-300 backdrop-blur-md ${
+      <header className={`sticky top-0 z-40 border-b transition-colors duration-300 backdrop-blur-xl ${
         isDark ? 'bg-[#090d16]/80 border-white/5 text-slate-100' : 'bg-white/80 border-slate-200 text-slate-900 shadow-sm'
       }`}>
-        <Link to="/" className="flex items-center gap-3.5 group">
-          <img 
-            src="/logo_icon.png" 
-            alt="Web-Taklifnoma" 
-            className="h-11 w-auto max-w-[50px] object-contain drop-shadow-md group-hover:scale-105 transition-transform" 
-          />
-          <div>
-            <h1 className="text-xl font-bold tracking-wider gold-gradient-text">WEB-TAKLIFNOMA</h1>
-            <p className="text-[10px] text-amber-500/70 tracking-widest font-medium uppercase">Премиум Web-Приглашения</p>
-          </div>
-        </Link>
-
-        <nav className="flex items-center gap-2 md:gap-3">
-          <Link to="/" className={`px-3 py-2 text-sm font-semibold transition-colors ${
-            isDark ? 'text-slate-300 hover:text-slate-100' : 'text-slate-700 hover:text-slate-950'
-          }`}>
-            Каталог
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-0 h-[72px] flex items-center justify-between gap-4">
+          <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 group min-w-0">
+            <img
+              src="/logo_icon.png"
+              alt="Web-Taklifnoma"
+              className="h-10 sm:h-11 w-auto max-w-[48px] object-contain drop-shadow-md group-hover:scale-105 transition-transform"
+            />
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-lg font-extrabold tracking-[0.12em] gold-gradient-text whitespace-nowrap">WEB-TAKLIFNOMA</h1>
+              <p className="hidden sm:block text-[9px] text-amber-500/70 tracking-[0.22em] font-semibold uppercase">Приглашения нового формата</p>
+            </div>
           </Link>
-          
-          {/* Day / Night Theme Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            className={`p-2 px-3.5 rounded-xl border transition-all flex items-center gap-2 text-sm font-semibold cursor-pointer ${
-              isDark 
-                ? 'bg-slate-900/80 border-amber-500/30 text-amber-400 hover:bg-slate-800 hover:border-amber-400 shadow-lg' 
-                : 'bg-amber-50 border-amber-500/40 text-amber-800 hover:bg-amber-100 shadow-sm'
-            }`}
-            title={isDark ? 'Включить дневной режим' : 'Включить ночной режим'}
-          >
-            {isDark ? (
+
+          <nav className="hidden md:flex items-center gap-2 lg:gap-3" aria-label="Основная навигация">
+            <Link to="/" className={`px-3 py-2 text-sm font-semibold rounded-xl transition-colors ${
+              isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
+            }`}>
+              Каталог
+            </Link>
+            {user && (
+              <Link to="/cabinet" className={`px-3 py-2 text-sm font-semibold rounded-xl transition-colors ${
+                isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
+              }`}>
+                Мои приглашения
+              </Link>
+            )}
+
+            {/* Day / Night Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 text-sm font-semibold cursor-pointer ${
+                isDark
+                  ? 'bg-slate-900/80 border-amber-500/25 text-amber-400 hover:bg-slate-800 hover:border-amber-400'
+                  : 'bg-amber-50 border-amber-500/30 text-amber-800 hover:bg-amber-100'
+              }`}
+              title={isDark ? 'Включить дневной режим' : 'Включить ночной режим'}
+              aria-label={isDark ? 'Включить дневной режим' : 'Включить ночной режим'}
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
+            {user ? (
               <>
-                <Sun className="w-4 h-4 text-amber-400 animate-spin-slow" />
-                <span className="hidden sm:inline text-xs font-bold text-amber-300">День</span>
+                {user.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 text-amber-400 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition-all"
+                  >
+                    <Shield className="w-4 h-4" /> Админка
+                  </Link>
+                )}
+                <button
+                  onClick={() => { logout(); navigate('/'); }}
+                  className={`p-2.5 border rounded-xl transition-all ${
+                    isDark
+                      ? 'bg-white/5 hover:bg-rose-500/15 border-white/5 hover:border-rose-500/25 text-slate-400 hover:text-rose-400'
+                      : 'bg-slate-100 hover:bg-rose-100 border-slate-200 hover:border-rose-300 text-slate-600 hover:text-rose-600'
+                  }`}
+                  title="Выйти"
+                  aria-label="Выйти"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </>
             ) : (
-              <>
-                <Moon className="w-4 h-4 text-amber-600" />
-                <span className="hidden sm:inline text-xs font-bold text-amber-700">Ночь</span>
-              </>
-            )}
-          </button>
-
-          {user ? (
-            <>
-              <Link 
-                to="/cabinet" 
-                className={`px-4 py-2 border rounded-lg text-sm font-semibold flex items-center gap-1.5 transition-all ${
-                  isDark 
-                    ? 'bg-white/5 hover:bg-white/10 border-white/5 text-slate-300 hover:text-slate-100' 
-                    : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700 hover:text-slate-900'
-                }`}
+              <Link
+                to="/login"
+                className="px-5 py-2.5 bg-amber-500 text-slate-950 text-sm font-extrabold rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-amber-500/15 hover:bg-amber-400"
               >
-                <UserIcon className="w-4 h-4" /> Кабинет
+                Войти
               </Link>
-              {user.role === 'admin' && (
-                <Link 
-                  to="/admin" 
-                  className="px-4 py-2 bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 text-amber-400 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition-all"
-                >
-                  <Shield className="w-4 h-4" /> Админка
-                </Link>
-              )}
-              <button 
-                onClick={() => { logout(); navigate('/'); }}
-                className={`p-2 border rounded-lg transition-all ${
-                  isDark
-                    ? 'bg-white/5 hover:bg-rose-500/15 border-white/5 hover:border-rose-500/25 text-slate-400 hover:text-rose-400'
-                    : 'bg-slate-100 hover:bg-rose-100 border-slate-300 hover:border-rose-300 text-slate-600 hover:text-rose-600'
-                }`}
-                title="Выйти"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </>
-          ) : (
-            <Link 
-              to="/login" 
-              className="px-5 py-2 bg-amber-500 text-slate-950 text-sm font-bold rounded-lg transition-all active:scale-[0.98] shadow-lg shadow-amber-500/15 hover:bg-amber-400"
+            )}
+          </nav>
+
+          <div className="flex md:hidden items-center gap-2">
+          <button
+            onClick={toggleTheme}
+              className={`p-2.5 rounded-xl border transition-all ${
+              isDark 
+                  ? 'bg-slate-900/80 border-amber-500/25 text-amber-400'
+                  : 'bg-amber-50 border-amber-500/30 text-amber-800'
+            }`}
+            title={isDark ? 'Включить дневной режим' : 'Включить ночной режим'}
+              aria-label={isDark ? 'Включить дневной режим' : 'Включить ночной режим'}
+          >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+            <button
+              onClick={() => setMobileMenuOpen(prev => !prev)}
+              className={`p-2.5 rounded-xl border transition-all ${
+                isDark ? 'bg-white/5 border-white/10 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-800'
+              }`}
+              aria-label={mobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
+              aria-expanded={mobileMenuOpen}
             >
-              Войти
-            </Link>
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.nav
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className={`md:hidden overflow-hidden border-t ${isDark ? 'border-white/5 bg-[#090d16]/95' : 'border-slate-200 bg-white/95'}`}
+              aria-label="Мобильная навигация"
+            >
+              <div className="px-4 sm:px-6 py-3 flex flex-col gap-1">
+                <Link onClick={() => setMobileMenuOpen(false)} to="/" className="px-4 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500/10">Каталог</Link>
+                {user ? (
+                  <>
+                    <Link onClick={() => setMobileMenuOpen(false)} to="/cabinet" className="px-4 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500/10 flex items-center gap-2"><UserIcon className="w-4 h-4 text-amber-400" /> Мои приглашения</Link>
+                    {user.role === 'admin' && <Link onClick={() => setMobileMenuOpen(false)} to="/admin" className="px-4 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500/10 flex items-center gap-2"><Shield className="w-4 h-4 text-amber-400" /> Админка</Link>}
+                    <button onClick={() => { setMobileMenuOpen(false); logout(); navigate('/'); }} className="px-4 py-3 rounded-xl text-sm font-semibold text-left hover:bg-rose-500/10 text-rose-400 flex items-center gap-2"><LogOut className="w-4 h-4" /> Выйти</button>
+                  </>
+                ) : (
+                  <Link onClick={() => setMobileMenuOpen(false)} to="/login" className="mt-1 px-4 py-3 bg-amber-500 text-slate-950 text-sm font-extrabold rounded-xl text-center">Войти в аккаунт</Link>
+                )}
+              </div>
+            </motion.nav>
           )}
-        </nav>
+        </AnimatePresence>
       </header>
 
       {/* Page Content */}
-      <main className="flex-1 p-6 md:p-12 max-w-7xl mx-auto w-full flex flex-col z-10 relative">
+      <main className="flex-1 px-4 sm:px-6 lg:px-10 xl:px-0 py-6 md:py-10 max-w-7xl mx-auto w-full flex flex-col z-10 relative">
         {children}
       </main>
 
@@ -609,13 +652,20 @@ function CatalogPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-12 md:gap-16 flex-1 relative">
+    <div className="flex flex-col gap-14 md:gap-20 flex-1 relative">
       {/* Glow background highlight */}
       <div className="glow-ambient w-96 h-96 bg-amber-500 top-0 left-1/4 -z-10" />
 
       {/* Hero Header Section */}
-      <section className="py-6 md:py-10 flex flex-col lg:flex-row justify-between items-center gap-10">
-        <div className="flex flex-col gap-5 max-w-2xl text-center lg:text-left">
+      <section className={`relative overflow-hidden rounded-[2rem] border px-5 py-10 sm:px-8 md:px-12 md:py-14 flex flex-col lg:flex-row justify-between items-center gap-10 lg:gap-14 ${
+        isDark
+          ? 'bg-[linear-gradient(145deg,rgba(30,41,59,.78),rgba(9,13,22,.92))] border-white/10 shadow-2xl shadow-black/20'
+          : 'bg-[linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,247,237,.9))] border-amber-900/10 shadow-xl shadow-amber-900/5'
+      }`}>
+        <div className="absolute -top-24 -right-20 w-72 h-72 rounded-full bg-amber-400/20 blur-[90px] pointer-events-none" />
+        <div className="absolute -bottom-32 left-1/3 w-80 h-80 rounded-full bg-teal-400/10 blur-[100px] pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col gap-5 max-w-2xl text-center lg:text-left">
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
             <span className={`border text-xs px-4 py-1.5 rounded-full font-bold uppercase tracking-widest backdrop-blur-md shadow-lg flex items-center gap-2 ${
               isDark 
@@ -626,17 +676,28 @@ function CatalogPage() {
             </span>
           </div>
 
-          <h1 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight transition-colors ${
+          <h1 className={`text-[2.2rem] sm:text-5xl md:text-[3.5rem] font-extrabold tracking-[-0.035em] leading-[1.06] transition-colors ${
             isDark ? 'text-slate-100' : 'text-slate-900'
           }`}>
-            Создайте <span className="gold-gradient-text">стильный сайт-приглашение</span> на свадьбу за 1 минуту
+            Ваш праздник начинается с <span className="gold-gradient-text">красивого приглашения</span>
           </h1>
 
           <p className={`text-base sm:text-lg leading-relaxed max-w-xl transition-colors ${
             isDark ? 'text-slate-300' : 'text-slate-600'
           }`}>
-            Интерактивные веб-пригласительные с RSVP-подтверждением гостей, Яндекс/Google картами, таймером отсчета и фоновой музыкой.
+            Создайте персональный сайт за несколько минут: RSVP гостей, карта, таймер, фотографии и любимая музыка — всё в одной ссылке.
           </p>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 pt-1">
+            <a href="#catalog" className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-extrabold shadow-lg shadow-amber-500/20 transition-all active:scale-[0.98]">
+              Выбрать дизайн <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </a>
+            <a href="#how-it-works" className={`inline-flex items-center justify-center px-6 py-3.5 rounded-xl border text-sm font-bold transition-all ${
+              isDark ? 'border-white/10 bg-white/5 hover:bg-white/10 text-slate-200' : 'border-slate-200 bg-white/70 hover:bg-white text-slate-700'
+            }`}>
+              Как это работает
+            </a>
+          </div>
 
           {/* Feature Badges */}
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2 text-xs font-semibold">
@@ -659,31 +720,31 @@ function CatalogPage() {
         </div>
 
         {/* Stats Card */}
-        <div className={`flex gap-6 items-center p-6 rounded-2xl backdrop-blur-xl shadow-2xl shrink-0 transition-all border ${
+        <div className={`relative z-10 w-full lg:w-auto grid grid-cols-3 gap-0 items-stretch p-2 sm:p-3 rounded-2xl backdrop-blur-xl shadow-2xl shrink-0 transition-all border ${
           isDark 
             ? 'bg-slate-900/70 border-amber-500/20 text-slate-100' 
             : 'bg-white/90 border-amber-500/30 text-slate-900'
         }`}>
-          <div className="flex flex-col items-center border-r border-slate-500/20 pr-6">
-            <span className="text-3xl font-extrabold text-amber-500 font-mono">1 мин</span>
-            <span className={`text-[11px] font-medium uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Готовность</span>
+          <div className="flex flex-col items-center justify-center border-r border-slate-500/20 px-3 py-4 sm:px-6">
+            <span className="text-xl sm:text-3xl font-extrabold text-amber-500 font-mono whitespace-nowrap">5 мин</span>
+            <span className={`text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>До запуска</span>
           </div>
-          <div className="flex flex-col items-center pr-6 border-r border-slate-500/20">
-            <span className="text-3xl font-extrabold text-amber-500 font-mono">100%</span>
-            <span className={`text-[11px] font-medium uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Интерактивно</span>
+          <div className="flex flex-col items-center justify-center px-3 py-4 sm:px-6 border-r border-slate-500/20">
+            <span className="text-xl sm:text-3xl font-extrabold text-amber-500 font-mono">100%</span>
+            <span className={`text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Адаптивно</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center justify-center px-3 py-4 sm:px-6">
             <div className="flex items-center gap-1 text-amber-400">
-              <Star className="w-5 h-5 fill-amber-400" />
-              <span className="text-2xl font-bold font-mono">4.9</span>
+              <Star className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-400" />
+              <span className="text-xl sm:text-2xl font-bold font-mono">4.9</span>
             </div>
-            <span className={`text-[11px] font-medium uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Отзывы</span>
+            <span className={`text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Рейтинг</span>
           </div>
         </div>
       </section>
 
       {/* Catalog Filters Section */}
-      <section className="flex flex-col gap-6">
+      <section id="catalog" className="flex flex-col gap-6 scroll-mt-28">
         <div className={`flex flex-wrap items-center justify-between gap-4 border-b pb-6 transition-colors ${
           isDark ? 'border-white/10' : 'border-slate-200'
         }`}>
@@ -696,8 +757,8 @@ function CatalogPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className={`flex p-1 rounded-xl border gap-1 transition-colors ${
+          <div className="w-full lg:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className={`flex overflow-x-auto scrollbar-none p-1 rounded-xl border gap-1 transition-colors ${
               isDark ? 'bg-white/5 border-white/10' : 'bg-slate-200/70 border-slate-300/80'
             }`}>
               {[
@@ -709,7 +770,7 @@ function CatalogPage() {
                   key={item.id}
                   disabled={item.disabled}
                   onClick={() => !item.disabled && setTypeFilter(item.id)}
-                  className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all flex items-center gap-1.5 ${
+                  className={`px-3 sm:px-4 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all flex items-center gap-1.5 whitespace-nowrap flex-1 sm:flex-none justify-center ${
                     item.disabled
                       ? 'opacity-40 cursor-not-allowed text-slate-500 bg-slate-500/10 border border-slate-500/20'
                       : typeFilter === item.id 
@@ -728,7 +789,7 @@ function CatalogPage() {
               ))}
             </div>
 
-            <div className={`flex p-1 rounded-xl border gap-1 transition-colors ${
+            <div className={`flex overflow-x-auto scrollbar-none p-1 rounded-xl border gap-1 transition-colors ${
               isDark ? 'bg-white/5 border-white/10' : 'bg-slate-200/70 border-slate-300/80'
             }`}>
               {[
@@ -739,7 +800,7 @@ function CatalogPage() {
                 <button 
                   key={item.id}
                   onClick={() => setCategoryFilter(item.id)}
-                  className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all cursor-pointer ${
+                  className={`px-3 sm:px-4 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all cursor-pointer whitespace-nowrap flex-1 sm:flex-none ${
                     categoryFilter === item.id 
                       ? 'bg-amber-500 text-slate-950 shadow-md font-bold' 
                       : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
@@ -754,29 +815,32 @@ function CatalogPage() {
 
         {/* Template Grid */}
         {filteredTemplates.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-wrap justify-center gap-6">
             {filteredTemplates.map(template => (
-              <div 
+              <div
                 key={template.id}
                 onClick={() => navigate(`/editor/${template.id}`)}
-                className="group rounded-2xl overflow-hidden glass-panel-interactive flex flex-col cursor-pointer"
+                className="group w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] max-w-[410px] min-w-0 rounded-2xl overflow-hidden glass-panel-interactive flex flex-col cursor-pointer"
               >
-                <div className="aspect-[3/4] w-full bg-slate-900/40 relative overflow-hidden flex items-center justify-center border-b border-white/5">
+                <div className="h-[440px] sm:h-[400px] md:h-[470px] lg:h-[390px] xl:h-[460px] w-full bg-slate-900/40 relative overflow-hidden border-b border-white/5">
                   {/* Transparent Overlay */}
                   <div className="absolute inset-0 z-20 cursor-pointer" />
 
                   {template.type === 'website' ? (
-                    <div className="scale-[0.66] origin-center shrink-0 pointer-events-none">
-                      <TemplatePreview 
-                        template={template} 
-                        formData={{}} 
-                        autoScrollOnHover={true}
-                      />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="origin-center scale-[0.62] sm:scale-[0.56] md:scale-[0.66] lg:scale-[0.54] xl:scale-[0.65]">
+                        <TemplatePreview
+                          template={template}
+                          formData={{}}
+                          autoScrollOnHover={true}
+                          catalogMode={true}
+                        />
+                      </div>
                     </div>
                   ) : (
-                    <img 
-                      src={getMediaUrl(template.media_url)} 
-                      alt={template.category} 
+                    <img
+                      src={getMediaUrl(template.media_url)}
+                      alt={template.category}
                       className="w-full h-full object-cover scale-100 group-hover:scale-[1.04] transition-all duration-500"
                     />
                   )}
@@ -798,10 +862,10 @@ function CatalogPage() {
                   </div>
                 </div>
 
-                <div className="p-5 flex flex-col gap-3 flex-1 justify-between bg-gradient-to-b from-transparent to-black/10">
-                  <div>
-                    <div className="flex justify-between items-start gap-2">
-                      <h3 className={`font-bold text-base tracking-wide transition-colors truncate max-w-[190px] ${
+                <div className="p-4 sm:p-5 flex flex-col gap-3 flex-1 justify-between bg-gradient-to-b from-transparent to-black/10 min-w-0">
+                  <div className="min-w-0">
+                    <div className="flex justify-between items-start gap-3 min-w-0">
+                      <h3 className={`font-bold text-base tracking-wide leading-snug transition-colors line-clamp-2 min-w-0 ${
                         isDark ? 'text-slate-100 group-hover:text-amber-400' : 'text-slate-900 group-hover:text-amber-600'
                       }`}>
                         {getTemplateName(template)}
@@ -819,8 +883,8 @@ function CatalogPage() {
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
-                    <div className="flex flex-col">
+                  <div className="flex flex-wrap items-end justify-between gap-3 border-t border-white/5 pt-4 mt-2">
+                    <div className="flex flex-col min-w-0">
                       {template.discount_price !== null && template.discount_price !== undefined ? (
                         <>
                           <span className="text-[10px] text-slate-500 line-through font-mono">
@@ -837,7 +901,7 @@ function CatalogPage() {
                       )}
                     </div>
 
-                    <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all">
+                    <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-2 rounded-lg font-bold flex items-center gap-1 shrink-0 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all">
                       Создать <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </span>
                   </div>
@@ -853,7 +917,7 @@ function CatalogPage() {
       </section>
 
       {/* Advantages Section */}
-      <section className="py-8 flex flex-col gap-8 border-t border-white/10 pt-12">
+      <section id="how-it-works" className="py-8 flex flex-col gap-8 border-t border-white/10 pt-12 scroll-mt-28">
         <div className="text-center max-w-2xl mx-auto flex flex-col gap-2">
           <h2 className={`text-2xl sm:text-3xl font-extrabold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
             Почему выбирают <span className="gold-gradient-text">Web-Taklifnoma</span>
@@ -1433,7 +1497,7 @@ function EditorPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left: Preview Panel */}
-        <div className="lg:col-span-7 flex flex-col gap-4">
+        <div className="lg:col-span-7 lg:sticky lg:top-28 flex flex-col gap-4">
           {template.type === 'website' && (
             <div className="flex items-center justify-center gap-2 font-sans text-xs">
               <button
@@ -1460,7 +1524,7 @@ function EditorPage() {
               </button>
             </div>
           )}
-          <div className="relative rounded-2xl overflow-hidden glass-panel border border-white/10 flex items-center justify-center p-4">
+          <div className="relative rounded-2xl overflow-hidden glass-panel border border-white/10 flex items-center justify-center p-2 sm:p-4">
             <TemplatePreview 
               template={template} 
               formData={formData} 
@@ -1476,7 +1540,7 @@ function EditorPage() {
 
         {/* Right: Customization Form */}
         <div className="lg:col-span-5 flex flex-col gap-6">
-          <div className="glass-panel p-6 rounded-2xl border border-white/5 flex flex-col gap-6">
+          <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-white/5 flex flex-col gap-6">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <h2 className="text-lg font-semibold tracking-wide">Персонализация</h2>
@@ -2221,6 +2285,7 @@ function TemplatePreview({
   template, 
   formData,
   autoScrollOnHover = false,
+  catalogMode = false,
   isOpened = false,
   onOpenEnvelope,
   onToggleSection
@@ -2228,6 +2293,7 @@ function TemplatePreview({
   template: Template; 
   formData: Record<string, any>; 
   autoScrollOnHover?: boolean;
+  catalogMode?: boolean;
   isOpened?: boolean;
   onOpenEnvelope?: () => void;
   onToggleSection?: (sectionKey: string) => void;
@@ -2238,6 +2304,16 @@ function TemplatePreview({
   const [isHovered, setIsHovered] = useState(false);
   const isVideo = template.media_url.endsWith('.mp4') || (template as any).isVideoBlob;
   const [scale, setScale] = useState(1);
+
+  const previewData: Record<string, string> = { ...formData };
+  if (template.text_config?.fields) {
+    template.text_config.fields.forEach((field: any) => {
+      if (!previewData[field.id] && field.placeholder) {
+        previewData[field.id] = field.placeholder;
+      }
+    });
+  }
+  const previewTimeLeft = useCountdownTimer(previewData.date, previewData.time);
 
   useEffect(() => {
     if (!autoScrollOnHover || !scrollRef.current) return;
@@ -2334,22 +2410,13 @@ function TemplatePreview({
     const standardIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'loveStory', 'phone'];
     const customDynamicFields = activeFields.filter((f: any) => !standardIds.includes(f.id));
 
-    const previewData: Record<string, string> = { ...formData };
-    if (template.text_config?.fields) {
-      template.text_config.fields.forEach((f: any) => {
-        if (!previewData[f.id] && f.placeholder) {
-          previewData[f.id] = f.placeholder;
-        }
-      });
-    }
-
-    const previewTimeLeft = useCountdownTimer(previewData.date, previewData.time);
-
     return (
       <div 
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="relative mx-auto border-[10px] border-slate-900 rounded-[2.5rem] h-[640px] w-[340px] shadow-2xl bg-slate-950 flex flex-col overflow-hidden ring-4 ring-slate-800/50"
+        className={`relative mx-auto border-[7px] sm:border-[10px] border-slate-900 rounded-[2rem] sm:rounded-[2.5rem] w-[340px] max-w-full shadow-2xl bg-slate-950 flex flex-col overflow-hidden ring-2 sm:ring-4 ring-slate-800/50 ${
+          catalogMode ? 'h-[640px] min-h-0' : 'h-[min(640px,calc(100svh-9rem))] min-h-[480px]'
+        }`}
       >
         {/* Phone Notch */}
         <div className="absolute top-0 inset-x-0 h-4 bg-slate-900 flex justify-center items-center z-30 rounded-b-xl">
@@ -2451,11 +2518,11 @@ function LoginPage() {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center py-10">
+    <div className="flex-1 flex items-center justify-center py-6 sm:py-10">
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-panel p-8 rounded-3xl max-w-md w-full border border-white/5 flex flex-col gap-6 shadow-xl"
+        className="glass-panel p-5 sm:p-8 rounded-2xl sm:rounded-3xl max-w-md w-full border border-white/5 flex flex-col gap-6 shadow-xl"
       >
         <div className="text-center flex flex-col gap-2 items-center">
           <div className="p-3 bg-amber-500/10 rounded-2xl border border-amber-500/25 w-fit text-amber-400">
@@ -2553,11 +2620,11 @@ function RegisterPage() {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center py-10">
+    <div className="flex-1 flex items-center justify-center py-6 sm:py-10">
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-panel p-8 rounded-3xl max-w-md w-full border border-white/5 flex flex-col gap-6 shadow-xl"
+        className="glass-panel p-5 sm:p-8 rounded-2xl sm:rounded-3xl max-w-md w-full border border-white/5 flex flex-col gap-6 shadow-xl"
       >
         <div className="text-center flex flex-col gap-2 items-center">
           <div className="p-3 bg-amber-500/10 rounded-2xl border border-amber-500/25 w-fit text-amber-400">
