@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Heart, VolumeX,
   Copy, Check, Navigation,
-  X, Globe, Upload, SlidersHorizontal, Eye
+  X, Globe, Upload, SlidersHorizontal, Eye, Sparkles
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
 import { useCountdownTimer } from '../../utils/timer';
@@ -28,9 +28,11 @@ export const SimpleWeddingSite: React.FC<WebsiteTemplateProps> = ({
   timeLeft,
   rsvpState,
   isPreview = false,
+  visualVariant = 'default',
   onToggleSection,
   onLanguageChange
 }) => {
+  const isBirthday = visualVariant === 'birthday';
   const currentDifference = useCountdownTimer(data.date, data.time, timeLeft);
   const [currentLang, setCurrentLang] = useState<'ru' | 'uz' | 'en'>(lang || 'ru');
   const [hiddenSections, setHiddenSections] = useState<string[]>(data.hiddenSections || []);
@@ -239,22 +241,48 @@ export const SimpleWeddingSite: React.FC<WebsiteTemplateProps> = ({
 
   if (!isOpened) {
     return (
-      <div className={`${isPreview ? 'h-full min-h-full p-4' : 'min-h-[100dvh] p-6'} w-full bg-stone-950 text-amber-50 flex flex-col items-center justify-center relative overflow-hidden select-none text-center`}>
-        <div className="w-full max-w-sm bg-stone-900/90 border-2 border-amber-400/50 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col items-center gap-5 sm:gap-6 relative">
-          <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-400 flex items-center justify-center text-amber-400 shadow-xl">
-            <Heart className="w-7 h-7 fill-amber-400 text-amber-400" />
+      <div className={`${isPreview ? 'h-full min-h-full p-4' : 'min-h-[100dvh] p-6'} ${
+        isBirthday
+          ? 'bg-[radial-gradient(circle_at_top,#312e81_0%,#1e1b4b_40%,#09090b_100%)] text-fuchsia-50'
+          : 'bg-stone-950 text-amber-50'
+      } w-full flex flex-col items-center justify-center relative overflow-hidden select-none text-center`}>
+        <div className={`w-full max-w-sm border-2 p-6 sm:p-8 shadow-2xl flex flex-col items-center gap-5 sm:gap-6 relative overflow-hidden ${
+          isBirthday
+            ? 'bg-gradient-to-b from-indigo-950/95 via-violet-950/95 to-fuchsia-950/90 border-violet-400/60 rounded-[2rem] shadow-fuchsia-950/40'
+            : 'bg-stone-900/90 border-amber-400/50 rounded-3xl'
+        }`}>
+          {isBirthday && (
+            <>
+              <span className="absolute top-4 left-5 text-fuchsia-300/60 text-lg">✦</span>
+              <span className="absolute bottom-4 right-5 text-violet-300/50 text-sm">✦</span>
+            </>
+          )}
+          <div className={`w-16 h-16 border flex items-center justify-center shadow-xl ${
+            isBirthday
+              ? 'rounded-2xl rotate-3 bg-fuchsia-500/15 border-fuchsia-300/70 text-fuchsia-300 shadow-fuchsia-500/10'
+              : 'rounded-full bg-amber-500/10 border-amber-400 text-amber-400'
+          }`}>
+            {isBirthday ? (
+              <Sparkles className="w-7 h-7 text-fuchsia-300" />
+            ) : (
+              <Heart className="w-7 h-7 fill-amber-400 text-amber-400" />
+            )}
           </div>
-          <span className="text-[10px] uppercase tracking-[0.3em] text-amber-400 font-bold">
-            {t.invitationTitle || 'Торжественное Приглашение'}
+          <span className={`text-[10px] uppercase tracking-[0.3em] font-bold ${isBirthday ? 'text-fuchsia-300' : 'text-amber-400'}`}>
+            {isBirthday ? 'Приглашение на день рождения' : (t.invitationTitle || 'Торжественное Приглашение')}
           </span>
-          <h1 className="text-3xl font-serif font-bold text-amber-100">
-            {groomName} <span className="text-amber-400 font-light">&</span> {brideName}
+          <h1 className={`text-3xl font-serif font-bold ${isBirthday ? 'text-white' : 'text-amber-100'}`}>
+            {groomName} <span className={`${isBirthday ? 'text-fuchsia-300' : 'text-amber-400'} font-light`}>&</span> {brideName}
           </h1>
           <button
             onClick={onOpenEnvelope}
-            className="w-full py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-2xl text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all mt-2 cursor-pointer"
+            className={`w-full py-3.5 font-bold text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all mt-2 cursor-pointer ${
+              isBirthday
+                ? 'bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 hover:brightness-110 text-white rounded-xl shadow-fuchsia-500/20'
+                : 'bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-2xl'
+            }`}
           >
-            {t.openEnvelopeBtn || 'Открыть Приглашение'}
+            {isBirthday ? 'Открыть праздник' : (t.openEnvelopeBtn || 'Открыть Приглашение')}
           </button>
         </div>
       </div>

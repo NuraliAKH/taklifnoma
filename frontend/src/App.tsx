@@ -337,6 +337,7 @@ const getTemplateName = (t: Template) => {
   if (t.id === 6) return 'Anor Web (Сайт)';
   if (t.id === 7) return 'Hilal Web (Сайт)';
   if (t.id === 8) return 'Taklifet Pink Floral Web (Сайт)';
+  if (t.id === 10) return 'Violet Birthday Web (Сайт)';
   
   const categoryRu = t.category === 'wedding' ? 'Свадебное' : t.category === 'birthday' ? 'День Рождения' : t.category;
   const typeRu = t.type === 'physical' ? '(Печать)' : t.type === 'website' ? '(Сайт)' : '(Электронное)';

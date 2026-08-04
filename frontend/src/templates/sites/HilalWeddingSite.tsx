@@ -344,8 +344,11 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
     ];
   }, [data.photos]);
 
-  const [heroPhoto] = useState<string>(defaultPhoto);
-  const [heroVideo] = useState<string>(defaultVideo);
+  // Keep the hero media reactive to editor form changes. Storing these values in
+  // local state captured only the initial URL, so uploaded photos never reached
+  // the live preview.
+  const heroPhoto = defaultPhoto;
+  const heroVideo = defaultVideo;
   const [galleryMedia, setGalleryMedia] = useState<string[]>(defaultGallery);
   const [newMediaUrl, setNewMediaUrl] = useState<string>('');
   const [activeModalMedia, setActiveModalMedia] = useState<string | null>(null);

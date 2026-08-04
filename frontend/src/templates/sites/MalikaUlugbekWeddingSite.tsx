@@ -165,6 +165,7 @@ export const MalikaUlugbekWeddingSite: React.FC<WebsiteTemplateProps> = ({
   timeLeft: externalTimeLeft,
   rsvpState,
   isPreview = false,
+  isCatalogPreview = false,
   onToggleSection,
 }) => {
   // Opening state
@@ -328,13 +329,13 @@ END:VCALENDAR`;
             </div>
 
             {/* Center Names & Quranic Ayah */}
-            <div className="my-auto z-10 max-w-md w-full px-4 space-y-4">
-              <div>
+            <div className={`my-auto z-10 max-w-md w-full px-4 ${isCatalogPreview ? 'space-y-5' : 'space-y-4'}`}>
+              <div className="flex flex-col items-center">
                 <motion.h1 
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.15 }}
-                  className="text-4xl sm:text-6xl font-serif tracking-wide text-amber-200 drop-shadow-md"
+                  className="text-4xl sm:text-6xl font-serif leading-[1.05] tracking-wide text-amber-200 drop-shadow-md"
                 >
                   {brideName}
                 </motion.h1>
@@ -343,7 +344,7 @@ END:VCALENDAR`;
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.25 }}
-                  className="text-4xl sm:text-6xl font-serif tracking-wide text-amber-200 drop-shadow-md"
+                  className="text-4xl sm:text-6xl font-serif leading-[1.05] tracking-wide text-amber-200 drop-shadow-md"
                 >
                   {groomName}
                 </motion.h1>
@@ -358,15 +359,17 @@ END:VCALENDAR`;
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.35 }}
-                className="p-5 sm:p-6 rounded-2xl bg-slate-900/90 border border-amber-500/30 backdrop-blur-sm shadow-2xl space-y-2.5"
+                className={`rounded-2xl bg-slate-900/90 border border-amber-500/30 backdrop-blur-sm shadow-2xl flex flex-col items-center justify-center ${
+                  isCatalogPreview ? 'min-h-[154px] px-5 py-4 gap-3' : 'p-5 sm:p-6 gap-3.5'
+                }`}
               >
-                <p className="text-2xl sm:text-3xl text-amber-200 font-serif leading-relaxed" style={{ fontFamily: 'Traditional Arabic, Scheherazade, serif' }}>
+                <p className="block w-full text-2xl sm:text-3xl text-amber-200 font-serif leading-[1.7] pb-1" style={{ fontFamily: 'Traditional Arabic, Scheherazade, serif' }}>
                   وَأَلَّفَ بَيْنَ قُلُوبِهِمْ
                 </p>
-                <p className="text-xs sm:text-sm text-amber-100/90 italic font-serif">
+                <p className="block w-full max-w-[250px] text-xs sm:text-sm leading-[1.55] text-amber-100/90 italic font-serif">
                   «Va U ularning qalblarini birlashtirdi»
                 </p>
-                <p className="text-[10px] text-amber-400/70 uppercase tracking-widest font-sans">
+                <p className="block w-full text-[9px] leading-none text-amber-400/70 uppercase tracking-[0.16em] font-sans mt-0.5">
                   ANFOL SURASI, 63-OYAT
                 </p>
               </motion.div>
@@ -374,7 +377,18 @@ END:VCALENDAR`;
 
             {/* Bottom Swipe To Open Button (EXACT VIDEO MATCH) */}
             <div className="pb-8 sm:pb-12 z-10 w-full max-w-xs px-4">
-              <SwipeToOpenButton onOpen={handleOpen} />
+              {isCatalogPreview ? (
+                <button
+                  type="button"
+                  onClick={handleOpen}
+                  className="w-full h-14 rounded-full bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 text-slate-950 border border-amber-200/80 shadow-[0_0_24px_rgba(212,175,55,0.35)] flex items-center justify-center gap-2 px-5 font-sans font-extrabold text-[10px] uppercase tracking-[0.12em] whitespace-nowrap"
+                >
+                  <Sparkles className="w-4 h-4 shrink-0" />
+                  Taklifnomani ochish
+                </button>
+              ) : (
+                <SwipeToOpenButton onOpen={handleOpen} />
+              )}
             </div>
           </motion.div>
         )}
