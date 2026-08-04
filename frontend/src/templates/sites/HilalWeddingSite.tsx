@@ -5,7 +5,8 @@ import {
   Send, Copy, Check, Gift, Phone, Navigation,
   Crown, X, Plus, Image as ImageIcon, Video,
   Globe, Maximize2, Upload, SlidersHorizontal, Eye,
-  Play, Pause, MapPin, User, Users, CheckCircle2, Share2
+  Play, Pause, MapPin, User, Users, CheckCircle2, Share2,
+  MoonStar, Sparkles, Compass, Gem, Flower2
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
 import { useCountdownTimer, parseEventDateTime } from '../../utils/timer';
@@ -23,7 +24,7 @@ const getMediaUrl = (url?: string) => {
 // ==========================================
 // Hilal Emerald & Gold Floating Dust Particle System
 // ==========================================
-const HilalParticleSystem = ({ isPreview }: { isPreview?: boolean }) => {
+const HilalParticleSystem = ({ isPreview, isRose = false }: { isPreview?: boolean; isRose?: boolean }) => {
   if (isPreview) return null;
 
   return (
@@ -37,12 +38,20 @@ const HilalParticleSystem = ({ isPreview }: { isPreview?: boolean }) => {
             left: `${(i * 23) % 100}%`,
             width: `${3 + (i % 4) * 2}px`,
             height: `${3 + (i % 4) * 2}px`,
-            background: i % 3 === 0
-              ? 'radial-gradient(circle, rgba(243,224,160,0.9) 0%, rgba(212,175,55,0) 70%)'
-              : i % 3 === 1
-              ? 'radial-gradient(circle, rgba(212,175,55,0.8) 0%, rgba(170,124,17,0) 70%)'
-              : 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(212,175,55,0) 70%)',
-            boxShadow: '0 0 10px rgba(212, 175, 55, 0.4)',
+            background: isRose
+              ? i % 3 === 0
+                ? 'radial-gradient(circle, rgba(251,207,232,0.95) 0%, rgba(236,72,153,0) 70%)'
+                : i % 3 === 1
+                  ? 'radial-gradient(circle, rgba(244,114,182,0.9) 0%, rgba(225,29,72,0) 70%)'
+                  : 'radial-gradient(circle, rgba(255,241,247,0.9) 0%, rgba(249,168,212,0) 70%)'
+              : i % 3 === 0
+                ? 'radial-gradient(circle, rgba(243,224,160,0.9) 0%, rgba(212,175,55,0) 70%)'
+                : i % 3 === 1
+                  ? 'radial-gradient(circle, rgba(212,175,55,0.8) 0%, rgba(170,124,17,0) 70%)'
+                  : 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(212,175,55,0) 70%)',
+            boxShadow: isRose
+              ? '0 0 10px rgba(236, 72, 153, 0.45)'
+              : '0 0 10px rgba(212, 175, 55, 0.4)',
           }}
           animate={{
             y: [0, -80, 0],
@@ -65,7 +74,7 @@ const HilalParticleSystem = ({ isPreview }: { isPreview?: boolean }) => {
 // ==========================================
 // Golden Particle Ripple Burst
 // ==========================================
-const GoldBurst = ({ active }: { active: boolean }) => {
+const GoldBurst = ({ active, isRose = false }: { active: boolean; isRose?: boolean }) => {
   if (!active) return null;
 
   return (
@@ -79,11 +88,13 @@ const GoldBurst = ({ active }: { active: boolean }) => {
         return (
           <motion.div
             key={`gold-burst-${i}`}
-            className="absolute rounded-full bg-[#D4AF37]"
+            className={`absolute rounded-full ${isRose ? 'bg-[#EC4899]' : 'bg-[#D4AF37]'}`}
             style={{
               width: `${4 + Math.random() * 5}px`,
               height: `${4 + Math.random() * 5}px`,
-              boxShadow: '0 0 10px rgba(212, 175, 55, 0.9)',
+              boxShadow: isRose
+                ? '0 0 10px rgba(236, 72, 153, 0.9)'
+                : '0 0 10px rgba(212, 175, 55, 0.9)',
             }}
             initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
             animate={{ 
@@ -267,9 +278,16 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
   rsvpState,
   isPreview = false,
   isCatalogPreview = false,
+  visualVariant = 'default',
   onToggleSection,
   onLanguageChange,
 }) => {
+  const isSapphire = visualVariant === 'sapphire';
+  const isRose = visualVariant === 'rose';
+  const ThemeMark = isRose ? Heart : isSapphire ? MoonStar : Crown;
+  const ThemeDateIcon = isRose ? Flower2 : isSapphire ? Sparkles : Calendar;
+  const ThemeVenueIcon = isRose ? Navigation : isSapphire ? Compass : MapPin;
+  const ThemeGiftIcon = isRose ? Sparkles : isSapphire ? Gem : Gift;
   const [currentLang, setCurrentLang] = useState<'uz' | 'ru' | 'en'>(lang || 'uz');
   const t = translations[currentLang] || translations.uz;
 
@@ -397,9 +415,9 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
   }, [targetYear, targetMonth]);
 
   return (
-    <div className="relative min-h-screen bg-[#0A120D] text-[#E5E9E6] font-serif overflow-x-hidden selection:bg-[#D4AF37] selection:text-[#0A120D]">
+    <div className={`relative min-h-screen bg-[#0A120D] text-[#E5E9E6] font-serif overflow-x-hidden selection:bg-[#D4AF37] selection:text-[#0A120D] ${isRose ? 'hilal-rose-theme' : isSapphire ? 'hilal-sapphire-theme' : ''}`}>
       {/* Background Floating Gold Dust Particle Animation */}
-      <HilalParticleSystem isPreview={isPreview} />
+      <HilalParticleSystem isPreview={isPreview} isRose={isRose} />
 
       {/* Floating Audio & Language Controls */}
       {!isCatalogPreview && <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
@@ -503,10 +521,16 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
             animate={isOpening ? { opacity: [1, 1, 0], scale: [1, 1.05, 1.1] } : { opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
             transition={{ duration: 0.85, ease: [0.77, 0, 0.175, 1] }}
-            className="fixed inset-0 z-40 bg-[radial-gradient(ellipse_at_center,rgba(15,26,19,0.95)_0%,#0A120D_100%)] flex flex-col items-center justify-between p-4 md:p-6 overflow-hidden select-none"
+            className={`fixed inset-0 z-40 flex flex-col items-center justify-between p-4 md:p-6 overflow-hidden select-none ${
+              isRose
+                ? 'bg-[radial-gradient(ellipse_at_center,rgba(69,16,49,0.97)_0%,#160612_100%)]'
+                : isSapphire
+                  ? 'bg-[radial-gradient(ellipse_at_center,rgba(12,32,68,0.97)_0%,#040817_100%)]'
+                  : 'bg-[radial-gradient(ellipse_at_center,rgba(15,26,19,0.95)_0%,#0A120D_100%)]'
+            }`}
           >
             {/* Particle Burst on Wax Seal Tap */}
-            <GoldBurst active={burstActive} />
+            <GoldBurst active={burstActive} isRose={isRose} />
 
             {/* Background Ambient Radial Glow */}
             <div className="absolute w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.18)_0%,transparent_70%)] pointer-events-none blur-2xl" />
@@ -519,7 +543,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
               className="w-full max-w-sm pt-4 md:pt-6 text-center flex flex-col items-center z-10"
             >
               <div className="w-12 h-12 rounded-full border border-[#D4AF37]/50 flex items-center justify-center mb-3 bg-[#0F1A13]/80 shadow-[0_0_25px_rgba(212,175,55,0.25)] text-[#D4AF37]">
-                <Crown className="w-6 h-6" />
+                <ThemeMark className="w-6 h-6" />
               </div>
 
               <div className="text-[#D4AF37] text-2xl md:text-3xl font-arabic tracking-wide leading-relaxed drop-shadow-[0_2px_12px_rgba(212,175,55,0.5)]">
@@ -532,7 +556,13 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
               initial={{ scale: 0.9, opacity: 0 }}
               animate={isOpening ? { scale: 1.05, y: -20 } : { scale: 1, opacity: 1 }}
               transition={{ duration: 0.7, delay: 0.2 }}
-              className="relative z-20 w-full max-w-xs aspect-[3/4.2] rounded-t-full border-2 border-[#D4AF37]/60 p-4 bg-gradient-to-b from-[#0F1A13]/95 via-[#0A120D]/95 to-[#0F1A13]/95 backdrop-blur-xl shadow-[0_0_60px_rgba(212,175,55,0.25)] flex flex-col items-center justify-between text-center overflow-hidden my-auto"
+              className={`relative z-20 w-full max-w-xs aspect-[3/4.2] rounded-t-full border-2 border-[#D4AF37]/60 p-4 bg-gradient-to-b backdrop-blur-xl shadow-[0_0_60px_rgba(212,175,55,0.25)] flex flex-col items-center justify-between text-center overflow-hidden my-auto ${
+                isRose
+                  ? 'from-[#4A1438]/95 via-[#230A1D]/95 to-[#561B42]/95'
+                  : isSapphire
+                    ? 'from-[#0B1833]/95 via-[#07101F]/95 to-[#101B3A]/95'
+                    : 'from-[#0F1A13]/95 via-[#0A120D]/95 to-[#0F1A13]/95'
+              }`}
             >
               {/* Decorative Arch Corner Borders */}
               <div className="absolute top-4 left-4 w-7 h-7 border-t-2 border-l-2 border-[#D4AF37]/70 rounded-tl-sm" />
@@ -586,7 +616,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
                   className="w-16 h-16 rounded-full bg-gradient-to-br from-[#F3E0A0] via-[#D4AF37] to-[#AA7C11] p-0.5 shadow-[0_0_30px_rgba(212,175,55,0.6)] cursor-pointer flex items-center justify-center relative z-10 group"
                 >
                   <div className="w-full h-full rounded-full bg-gradient-to-br from-[#0F1A13] via-[#0A120D] to-[#0F1A13] border border-[#F3E0A0]/70 flex flex-col items-center justify-center text-[#D4AF37] shadow-inner">
-                    <Crown className="w-4 h-4 text-[#F3E0A0] group-hover:scale-110 transition-transform mb-0.5" />
+                    <ThemeMark className="w-4 h-4 text-[#F3E0A0] group-hover:scale-110 transition-transform mb-0.5" />
                     <span className="text-[9px] font-serif font-bold tracking-widest text-[#F3E0A0]">
                       {groomName.charAt(0)}&{brideName.charAt(0)}
                     </span>
@@ -611,9 +641,9 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
                 disabled={isOpening}
                 className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E0A0] to-[#AA7C11] text-[#0A120D] font-sans font-bold tracking-widest text-xs uppercase shadow-[0_0_30px_rgba(212,175,55,0.5)] hover:shadow-[0_0_40px_rgba(212,175,55,0.8)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
-                <Crown className="w-4 h-4 text-[#0A120D]" />
+                <ThemeMark className="w-4 h-4 text-[#0A120D]" />
                 {isOpening ? "OCHILMOQDA..." : t.openInvitation}
-                <Crown className="w-4 h-4 text-[#0A120D]" />
+                <ThemeMark className="w-4 h-4 text-[#0A120D]" />
               </button>
             </motion.div>
           </motion.div>
@@ -681,7 +711,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
 
             {/* Date & Time Badge */}
             <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-[#0F1A13] border border-[#D4AF37]/40 shadow-lg text-sm text-[#D4AF37] font-sans font-medium">
-              <Calendar className="w-4 h-4 text-[#D4AF37]" />
+              <ThemeDateIcon className="w-4 h-4 text-[#D4AF37]" />
               <span>{dateStr}</span>
               <span className="text-[#D4AF37]/40">•</span>
               <Clock className="w-4 h-4 text-[#D4AF37]" />
@@ -700,7 +730,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
             className="relative p-6 rounded-3xl bg-[#0F1A13]/90 border border-[#D4AF37]/30 shadow-[0_0_30px_rgba(0,0,0,0.5)] text-center space-y-4 overflow-hidden backdrop-blur-md"
           >
             <div className="flex justify-center text-[#D4AF37]">
-              <Crown className="w-5 h-5" />
+              <ThemeMark className="w-5 h-5" />
             </div>
 
             <div className="text-xs uppercase tracking-widest text-[#D4AF37]/80 font-sans font-semibold">
@@ -899,7 +929,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
               </span>
               <h3 className="text-2xl font-serif text-[#F3E0A0]">{venueName}</h3>
               <p className="text-xs text-gray-300 font-light flex items-center justify-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
+                <ThemeVenueIcon className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
                 {venueAddress}
               </p>
             </div>
@@ -1051,7 +1081,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
                 <span className="text-xs font-serif font-bold text-[#D4AF37] tracking-widest uppercase">
                   WEDDING GIFT CARD
                 </span>
-                <Gift className="w-6 h-6 text-[#D4AF37]" />
+                <ThemeGiftIcon className="w-6 h-6 text-[#D4AF37]" />
               </div>
 
               <div className="space-y-1">

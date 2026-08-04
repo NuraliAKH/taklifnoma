@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, createContext, useContext } from 'react';
+import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 import { 
   BrowserRouter, 
   Routes, 
@@ -203,29 +203,49 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearError = () => setError(null);
 
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    if (!storedToken) return;
+
+    fetch(`${API_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${storedToken}` }
+    })
+      .then(async res => {
+        if (!res.ok) throw new Error('Session expired');
+        return res.json();
+      })
+      .then(userData => {
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
+      })
+      .catch(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setToken(null);
+        setUser(null);
+      });
+  }, []);
+
   const setTokenAndFetchUser = async (newToken: string) => {
     setLoading(true);
     setError(null);
     try {
-      localStorage.setItem('token', newToken);
-      setToken(newToken);
-
       const res = await fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${newToken}` }
       });
-      if (res.ok) {
-        const userData = await res.json();
-        localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
-      } else {
-        const dummyUser = { id: Date.now(), email: 'google.user@example.com', role: 'user' as const };
-        localStorage.setItem('user', JSON.stringify(dummyUser));
-        setUser(dummyUser);
-      }
-    } catch (err: any) {
-      const dummyUser = { id: Date.now(), email: 'google.user@example.com', role: 'user' as const };
-      localStorage.setItem('user', JSON.stringify(dummyUser));
-      setUser(dummyUser);
+      if (!res.ok) throw new Error('Не удалось подтвердить авторизацию');
+
+      const userData = await res.json();
+      localStorage.setItem('token', newToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setToken(newToken);
+      setUser(userData);
+    } catch (err) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setToken(null);
+      setUser(null);
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -281,13 +301,13 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setToken(null);
     setUser(null);
     setError(null);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ token, user, login, register, setTokenAndFetchUser, logout, error, loading, clearError }}>
@@ -338,6 +358,8 @@ const getTemplateName = (t: Template) => {
   if (t.id === 7) return 'Hilal Web (Сайт)';
   if (t.id === 8) return 'Taklifet Pink Floral Web (Сайт)';
   if (t.id === 10) return 'Violet Birthday Web (Сайт)';
+  if (t.id === 11) return 'Sapphire Hilal Web (Сайт)';
+  if (t.id === 12) return 'Rose Hilal Web (Сайт)';
   
   const categoryRu = t.category === 'wedding' ? 'Свадебное' : t.category === 'birthday' ? 'День Рождения' : t.category;
   const typeRu = t.type === 'physical' ? '(Печать)' : t.type === 'website' ? '(Сайт)' : '(Электронное)';
@@ -1064,7 +1086,7 @@ function CatalogPage() {
 function EditorPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
   
   const [template, setTemplate] = useState<Template | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -1413,6 +1435,17 @@ function EditorPage() {
         }),
       });
 
+      if (res.status === 401) {
+        sessionStorage.setItem(`draft_order_${id}`, JSON.stringify({
+          ...formData,
+          _customFields: customFields
+        }));
+        logout();
+        setIsSubmitting(false);
+        navigate(`/login?redirect=${encodeURIComponent(`/editor/${id}`)}`);
+        return;
+      }
+
       const orderData = await res.json();
       if (!res.ok) throw new Error(orderData.message || 'Ошибка генерации');
       
@@ -1421,18 +1454,19 @@ function EditorPage() {
       const elapsed = Date.now() - startTime;
       const delay = Math.max(0, 1500 - elapsed);
 
+      if (orderData?.id) {
+        try {
+          const saved = JSON.parse(localStorage.getItem('my_order_ids') || '[]');
+          if (!saved.includes(orderData.id)) {
+            localStorage.setItem('my_order_ids', JSON.stringify([...saved, orderData.id]));
+          }
+        } catch (e) {
+          console.error('Failed to save order ID locally:', e);
+        }
+      }
+
       setTimeout(() => {
         setCurrentOrder(orderData);
-        if (orderData && orderData.id) {
-          try {
-            const saved = JSON.parse(localStorage.getItem('my_order_ids') || '[]');
-            if (!saved.includes(orderData.id)) {
-              localStorage.setItem('my_order_ids', JSON.stringify([...saved, orderData.id]));
-            }
-          } catch (e) {
-            console.error('Failed to save order ID locally:', e);
-          }
-        }
         if (orderData.status === 'pending' || orderData.status === 'processing') {
           pollOrderStatus(orderData.id);
         }
@@ -2703,7 +2737,8 @@ function RegisterPage() {
 
 // ----------------- USER CABINET PAGE -----------------
 function CabinetPage() {
-  const { token, user } = useAuth();
+  const { token, user, logout } = useAuth();
+  const navigate = useNavigate();
   const [ordersList, setOrdersList] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRsvpOrderId, setSelectedRsvpOrderId] = useState<string | null>(null);
@@ -2721,8 +2756,18 @@ function CabinetPage() {
     fetch(`${API_URL}/orders/my${query}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-      .then(res => res.json())
+      .then(async res => {
+        if (res.status === 401) {
+          logout();
+          setLoading(false);
+          navigate('/login?redirect=%2Fcabinet', { replace: true });
+          return null;
+        }
+        if (!res.ok) throw new Error('Не удалось загрузить приглашения');
+        return res.json();
+      })
       .then(data => {
+        if (data === null) return;
         if (Array.isArray(data)) {
           setOrdersList(data);
           const fetchedIds = data.map((o: Order) => o.id);
@@ -2738,7 +2783,7 @@ function CabinetPage() {
         setOrdersList([]);
         setLoading(false);
       });
-  }, [token]);
+  }, [token, logout, navigate]);
 
   return (
     <div className="flex flex-col gap-8 flex-1">

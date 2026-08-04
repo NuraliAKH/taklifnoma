@@ -90,6 +90,117 @@ a {
   display: none;
 }
 
+/* Sapphire Hilal reuses the layout while recoloring ornaments and UI chrome. */
+.hilal-sapphire-theme {
+  background-color: #050b1a !important;
+  color: #eef7ff;
+}
+
+.hilal-sapphire-theme [class*="text-[#D4AF37]"],
+.hilal-sapphire-theme [class*="text-[#F3E0A0]"] {
+  color: #7dd3fc !important;
+}
+
+.hilal-sapphire-theme [class*="text-[#AA7C11]"] {
+  color: #818cf8 !important;
+}
+
+.hilal-sapphire-theme [class*="border-[#D4AF37]"],
+.hilal-sapphire-theme [class*="border-[#F3E0A0]"] {
+  border-color: rgba(125, 211, 252, 0.72) !important;
+}
+
+.hilal-sapphire-theme [class*="bg-[#0A120D]"] {
+  background-color: #050b1a !important;
+}
+
+.hilal-sapphire-theme [class*="bg-[#0F1A13]"] {
+  background-color: #0b1730 !important;
+}
+
+.hilal-sapphire-theme [class*="bg-[#D4AF37]"] {
+  background-color: #38bdf8 !important;
+}
+
+.hilal-sapphire-theme [class*="from-[#D4AF37]"] {
+  --tw-gradient-from: #38bdf8 !important;
+}
+
+.hilal-sapphire-theme [class*="via-[#F3E0A0]"] {
+  --tw-gradient-via: #c4b5fd !important;
+}
+
+.hilal-sapphire-theme [class*="to-[#AA7C11]"] {
+  --tw-gradient-to: #6366f1 !important;
+}
+
+.hilal-sapphire-theme [class*="accent-[#D4AF37]"] {
+  accent-color: #38bdf8 !important;
+}
+
+.hilal-rose-theme {
+  background-color: #190812 !important;
+  color: #fff1f7;
+}
+
+.hilal-rose-theme [class*="text-[#D4AF37]"],
+.hilal-rose-theme [class*="text-[#F3E0A0]"] {
+  color: #f9a8d4 !important;
+}
+
+.hilal-rose-theme [class*="text-[#AA7C11]"] {
+  color: #fb7185 !important;
+}
+
+.hilal-rose-theme [class*="border-[#D4AF37]"],
+.hilal-rose-theme [class*="border-[#F3E0A0]"] {
+  border-color: rgba(249, 168, 212, 0.72) !important;
+}
+
+.hilal-rose-theme [class*="bg-[#0A120D]"] {
+  background-color: #190812 !important;
+}
+
+.hilal-rose-theme [class*="bg-[#0F1A13]"] {
+  background-color: #351028 !important;
+}
+
+.hilal-rose-theme [class*="bg-[#D4AF37]"] {
+  background-color: #ec4899 !important;
+}
+
+.hilal-rose-theme [class*="from-[#D4AF37]"] {
+  --tw-gradient-from: #ec4899 !important;
+}
+
+.hilal-rose-theme [class*="via-[#F3E0A0]"] {
+  --tw-gradient-via: #fbcfe8 !important;
+}
+
+.hilal-rose-theme [class*="to-[#AA7C11]"] {
+  --tw-gradient-to: #e11d48 !important;
+}
+
+.hilal-rose-theme [class*="from-[#0F2618]"],
+.hilal-rose-theme [class*="from-[#0F1A13]"],
+.hilal-rose-theme [class*="from-[#0A120D]"] {
+  --tw-gradient-from: #351028 !important;
+}
+
+.hilal-rose-theme [class*="via-[#0F1A13]"],
+.hilal-rose-theme [class*="via-[#0A120D]"] {
+  --tw-gradient-via: #230a1d !important;
+}
+
+.hilal-rose-theme [class*="to-[#050B07]"],
+.hilal-rose-theme [class*="to-[#0F1A13]"] {
+  --tw-gradient-to: #14050f !important;
+}
+
+.hilal-rose-theme [class*="accent-[#D4AF37]"] {
+  accent-color: #ec4899 !important;
+}
+
 .glow-ambient {
   position: absolute;
   border-radius: 50%;
@@ -309,5 +420,3 @@ html.light .gold-gradient-text {
     transition-duration: 0.01ms !important;
   }
 }
-
-

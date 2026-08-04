@@ -196,17 +196,13 @@ export class OrdersService {
   }
 
   async findByUser(userId: number, claimOrderIds?: string[]): Promise<Order[]> {
-    // 1. Auto claim any unassigned orders (userId === null)
-    await this.prisma.order.updateMany({
-      where: { userId: null },
-      data: { userId: userId },
-    });
-
-    // 2. Auto claim any orders whose IDs are passed from client local storage
+    // Claim only orphaned orders explicitly remembered by this browser.
+    // Never attach every anonymous order or reassign another user's order.
     if (claimOrderIds && claimOrderIds.length > 0) {
       await this.prisma.order.updateMany({
         where: {
           id: { in: claimOrderIds },
+          userId: null,
         },
         data: { userId: userId },
       });

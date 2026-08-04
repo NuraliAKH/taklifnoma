@@ -880,6 +880,39 @@ export class TemplatesService implements OnModuleInit {
       }
     ];
 
+    const hilalTemplate = defaultTemplates.find((template) => template.id === 7);
+    if (hilalTemplate) {
+      defaultTemplates.push({
+        ...hilalTemplate,
+        id: 11,
+        media_url: '/uploads/templates/hilal_sapphire_web.png',
+        price: 149000.00,
+        discount_price: 119000.00,
+        text_config: {
+          ...hilalTemplate.text_config,
+          fields: hilalTemplate.text_config.fields.map((field: any) => ({
+            ...field,
+            color: field.color === '#D4AF37' ? '#7DD3FC' : field.color,
+          })),
+        },
+      });
+
+      defaultTemplates.push({
+        ...hilalTemplate,
+        id: 12,
+        media_url: '/uploads/templates/hilal_rose_web.png',
+        price: 149000.00,
+        discount_price: 119000.00,
+        text_config: {
+          ...hilalTemplate.text_config,
+          fields: hilalTemplate.text_config.fields.map((field: any) => ({
+            ...field,
+            color: field.color === '#D4AF37' ? '#F9A8D4' : field.color,
+          })),
+        },
+      });
+    }
+
     for (const t of defaultTemplates as any[]) {
       await this.prisma.template.upsert({
         where: { id: t.id },

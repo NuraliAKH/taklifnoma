@@ -10,6 +10,12 @@ import type { WebsiteTemplateProps } from './types';
 const BirthdayCelebrationSite: React.FC<WebsiteTemplateProps> = (props) =>
   React.createElement(SimpleWeddingSite, { ...props, visualVariant: 'birthday' });
 
+const SapphireHilalWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(HilalWeddingSite, { ...props, visualVariant: 'sapphire' });
+
+const RoseHilalWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(HilalWeddingSite, { ...props, visualVariant: 'rose' });
+
 // Map of Template ID / Slug to Component
 export const siteTemplatesRegistry: Record<string | number, React.ComponentType<WebsiteTemplateProps>> = {
   // Template ID 4: Zar Atlas Web
@@ -29,6 +35,14 @@ export const siteTemplatesRegistry: Record<string | number, React.ComponentType<
   7: HilalWeddingSite,
   'hilal': HilalWeddingSite,
   'emerald': HilalWeddingSite,
+
+  // Template ID 11: Sapphire & silver Hilal variation
+  11: SapphireHilalWeddingSite,
+  'sapphire-hilal': SapphireHilalWeddingSite,
+
+  // Template ID 12: Rose & blush Hilal variation
+  12: RoseHilalWeddingSite,
+  'rose-hilal': RoseHilalWeddingSite,
 
   // Template ID 8: Taklifet Pink Lavender Floral Web
   8: TaklifetPinkSite,
@@ -73,4 +87,3 @@ export * from './AnorWeddingSite';
 export * from './HilalWeddingSite';
 export * from './TaklifetPinkSite';
 export * from './MalikaUlugbekWeddingSite';
-
