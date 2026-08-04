@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Heart, Calendar, Clock, VolumeX, Volume2,
+  Calendar, Clock, VolumeX, Volume2,
   Send, Copy, Check, Gift, Phone, Navigation,
   Crown, X, Plus, Image as ImageIcon, Video,
   Globe, Maximize2, Upload, SlidersHorizontal, Eye,
@@ -548,13 +548,9 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
                   className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-0.5 shadow-[0_0_25px_rgba(251,191,36,0.7)] flex items-center justify-center cursor-pointer group"
                 >
                   <div className="w-full h-full rounded-full bg-gradient-to-br from-[#581C87] to-[#3B0764] border border-amber-300 flex items-center justify-center text-amber-300 shadow-inner">
-                    {isRoseEnvelope ? (
-                      <Heart className="w-5 h-5 fill-current text-amber-200 group-hover:scale-110 transition-transform" />
-                    ) : (
-                      <span className="text-xs font-serif font-bold tracking-widest text-amber-200 group-hover:scale-110 transition-transform">
-                        {groomName.charAt(0)}♡{brideName.charAt(0)}
-                      </span>
-                    )}
+                    <span className="text-xs font-serif font-bold tracking-widest text-amber-200 group-hover:scale-110 transition-transform text-center leading-none">
+                      {groomName.trim().charAt(0).toUpperCase()}♡{brideName.trim().charAt(0).toUpperCase()}
+                    </span>
                   </div>
                 </motion.button>
               </div>

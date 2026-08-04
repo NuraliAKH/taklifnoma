@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Heart, VolumeX,
   Copy, Check, Navigation,
-  X, Globe, Upload, SlidersHorizontal, Eye, Sparkles
+  X, Globe, Upload, SlidersHorizontal, Eye
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
 import { useCountdownTimer } from '../../utils/timer';
@@ -262,11 +262,9 @@ export const SimpleWeddingSite: React.FC<WebsiteTemplateProps> = ({
               ? 'rounded-2xl rotate-3 bg-fuchsia-500/15 border-fuchsia-300/70 text-fuchsia-300 shadow-fuchsia-500/10'
               : 'rounded-full bg-amber-500/10 border-amber-400 text-amber-400'
           }`}>
-            {isBirthday ? (
-              <Sparkles className="w-7 h-7 text-fuchsia-300" />
-            ) : (
-              <Heart className="w-7 h-7 fill-amber-400 text-amber-400" />
-            )}
+            <span className={`text-sm font-serif font-extrabold tracking-wider text-center leading-none ${isBirthday ? 'text-fuchsia-200' : 'text-amber-200'}`}>
+              {groomName.trim().charAt(0).toUpperCase()}♡{brideName.trim().charAt(0).toUpperCase()}
+            </span>
           </div>
           <span className={`text-[10px] uppercase tracking-[0.3em] font-bold ${isBirthday ? 'text-fuchsia-300' : 'text-amber-400'}`}>
             {isBirthday ? 'Приглашение на день рождения' : (t.invitationTitle || 'Торжественное Приглашение')}

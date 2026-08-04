@@ -304,7 +304,9 @@ export const AnorWeddingSite: React.FC<WebsiteTemplateProps> = ({
       <div className={`${isPreview ? 'h-full min-h-full p-4' : 'min-h-[100dvh] p-6'} w-full bg-stone-950 text-rose-100 flex flex-col items-center justify-center relative overflow-hidden select-none text-center`}>
         <div className="w-full max-w-sm bg-gradient-to-b from-stone-900/95 via-stone-900/90 to-rose-950/95 border-2 border-amber-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col items-center gap-5 sm:gap-6 relative">
           <div className="w-20 h-20 rounded-full bg-stone-950 border-2 border-amber-400 flex items-center justify-center text-amber-400 shadow-xl">
-            <Crown className="w-8 h-8 text-amber-400" />
+            <span className="text-base font-serif font-extrabold tracking-wider text-amber-200 text-center leading-none">
+              {groomName.trim().charAt(0).toUpperCase()}♡{brideName.trim().charAt(0).toUpperCase()}
+            </span>
           </div>
           <span className="text-[10px] uppercase tracking-[0.3em] text-amber-400 font-serif font-bold">
             {t.invitationTitle}

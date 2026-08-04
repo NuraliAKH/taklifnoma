@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Heart, Calendar, Clock, VolumeX,
   Send, Copy, Check, Gift, Phone, Navigation,
-  Crown, Shirt, X, Plus, Image as ImageIcon,
+  Shirt, X, Plus, Image as ImageIcon,
   Globe, Maximize2, Upload, SlidersHorizontal, Eye
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
@@ -216,10 +216,9 @@ const EnvelopeEntranceAnimation = ({
               disabled={isTransitioning}
               className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 via-amber-600 to-amber-800 p-0.5 shadow-2xl relative z-10 cursor-pointer flex items-center justify-center group"
             >
-              <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-600 via-amber-800 to-amber-950 border border-amber-300/80 flex flex-col items-center justify-center text-amber-200 shadow-inner">
-                <Crown className="w-5 h-5 text-amber-300 group-hover:scale-110 transition-transform mb-0.5" />
-                <span className="text-[10px] font-serif font-bold tracking-widest text-amber-100">
-                  {groomName.charAt(0)}&{brideName.charAt(0)}
+              <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-600 via-amber-800 to-amber-950 border border-amber-300/80 flex items-center justify-center text-amber-200 shadow-inner">
+                <span className="text-sm font-serif font-extrabold tracking-widest text-amber-100 text-center leading-none group-hover:scale-110 transition-transform">
+                  {groomName.trim().charAt(0).toUpperCase()}♡{brideName.trim().charAt(0).toUpperCase()}
                 </span>
               </div>
             </motion.button>
@@ -743,11 +742,10 @@ export const MarmarWeddingSite: React.FC<WebsiteTemplateProps> = ({
 
               <motion.div 
                 whileHover={{ rotate: 5, scale: 1.05 }}
-                className="w-20 h-20 rounded-full bg-gradient-to-br from-stone-900 via-amber-950 to-stone-900 border-2 border-amber-400/90 flex flex-col items-center justify-center text-amber-300 shadow-xl relative"
+                className="w-20 h-20 rounded-full bg-gradient-to-br from-stone-900 via-amber-950 to-stone-900 border-2 border-amber-400/90 flex items-center justify-center text-amber-300 shadow-xl relative"
               >
-                <Crown className="w-6 h-6 text-amber-400 mb-0.5" />
-                <span className="text-xs font-serif font-bold tracking-wider text-amber-200">
-                  {groomName.charAt(0)} & {brideName.charAt(0)}
+                <span className="text-sm font-serif font-extrabold tracking-wider text-amber-200 text-center leading-none">
+                  {groomName.trim().charAt(0).toUpperCase()}♡{brideName.trim().charAt(0).toUpperCase()}
                 </span>
               </motion.div>
               

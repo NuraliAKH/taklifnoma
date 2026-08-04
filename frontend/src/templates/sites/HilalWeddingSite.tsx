@@ -635,10 +635,9 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
                   disabled={isOpening}
                   className="w-16 h-16 rounded-full bg-gradient-to-br from-[#F3E0A0] via-[#D4AF37] to-[#AA7C11] p-0.5 shadow-[0_0_30px_rgba(212,175,55,0.6)] cursor-pointer flex items-center justify-center relative z-10 group"
                 >
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-[#0F1A13] via-[#0A120D] to-[#0F1A13] border border-[#F3E0A0]/70 flex flex-col items-center justify-center text-[#D4AF37] shadow-inner">
-                    <ThemeMark className="w-4 h-4 text-[#F3E0A0] group-hover:scale-110 transition-transform mb-0.5" />
-                    <span className="text-[9px] font-serif font-bold tracking-widest text-[#F3E0A0]">
-                      {groomName.charAt(0)}&{brideName.charAt(0)}
+                  <div className="w-full h-full rounded-full bg-gradient-to-br from-[#0F1A13] via-[#0A120D] to-[#0F1A13] border border-[#F3E0A0]/70 flex items-center justify-center text-[#D4AF37] shadow-inner">
+                    <span className="text-xs font-serif font-extrabold tracking-widest text-[#F3E0A0] text-center leading-none group-hover:scale-110 transition-transform">
+                      {groomName.trim().charAt(0).toUpperCase()}♡{brideName.trim().charAt(0).toUpperCase()}
                     </span>
                   </div>
                 </motion.button>
