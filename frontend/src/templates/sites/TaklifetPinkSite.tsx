@@ -323,9 +323,24 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
 
   // RSVP Form State
   const [rsvpName, setRsvpName] = useState(rsvpState?.name || '');
-  const [rsvpGuests, setRsvpGuests] = useState('1');
-  const [rsvpAttending, setRsvpAttending] = useState<boolean | null>(rsvpState?.attending ?? true);
+  const [rsvpGuests, setRsvpGuests] = useState(rsvpState?.guestCount || 1);
+  const [rsvpAttending, setRsvpAttending] = useState<boolean | null>(rsvpState?.attending ?? null);
   const [rsvpSubmitted, setRsvpSubmitted] = useState(rsvpState?.isSuccess || false);
+
+  const updateRsvpName = (value: string) => {
+    setRsvpName(value);
+    rsvpState?.setName(value);
+  };
+
+  const updateRsvpAttending = (value: boolean) => {
+    setRsvpAttending(value);
+    rsvpState?.setAttending(value);
+  };
+
+  const updateRsvpGuests = (value: number) => {
+    setRsvpGuests(value);
+    rsvpState?.setGuestCount(value);
+  };
 
   const handleRsvpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -879,7 +894,7 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
               </span>
             </div>
 
-            {rsvpSubmitted ? (
+            {(rsvpState?.isSuccess || rsvpSubmitted) ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -894,7 +909,7 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => setRsvpAttending(true)}
+                    onClick={() => updateRsvpAttending(true)}
                     className={`py-3 px-3 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all ${
                       rsvpAttending === true
                         ? 'bg-[#7E22CE] text-white shadow-md'
@@ -905,7 +920,7 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setRsvpAttending(false)}
+                    onClick={() => updateRsvpAttending(false)}
                     className={`py-3 px-3 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all ${
                       rsvpAttending === false
                         ? 'bg-rose-600 text-white shadow-md'
@@ -924,7 +939,7 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
                     type="text"
                     required
                     value={rsvpName}
-                    onChange={(e) => setRsvpName(e.target.value)}
+                    onChange={(e) => updateRsvpName(e.target.value)}
                     placeholder={t.namePlaceholder}
                     className="w-full px-4 py-3 rounded-xl bg-purple-50/50 border border-purple-200 text-purple-950 placeholder-purple-400 focus:outline-none focus:border-[#7E22CE] transition-colors"
                   />
@@ -937,23 +952,24 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
                     </label>
                     <select
                       value={rsvpGuests}
-                      onChange={(e) => setRsvpGuests(e.target.value)}
+                      onChange={(e) => updateRsvpGuests(Number(e.target.value))}
                       className="w-full px-4 py-3 rounded-xl bg-purple-50/50 border border-purple-200 text-purple-950 focus:outline-none focus:border-[#7E22CE] transition-colors"
                     >
                       <option value="1">1 kishi</option>
                       <option value="2">2 kishi</option>
                       <option value="3">3 kishi</option>
-                      <option value="4+">4+ kishi</option>
+                      <option value="4">4+ kishi</option>
                     </select>
                   </div>
                 )}
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 px-6 rounded-xl bg-[#7E22CE] text-white font-bold text-xs uppercase tracking-widest shadow-lg shadow-purple-500/20 hover:bg-[#6B21A8] transition-all flex items-center justify-center gap-2"
+                  disabled={rsvpState?.isSubmitting || !rsvpName.trim() || rsvpAttending === null}
+                  className="w-full py-3.5 px-6 rounded-xl bg-[#7E22CE] text-white font-bold text-xs uppercase tracking-widest shadow-lg shadow-purple-500/20 hover:bg-[#6B21A8] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
-                  {t.submitRsvp}
+                  {rsvpState?.isSubmitting ? 'ОТПРАВКА...' : t.submitRsvp}
                 </button>
               </form>
             )}

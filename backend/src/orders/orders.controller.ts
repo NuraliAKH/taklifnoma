@@ -40,9 +40,10 @@ export class OrdersController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body('name') name: string,
     @Body('attending') attending: boolean,
+    @Body('guestCount') guestCount: number,
     @Body('wishes') wishes: string,
   ): Promise<Order> {
-    return this.ordersService.addRsvp(id, { name, attending, wishes });
+    return this.ordersService.addRsvp(id, { name, attending, guestCount, wishes });
   }
 
   // Admin orders listing

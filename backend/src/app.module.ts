@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PromocodesModule } from './promocodes/promocodes.module';
+import { WebhookModule } from './webhook/webhook.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { PromocodesModule } from './promocodes/promocodes.module';
     AuthModule,
     PaymentsModule,
     PromocodesModule,
+    WebhookModule,
   ],
   controllers: [AppController],
   providers: [AppService],

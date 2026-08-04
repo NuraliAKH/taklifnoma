@@ -5,7 +5,7 @@ import {
   Send, Copy, Check, Gift, Phone, Navigation,
   Crown, X, Plus, Image as ImageIcon, Video,
   Globe, Maximize2, Upload, SlidersHorizontal, Eye,
-  Play, Pause, MapPin, User, Users, CheckCircle2, Share2,
+  Play, Pause, MapPin, User, Users, CheckCircle2, Share2, MessageSquare,
   MoonStar, Sparkles, Compass, Gem, Flower2
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
@@ -381,10 +381,30 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
 
   // RSVP Form State
   const [rsvpName, setRsvpName] = useState(rsvpState?.name || '');
-  const [rsvpGuests, setRsvpGuests] = useState('1');
-  const [rsvpAttending, setRsvpAttending] = useState<boolean | null>(rsvpState?.attending ?? true);
-  const [rsvpWishes] = useState(rsvpState?.wishes || '');
+  const [rsvpGuests, setRsvpGuests] = useState(rsvpState?.guestCount || 1);
+  const [rsvpAttending, setRsvpAttending] = useState<boolean | null>(rsvpState?.attending ?? null);
+  const [rsvpWishes, setRsvpWishes] = useState(rsvpState?.wishes || '');
   const [rsvpSubmitted, setRsvpSubmitted] = useState(rsvpState?.isSuccess || false);
+
+  const updateRsvpName = (value: string) => {
+    setRsvpName(value);
+    rsvpState?.setName(value);
+  };
+
+  const updateRsvpAttending = (value: boolean) => {
+    setRsvpAttending(value);
+    rsvpState?.setAttending(value);
+  };
+
+  const updateRsvpGuests = (value: number) => {
+    setRsvpGuests(value);
+    rsvpState?.setGuestCount(value);
+  };
+
+  const updateRsvpWishes = (value: string) => {
+    setRsvpWishes(value);
+    rsvpState?.setWishes(value);
+  };
 
   const handleRsvpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -977,7 +997,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
               <p className="text-xs text-gray-300 font-light">{t.rsvpSub}</p>
             </div>
 
-            {rsvpSubmitted ? (
+            {(rsvpState?.isSuccess || rsvpSubmitted) ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -992,7 +1012,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => setRsvpAttending(true)}
+                    onClick={() => updateRsvpAttending(true)}
                     className={`py-3 px-3 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all ${
                       rsvpAttending === true
                         ? 'bg-gradient-to-r from-[#D4AF37] to-[#AA7C11] text-[#0A120D] shadow-lg shadow-[#D4AF37]/30'
@@ -1003,7 +1023,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setRsvpAttending(false)}
+                    onClick={() => updateRsvpAttending(false)}
                     className={`py-3 px-3 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all ${
                       rsvpAttending === false
                         ? 'bg-red-900/60 border border-red-500 text-red-200'
@@ -1022,7 +1042,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
                     type="text"
                     required
                     value={rsvpName}
-                    onChange={(e) => setRsvpName(e.target.value)}
+                    onChange={(e) => updateRsvpName(e.target.value)}
                     placeholder={t.namePlaceholder}
                     className="w-full px-4 py-3 rounded-xl bg-[#0A120D] border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
                   />
@@ -1035,23 +1055,37 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
                     </label>
                     <select
                       value={rsvpGuests}
-                      onChange={(e) => setRsvpGuests(e.target.value)}
+                      onChange={(e) => updateRsvpGuests(Number(e.target.value))}
                       className="w-full px-4 py-3 rounded-xl bg-[#0A120D] border border-white/10 text-white focus:outline-none focus:border-[#D4AF37] transition-colors"
                     >
                       <option value="1">1 kishi</option>
                       <option value="2">2 kishi</option>
                       <option value="3">3 kishi</option>
-                      <option value="4+">4+ kishi</option>
+                      <option value="4">4+ kishi</option>
                     </select>
                   </div>
                 )}
 
+                <div className="space-y-1">
+                  <label className="text-gray-300 font-medium flex items-center gap-1">
+                    <MessageSquare className="w-3.5 h-3.5 text-[#D4AF37]" /> {t.wishesLabel}
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={rsvpWishes}
+                    onChange={(e) => updateRsvpWishes(e.target.value)}
+                    placeholder={t.wishesPlaceholder}
+                    className="w-full px-4 py-3 rounded-xl bg-[#0A120D] border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-[#D4AF37] transition-colors resize-none"
+                  />
+                </div>
+
                 <button
                   type="submit"
-                  className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E0A0] to-[#AA7C11] text-[#0A120D] font-bold text-xs uppercase tracking-widest shadow-lg shadow-[#D4AF37]/30 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                  disabled={rsvpState?.isSubmitting || !rsvpName.trim() || rsvpAttending === null}
+                  className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E0A0] to-[#AA7C11] text-[#0A120D] font-bold text-xs uppercase tracking-widest shadow-lg shadow-[#D4AF37]/30 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
                 >
                   <Send className="w-4 h-4" />
-                  {t.submitRsvp}
+                  {rsvpState?.isSubmitting ? 'ОТПРАВКА...' : t.submitRsvp}
                 </button>
               </form>
             )}

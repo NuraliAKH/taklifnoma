@@ -48,6 +48,8 @@ export interface RsvpState {
   setName: (val: string) => void;
   attending: boolean | null;
   setAttending: (val: boolean | null) => void;
+  guestCount: number;
+  setGuestCount: (val: number) => void;
   wishes: string;
   setWishes: (val: string) => void;
   isSubmitting: boolean;

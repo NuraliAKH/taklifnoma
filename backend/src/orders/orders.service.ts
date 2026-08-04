@@ -336,7 +336,15 @@ export class OrdersService {
     });
   }
 
-  async addRsvp(orderId: string, rsvpData: { name: string; attending: boolean; wishes: string }): Promise<Order> {
+  async addRsvp(
+    orderId: string,
+    rsvpData: { name: string; attending: boolean; guestCount?: number; wishes: string },
+  ): Promise<Order> {
+    const name = String(rsvpData.name || '').trim();
+    if (!name || typeof rsvpData.attending !== 'boolean') {
+      throw new BadRequestException('Guest name and attendance status are required');
+    }
+
     const order = await this.findOne(orderId);
     if (!order) {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
@@ -345,9 +353,12 @@ export class OrdersService {
     const currentData = (order.user_data as any) || {};
     const rsvps = [...(currentData.rsvps || [])];
     rsvps.push({
-      name: rsvpData.name,
+      name,
       attending: rsvpData.attending,
-      wishes: rsvpData.wishes,
+      guestCount: rsvpData.attending
+        ? Math.min(20, Math.max(1, Number(rsvpData.guestCount) || 1))
+        : 0,
+      wishes: String(rsvpData.wishes || '').trim(),
       createdAt: new Date().toISOString(),
     });
 

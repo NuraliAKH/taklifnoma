@@ -47,7 +47,8 @@ import {
   Star,
   MessageSquare,
   Tag,
-  Menu
+  Menu,
+  RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WebsiteTemplateDispatcher } from './templates/sites';
@@ -2742,6 +2743,15 @@ function CabinetPage() {
   const [ordersList, setOrdersList] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRsvpOrderId, setSelectedRsvpOrderId] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (!selectedRsvpOrderId) return;
+    const interval = window.setInterval(() => {
+      setRefreshKey(value => value + 1);
+    }, 10000);
+    return () => window.clearInterval(interval);
+  }, [selectedRsvpOrderId]);
 
   useEffect(() => {
     let savedIds: string[] = [];
@@ -2783,7 +2793,7 @@ function CabinetPage() {
         setOrdersList([]);
         setLoading(false);
       });
-  }, [token, logout, navigate]);
+  }, [token, logout, navigate, refreshKey]);
 
   return (
     <div className="flex flex-col gap-8 flex-1">
@@ -2797,8 +2807,21 @@ function CabinetPage() {
             Пользователь: <span className="font-semibold text-slate-300">{user?.email}</span>
           </p>
         </div>
-        <div className="bg-white/5 px-4 py-2 border border-white/10 rounded-xl text-xs">
+        <div className="flex items-center gap-2">
+          <div className="bg-white/5 px-4 py-2 border border-white/10 rounded-xl text-xs">
           Всего заказов: <span className="font-bold text-amber-400 font-mono">{ordersList.length}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true);
+              setRefreshKey(value => value + 1);
+            }}
+            className="p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-slate-400 hover:text-amber-400 transition-colors"
+            title="Обновить ответы гостей"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </div>
 
@@ -2924,6 +2947,32 @@ function CabinetPage() {
                     )}
                   </div>
 
+                  {order.template.type === 'website' && (
+                    <div className="grid grid-cols-3 gap-1.5">
+                      <div className="rounded-lg border border-emerald-500/15 bg-emerald-500/5 px-2 py-1.5 text-center">
+                        <div className="text-xs font-bold text-emerald-400">
+                          {(order.user_data?.rsvps || []).filter((r: any) => r.attending).length}
+                        </div>
+                        <div className="text-[9px] text-slate-500">Придут</div>
+                      </div>
+                      <div className="rounded-lg border border-rose-500/15 bg-rose-500/5 px-2 py-1.5 text-center">
+                        <div className="text-xs font-bold text-rose-400">
+                          {(order.user_data?.rsvps || []).filter((r: any) => !r.attending).length}
+                        </div>
+                        <div className="text-[9px] text-slate-500">Не придут</div>
+                      </div>
+                      <div className="rounded-lg border border-amber-500/15 bg-amber-500/5 px-2 py-1.5 text-center">
+                        <div className="text-xs font-bold text-amber-400">
+                          {(order.user_data?.rsvps || []).reduce(
+                            (total: number, r: any) => total + (r.attending ? (Number(r.guestCount) || 1) : 0),
+                            0,
+                          )}
+                        </div>
+                        <div className="text-[9px] text-slate-500">Гостей</div>
+                      </div>
+                    </div>
+                  )}
+
                   {order.final_asset_url ? (
                     order.template.type === 'website' ? (
                       <div className="flex gap-2">
@@ -3001,6 +3050,11 @@ function CabinetPage() {
                   <div key={idx} className="bg-white/5 border border-white/5 p-3.5 rounded-xl flex flex-col gap-1.5 text-left">
                     <div className="flex justify-between items-center text-xs">
                       <span className="font-bold text-slate-200">{r.name}</span>
+                      {r.attending && (
+                        <span className="ml-auto px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/10">
+                          {Number(r.guestCount) || 1} чел.
+                        </span>
+                      )}
                       <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${r.attending ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10' : 'bg-rose-500/10 text-rose-400 border border-rose-500/10'}`}>
                         {r.attending ? 'Придет' : 'Не сможет прийти'}
                       </span>
@@ -4282,6 +4336,7 @@ export function InvitationPage() {
   // RSVP Form state
   const [rsvpName, setRsvpName] = useState('');
   const [rsvpAttending, setRsvpAttending] = useState<boolean | null>(null);
+  const [rsvpGuestCount, setRsvpGuestCount] = useState(1);
   const [rsvpWishes, setRsvpWishes] = useState('');
   const [isSubmittingRsvp, setIsSubmittingRsvp] = useState(false);
   const [rsvpSuccess, setRsvpSuccess] = useState(false);
@@ -4340,6 +4395,7 @@ export function InvitationPage() {
         body: JSON.stringify({
           name: rsvpName,
           attending: rsvpAttending,
+          guestCount: rsvpAttending ? rsvpGuestCount : 0,
           wishes: rsvpWishes,
         })
       });
@@ -4448,6 +4504,8 @@ export function InvitationPage() {
           setName: setRsvpName,
           attending: rsvpAttending,
           setAttending: setRsvpAttending,
+          guestCount: rsvpGuestCount,
+          setGuestCount: setRsvpGuestCount,
           wishes: rsvpWishes,
           setWishes: setRsvpWishes,
           isSubmitting: isSubmittingRsvp,
