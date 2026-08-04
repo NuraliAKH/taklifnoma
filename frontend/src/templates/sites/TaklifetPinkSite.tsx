@@ -21,17 +21,92 @@ const getMediaUrl = (url?: string) => {
   return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
+type EnvelopePalette = {
+  themeClass: string;
+  particleA: string;
+  particleB: string;
+  particleShadow: string;
+  burstColor: string;
+  burstShadow: string;
+};
+
+const DEFAULT_ENVELOPE_PALETTE: EnvelopePalette = {
+  themeClass: '',
+  particleA: 'linear-gradient(135deg, #F472B6 0%, #C084FC 100%)',
+  particleB: 'linear-gradient(135deg, #E879F9 0%, #F43F5E 100%)',
+  particleShadow: '0 2px 8px rgba(192, 132, 252, 0.3)',
+  burstColor: '#FCD34D',
+  burstShadow: '0 0 10px rgba(251, 191, 36, 0.9)',
+};
+
+const ENVELOPE_PALETTES: Record<string, EnvelopePalette> = {
+  'pink-envelope': {
+    themeClass: 'taklifet-rose-envelope-theme',
+    particleA: 'linear-gradient(135deg, #FDA4AF 0%, #EC4899 100%)',
+    particleB: 'linear-gradient(135deg, #FBCFE8 0%, #E11D48 100%)',
+    particleShadow: '0 2px 8px rgba(225, 29, 72, 0.3)',
+    burstColor: '#F9A8D4',
+    burstShadow: '0 0 10px rgba(225, 29, 72, 0.72)',
+  },
+  'emerald-envelope': {
+    themeClass: 'taklifet-emerald-envelope-theme',
+    particleA: 'linear-gradient(135deg, #D4AF37 0%, #1B4D3E 100%)',
+    particleB: 'linear-gradient(135deg, #F3E0A0 0%, #0F4C3A 100%)',
+    particleShadow: '0 2px 8px rgba(212, 175, 55, 0.32)',
+    burstColor: '#D4AF37',
+    burstShadow: '0 0 10px rgba(212, 175, 55, 0.84)',
+  },
+  'champagne-envelope': {
+    themeClass: 'taklifet-champagne-envelope-theme',
+    particleA: 'linear-gradient(135deg, #F1E7DA 0%, #D8C3A5 100%)',
+    particleB: 'linear-gradient(135deg, #E6D7C3 0%, #A66C3F 100%)',
+    particleShadow: '0 2px 8px rgba(166, 108, 63, 0.26)',
+    burstColor: '#B6814C',
+    burstShadow: '0 0 10px rgba(182, 129, 76, 0.72)',
+  },
+  'dusty-rose-envelope': {
+    themeClass: 'taklifet-dusty-rose-envelope-theme',
+    particleA: 'linear-gradient(135deg, #F3C5B5 0%, #D8A7B1 100%)',
+    particleB: 'linear-gradient(135deg, #E9B7A5 0%, #C48B9F 100%)',
+    particleShadow: '0 2px 8px rgba(184, 115, 51, 0.26)',
+    burstColor: '#B87333',
+    burstShadow: '0 0 10px rgba(184, 115, 51, 0.75)',
+  },
+  'dusty-blue-envelope': {
+    themeClass: 'taklifet-dusty-blue-envelope-theme',
+    particleA: 'linear-gradient(135deg, #F4F6F8 0%, #8E9AAF 100%)',
+    particleB: 'linear-gradient(135deg, #DDE2E8 0%, #9A9EAB 100%)',
+    particleShadow: '0 2px 8px rgba(142, 154, 175, 0.34)',
+    burstColor: '#E5E7EB',
+    burstShadow: '0 0 10px rgba(192, 192, 192, 0.82)',
+  },
+  'navy-envelope': {
+    themeClass: 'taklifet-navy-envelope-theme',
+    particleA: 'linear-gradient(135deg, #E5E7EB 0%, #1B263B 100%)',
+    particleB: 'linear-gradient(135deg, #C0C0C0 0%, #0D1B2A 100%)',
+    particleShadow: '0 2px 8px rgba(27, 38, 59, 0.36)',
+    burstColor: '#C0C0C0',
+    burstShadow: '0 0 10px rgba(192, 192, 192, 0.85)',
+  },
+  'burgundy-envelope': {
+    themeClass: 'taklifet-burgundy-envelope-theme',
+    particleA: 'linear-gradient(135deg, #D4AF37 0%, #6B1724 100%)',
+    particleB: 'linear-gradient(135deg, #F2D47B 0%, #581845 100%)',
+    particleShadow: '0 2px 8px rgba(88, 24, 69, 0.34)',
+    burstColor: '#D4AF37',
+    burstShadow: '0 0 10px rgba(212, 175, 55, 0.85)',
+  },
+};
+
 // ==========================================
 // Falling Petal Particle System
 // ==========================================
 const PetalParticleSystem = ({
   isPreview,
-  isRose = false,
-  isEmerald = false,
+  palette = DEFAULT_ENVELOPE_PALETTE,
 }: {
   isPreview?: boolean;
-  isRose?: boolean;
-  isEmerald?: boolean;
+  palette?: EnvelopePalette;
 }) => {
   if (isPreview) return null;
 
@@ -46,22 +121,8 @@ const PetalParticleSystem = ({
             left: `${(i * 19) % 100}%`,
             width: `${10 + (i % 4) * 4}px`,
             height: `${14 + (i % 4) * 5}px`,
-            background: isEmerald
-              ? i % 2 === 0
-                ? 'linear-gradient(135deg, #D4AF37 0%, #1B4D3E 100%)'
-                : 'linear-gradient(135deg, #F3E0A0 0%, #0F4C3A 100%)'
-              : isRose
-                ? i % 2 === 0
-                  ? 'linear-gradient(135deg, #FDA4AF 0%, #EC4899 100%)'
-                  : 'linear-gradient(135deg, #FBCFE8 0%, #E11D48 100%)'
-                : i % 2 === 0
-                  ? 'linear-gradient(135deg, #F472B6 0%, #C084FC 100%)'
-                  : 'linear-gradient(135deg, #E879F9 0%, #F43F5E 100%)',
-            boxShadow: isEmerald
-              ? '0 2px 8px rgba(212, 175, 55, 0.32)'
-              : isRose
-                ? '0 2px 8px rgba(225, 29, 72, 0.3)'
-                : '0 2px 8px rgba(192, 132, 252, 0.3)',
+            background: i % 2 === 0 ? palette.particleA : palette.particleB,
+            boxShadow: palette.particleShadow,
           }}
           animate={{
             y: ['0vh', '110vh'],
@@ -84,7 +145,13 @@ const PetalParticleSystem = ({
 // ==========================================
 // Golden Particle Ripple Burst
 // ==========================================
-const GoldBurst = ({ active }: { active: boolean }) => {
+const GoldBurst = ({
+  active,
+  palette = DEFAULT_ENVELOPE_PALETTE,
+}: {
+  active: boolean;
+  palette?: EnvelopePalette;
+}) => {
   if (!active) return null;
 
   return (
@@ -98,11 +165,12 @@ const GoldBurst = ({ active }: { active: boolean }) => {
         return (
           <motion.div
             key={`gold-burst-${i}`}
-            className="absolute rounded-full bg-amber-300"
+            className="absolute rounded-full"
             style={{
               width: `${4 + Math.random() * 4}px`,
               height: `${4 + Math.random() * 4}px`,
-              boxShadow: '0 0 10px rgba(251, 191, 36, 0.9)',
+              backgroundColor: palette.burstColor,
+              boxShadow: palette.burstShadow,
             }}
             initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
             animate={{ 
@@ -266,8 +334,9 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
   onToggleSection,
   onLanguageChange,
 }) => {
-  const isRoseEnvelope = visualVariant === 'pink-envelope';
-  const isEmeraldEnvelope = visualVariant === 'emerald-envelope';
+  const envelopePalette = visualVariant ? ENVELOPE_PALETTES[visualVariant] : undefined;
+  const envelopeThemeClass = envelopePalette?.themeClass || '';
+  const usesSharedEnvelopePalette = Boolean(envelopePalette && visualVariant !== 'pink-envelope');
   const [currentLang, setCurrentLang] = useState<'uz' | 'ru' | 'en'>(lang || 'uz');
   const t = translations[currentLang] || translations.uz;
 
@@ -395,9 +464,9 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
   }, [targetYear, targetMonth]);
 
   return (
-    <div className={`relative min-h-screen bg-gradient-to-b from-[#FAF5FF] via-[#F3E8FF] to-[#FCE7F3] text-[#4C1D95] font-serif overflow-x-hidden selection:bg-[#C084FC] selection:text-white ${isEmeraldEnvelope ? 'taklifet-emerald-envelope-theme' : isRoseEnvelope ? 'taklifet-rose-envelope-theme' : ''}`}>
+    <div className={`relative min-h-screen bg-gradient-to-b from-[#FAF5FF] via-[#F3E8FF] to-[#FCE7F3] text-[#4C1D95] font-serif overflow-x-hidden selection:bg-[#C084FC] selection:text-white ${usesSharedEnvelopePalette ? 'taklifet-envelope-palette' : ''} ${envelopeThemeClass}`}>
       {/* Background Falling Petals */}
-      <PetalParticleSystem isPreview={isPreview} isRose={isRoseEnvelope} isEmerald={isEmeraldEnvelope} />
+      <PetalParticleSystem isPreview={isPreview} palette={envelopePalette} />
 
       {/* Floating Audio & Language Controls */}
       {!isCatalogPreview && <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
@@ -504,7 +573,7 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
             className="fixed inset-0 z-40 bg-[#F5EEF8] flex flex-col items-center justify-center p-4 select-none overflow-hidden"
           >
             {/* Golden Particles Splash */}
-            <GoldBurst active={burstActive} />
+            <GoldBurst active={burstActive} palette={envelopePalette} />
 
             {/* Glowing background aura */}
             <div className="absolute w-[450px] h-[450px] rounded-full bg-[radial-gradient(circle_at_center,rgba(192,132,252,0.3)_0%,transparent_70%)] pointer-events-none blur-3xl" />

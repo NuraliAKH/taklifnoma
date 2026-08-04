@@ -471,6 +471,302 @@ a {
   --tw-shadow-color: rgba(15, 76, 58, 0.24) !important;
 }
 
+/* Shared color system for the envelope collection. */
+.taklifet-envelope-palette {
+  background-image: linear-gradient(to bottom, var(--envelope-canvas), var(--envelope-canvas-soft), var(--envelope-canvas)) !important;
+  color: var(--envelope-ink);
+}
+
+.taklifet-emerald-envelope-theme {
+  --envelope-canvas: #fdfbf7;
+  --envelope-canvas-soft: #f8f2e8;
+  --envelope-surface: #f3ead7;
+  --envelope-light: #2f6b57;
+  --envelope-base: #1b4d3e;
+  --envelope-dark: #082f25;
+  --envelope-ink: #143d31;
+  --envelope-accent: #d4af37;
+  --envelope-border: rgba(212, 175, 55, 0.48);
+  --envelope-shadow: rgba(15, 76, 58, 0.3);
+  --envelope-glow: rgba(212, 175, 55, 0.3);
+  --seal-light: #f3e0a0;
+  --seal-mid: #d4af37;
+  --seal-dark: #967019;
+  --seal-inner-light: #1b4d3e;
+  --seal-inner-dark: #082f25;
+  --seal-text: #f3e0a0;
+}
+
+.taklifet-champagne-envelope-theme {
+  --envelope-canvas: #faf8f5;
+  --envelope-canvas-soft: #f1e9df;
+  --envelope-surface: #eee3d5;
+  --envelope-light: #e6d7c3;
+  --envelope-base: #d8c3a5;
+  --envelope-dark: #b99f7d;
+  --envelope-ink: #6f5841;
+  --envelope-accent: #a66c3f;
+  --envelope-border: rgba(166, 108, 63, 0.42);
+  --envelope-shadow: rgba(111, 88, 65, 0.27);
+  --envelope-glow: rgba(182, 129, 76, 0.28);
+  --seal-light: #dec399;
+  --seal-mid: #b6814c;
+  --seal-dark: #7e4d2d;
+  --seal-inner-light: #6f5841;
+  --seal-inner-dark: #3e2d1f;
+  --seal-text: #f7e8cf;
+}
+
+.taklifet-dusty-rose-envelope-theme {
+  --envelope-canvas: #fff9fa;
+  --envelope-canvas-soft: #f8e8eb;
+  --envelope-surface: #f4dde2;
+  --envelope-light: #d8a7b1;
+  --envelope-base: #c48b9f;
+  --envelope-dark: #9a5f75;
+  --envelope-ink: #6e3349;
+  --envelope-accent: #b87333;
+  --envelope-border: rgba(184, 115, 51, 0.42);
+  --envelope-shadow: rgba(110, 51, 73, 0.27);
+  --envelope-glow: rgba(216, 167, 177, 0.38);
+  --seal-light: #e3b07d;
+  --seal-mid: #b87333;
+  --seal-dark: #82451f;
+  --seal-inner-light: #6b263c;
+  --seal-inner-dark: #461524;
+  --seal-text: #ffe7cf;
+}
+
+.taklifet-dusty-blue-envelope-theme {
+  --envelope-canvas: #fbfcfd;
+  --envelope-canvas-soft: #eef1f3;
+  --envelope-surface: #e5e9ed;
+  --envelope-light: #aeb8c7;
+  --envelope-base: #8e9aaf;
+  --envelope-dark: #657286;
+  --envelope-ink: #465263;
+  --envelope-accent: #9a9eab;
+  --envelope-border: rgba(142, 154, 175, 0.52);
+  --envelope-shadow: rgba(70, 82, 99, 0.25);
+  --envelope-glow: rgba(192, 192, 192, 0.38);
+  --seal-light: #ffffff;
+  --seal-mid: #d9dde2;
+  --seal-dark: #9ca3af;
+  --seal-inner-light: #9a9eab;
+  --seal-inner-dark: #606770;
+  --seal-text: #ffffff;
+}
+
+.taklifet-navy-envelope-theme {
+  --envelope-canvas: #f2f6fa;
+  --envelope-canvas-soft: #dfe7ef;
+  --envelope-surface: #d7e0e9;
+  --envelope-light: #2c3e59;
+  --envelope-base: #1b263b;
+  --envelope-dark: #0d1b2a;
+  --envelope-ink: #1b263b;
+  --envelope-accent: #8894a4;
+  --envelope-border: rgba(136, 148, 164, 0.58);
+  --envelope-shadow: rgba(13, 27, 42, 0.34);
+  --envelope-glow: rgba(192, 192, 192, 0.34);
+  --seal-light: #f8fafc;
+  --seal-mid: #c0c0c0;
+  --seal-dark: #7e8792;
+  --seal-inner-light: #1b263b;
+  --seal-inner-dark: #0d1b2a;
+  --seal-text: #f8fafc;
+}
+
+.taklifet-burgundy-envelope-theme {
+  --envelope-canvas: #faf4ea;
+  --envelope-canvas-soft: #efe0d2;
+  --envelope-surface: #f1e4d3;
+  --envelope-light: #7b2331;
+  --envelope-base: #6b1724;
+  --envelope-dark: #581845;
+  --envelope-ink: #581845;
+  --envelope-accent: #d4af37;
+  --envelope-border: rgba(212, 175, 55, 0.5);
+  --envelope-shadow: rgba(88, 24, 69, 0.3);
+  --envelope-glow: rgba(212, 175, 55, 0.3);
+  --seal-light: #f2d47b;
+  --seal-mid: #d4af37;
+  --seal-dark: #967019;
+  --seal-inner-light: #6b1724;
+  --seal-inner-dark: #581845;
+  --seal-text: #f8e6a4;
+}
+
+.taklifet-envelope-palette::selection,
+.taklifet-envelope-palette *::selection {
+  background-color: var(--envelope-accent);
+  color: var(--envelope-dark);
+}
+
+.taklifet-envelope-palette [class~="bg-[#F5EEF8]"],
+.taklifet-envelope-palette [class~="bg-purple-50"],
+.taklifet-envelope-palette [class~="bg-purple-50/50"],
+.taklifet-envelope-palette [class~="bg-purple-50/90"] {
+  background-color: var(--envelope-canvas) !important;
+}
+
+.taklifet-envelope-palette [class~="bg-purple-100"],
+.taklifet-envelope-palette [class~="bg-purple-200"] {
+  background-color: var(--envelope-surface) !important;
+}
+
+.taklifet-envelope-palette [class~="bg-[#7C3AED]"] {
+  background-color: var(--envelope-base) !important;
+}
+
+.taklifet-envelope-palette [class~="bg-[#7E22CE]"],
+.taklifet-envelope-palette [class~="bg-[#9333EA]"],
+.taklifet-envelope-palette [class~="bg-purple-700"] {
+  background-color: var(--envelope-dark) !important;
+}
+
+.taklifet-envelope-palette [class~="from-[#7C3AED]"] {
+  --tw-gradient-from: var(--envelope-base) !important;
+}
+
+.taklifet-envelope-palette [class~="via-[#6D28D9]"] {
+  --tw-gradient-via: var(--envelope-base) !important;
+}
+
+.taklifet-envelope-palette [class~="to-[#581C87]"] {
+  --tw-gradient-to: var(--envelope-dark) !important;
+}
+
+.taklifet-envelope-palette [class~="from-[#8B5CF6]"] {
+  --tw-gradient-from: var(--envelope-light) !important;
+}
+
+.taklifet-envelope-palette [class~="to-[#7C3AED]"] {
+  --tw-gradient-to: var(--envelope-base) !important;
+}
+
+.taklifet-envelope-palette [class~="from-[#581C87]"] {
+  --tw-gradient-from: var(--seal-inner-light) !important;
+}
+
+.taklifet-envelope-palette [class~="to-[#3B0764]"] {
+  --tw-gradient-to: var(--seal-inner-dark) !important;
+}
+
+.taklifet-envelope-palette [class~="from-amber-200"] {
+  --tw-gradient-from: var(--seal-light) !important;
+}
+
+.taklifet-envelope-palette [class~="via-amber-400"] {
+  --tw-gradient-via: var(--seal-mid) !important;
+}
+
+.taklifet-envelope-palette [class~="to-amber-600"] {
+  --tw-gradient-to: var(--seal-dark) !important;
+}
+
+.taklifet-envelope-palette [class~="bg-amber-400/40"] {
+  background-color: var(--envelope-glow) !important;
+}
+
+.taklifet-envelope-palette [class~="border-amber-300"] {
+  border-color: var(--seal-mid) !important;
+}
+
+.taklifet-envelope-palette [class~="text-amber-200"],
+.taklifet-envelope-palette [class~="text-amber-300"] {
+  color: var(--seal-text) !important;
+}
+
+.taklifet-envelope-palette [class~="text-[#4C1D95]"],
+.taklifet-envelope-palette [class~="text-[#581C87]"],
+.taklifet-envelope-palette [class~="text-[#6B21A8]"],
+.taklifet-envelope-palette [class~="text-[#7E22CE]"],
+.taklifet-envelope-palette [class~="text-[#7C3AED]"],
+.taklifet-envelope-palette [class~="text-[#9333EA]"],
+.taklifet-envelope-palette [class~="text-purple-400"],
+.taklifet-envelope-palette [class~="text-purple-500"],
+.taklifet-envelope-palette [class~="text-purple-700"],
+.taklifet-envelope-palette [class~="text-purple-800"],
+.taklifet-envelope-palette [class~="text-purple-900"],
+.taklifet-envelope-palette [class~="text-purple-900/80"],
+.taklifet-envelope-palette [class~="text-purple-950"],
+.taklifet-envelope-palette [class~="text-purple-950/80"] {
+  color: var(--envelope-ink) !important;
+}
+
+.taklifet-envelope-palette [class~="border-[#7E22CE]"],
+.taklifet-envelope-palette [class~="border-[#C084FC]/40"],
+.taklifet-envelope-palette [class~="border-[#C084FC]/50"],
+.taklifet-envelope-palette [class~="border-purple-100"],
+.taklifet-envelope-palette [class~="border-purple-200"],
+.taklifet-envelope-palette [class~="border-purple-200/80"],
+.taklifet-envelope-palette [class~="border-purple-300"],
+.taklifet-envelope-palette [class~="border-purple-300/40"],
+.taklifet-envelope-palette [class~="border-purple-300/50"],
+.taklifet-envelope-palette [class~="border-purple-400"],
+.taklifet-envelope-palette [class~="border-purple-400/40"] {
+  border-color: var(--envelope-border) !important;
+}
+
+.taklifet-envelope-palette [class~="from-purple-100/90"] {
+  --tw-gradient-from: color-mix(in srgb, var(--envelope-surface) 90%, transparent) !important;
+}
+
+.taklifet-envelope-palette [class~="via-pink-50/90"] {
+  --tw-gradient-via: color-mix(in srgb, var(--envelope-canvas) 90%, transparent) !important;
+}
+
+.taklifet-envelope-palette [class~="to-purple-100/90"] {
+  --tw-gradient-to: color-mix(in srgb, var(--envelope-surface) 90%, transparent) !important;
+}
+
+.taklifet-envelope-palette [class~="placeholder-purple-400"]::placeholder {
+  color: color-mix(in srgb, var(--envelope-ink) 58%, transparent) !important;
+}
+
+.taklifet-envelope-palette [class~="accent-[#7E22CE]"] {
+  accent-color: var(--envelope-accent) !important;
+}
+
+.taklifet-envelope-palette [class~="hover:bg-purple-100"]:hover,
+.taklifet-envelope-palette [class~="hover:bg-[#C084FC]/20"]:hover,
+.taklifet-envelope-palette [class~="hover:bg-[#C084FC]"]:hover {
+  background-color: var(--envelope-surface) !important;
+}
+
+.taklifet-envelope-palette [class~="hover:bg-[#6B21A8]"]:hover,
+.taklifet-envelope-palette [class~="hover:bg-[#7E22CE]"]:hover {
+  background-color: var(--envelope-base) !important;
+}
+
+.taklifet-envelope-palette [class~="hover:text-purple-900"]:hover,
+.taklifet-envelope-palette [class~="hover:text-[#9333EA]"]:hover {
+  color: var(--envelope-dark) !important;
+}
+
+.taklifet-envelope-palette [class~="hover:border-purple-300"]:hover,
+.taklifet-envelope-palette [class~="hover:border-purple-400"]:hover,
+.taklifet-envelope-palette [class~="focus:border-[#7E22CE]"]:focus {
+  border-color: var(--envelope-accent) !important;
+}
+
+.taklifet-envelope-palette [class~="shadow-purple-500/10"],
+.taklifet-envelope-palette [class~="shadow-purple-500/20"],
+.taklifet-envelope-palette [class~="shadow-purple-500/40"],
+.taklifet-envelope-palette [class~="shadow-purple-900/10"],
+.taklifet-envelope-palette [class~="shadow-purple-900/5"] {
+  --tw-shadow-color: var(--envelope-shadow) !important;
+}
+
+.taklifet-envelope-palette [class~="shadow-[0_25px_60px_rgba(124,58,237,0.35)]"] {
+  box-shadow: 0 25px 60px var(--envelope-shadow) !important;
+}
+
+.taklifet-envelope-palette [class~="bg-[radial-gradient(circle_at_center,rgba(192,132,252,0.3)_0%,transparent_70%)]"] {
+  background-image: radial-gradient(circle at center, var(--envelope-glow) 0%, transparent 70%) !important;
+}
+
 .glow-ambient {
   position: absolute;
   border-radius: 50%;

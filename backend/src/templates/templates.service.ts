@@ -915,35 +915,32 @@ export class TemplatesService implements OnModuleInit {
 
     const taklifetTemplate = defaultTemplates.find((template) => template.id === 8);
     if (taklifetTemplate) {
-      defaultTemplates.push({
-        ...taklifetTemplate,
-        id: 13,
-        media_url: '/uploads/templates/taklifet_rose_envelope_web.png',
-        price: 139000.00,
-        discount_price: 109000.00,
-        text_config: {
-          ...taklifetTemplate.text_config,
-          fields: taklifetTemplate.text_config.fields.map((field: any) => ({
-            ...field,
-            color: field.color === '#7E22CE' ? '#BE185D' : field.color,
-          })),
-        },
-      });
+      const envelopeVariants = [
+        { id: 13, file: 'taklifet_rose_envelope_web.png', color: '#BE185D', price: 139000.00, discount: 109000.00 },
+        { id: 14, file: 'taklifet_emerald_gold_web.png', color: '#0F4C3A', price: 149000.00, discount: 119000.00 },
+        { id: 15, file: 'taklifet_champagne_nude_web.png', color: '#A66C3F', price: 149000.00, discount: 119000.00 },
+        { id: 16, file: 'taklifet_dusty_rose_peach_web.png', color: '#9A5F75', price: 149000.00, discount: 119000.00 },
+        { id: 17, file: 'taklifet_dusty_blue_sage_web.png', color: '#657286', price: 149000.00, discount: 119000.00 },
+        { id: 18, file: 'taklifet_midnight_navy_web.png', color: '#1B263B', price: 149000.00, discount: 119000.00 },
+        { id: 19, file: 'taklifet_burgundy_wine_web.png', color: '#6B1724', price: 149000.00, discount: 119000.00 },
+      ];
 
-      defaultTemplates.push({
-        ...taklifetTemplate,
-        id: 14,
-        media_url: '/uploads/templates/taklifet_emerald_gold_web.png',
-        price: 149000.00,
-        discount_price: 119000.00,
-        text_config: {
-          ...taklifetTemplate.text_config,
-          fields: taklifetTemplate.text_config.fields.map((field: any) => ({
-            ...field,
-            color: field.color === '#7E22CE' ? '#0F4C3A' : field.color,
-          })),
-        },
-      });
+      for (const variant of envelopeVariants) {
+        defaultTemplates.push({
+          ...taklifetTemplate,
+          id: variant.id,
+          media_url: `/uploads/templates/${variant.file}`,
+          price: variant.price,
+          discount_price: variant.discount,
+          text_config: {
+            ...taklifetTemplate.text_config,
+            fields: taklifetTemplate.text_config.fields.map((field: any) => ({
+              ...field,
+              color: field.color === '#7E22CE' ? variant.color : field.color,
+            })),
+          },
+        });
+      }
     }
 
     for (const t of defaultTemplates as any[]) {

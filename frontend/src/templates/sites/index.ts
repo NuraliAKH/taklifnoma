@@ -22,6 +22,21 @@ const RoseEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
 const EmeraldEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
   React.createElement(TaklifetPinkSite, { ...props, visualVariant: 'emerald-envelope' });
 
+const ChampagneEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(TaklifetPinkSite, { ...props, visualVariant: 'champagne-envelope' });
+
+const DustyRoseEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(TaklifetPinkSite, { ...props, visualVariant: 'dusty-rose-envelope' });
+
+const DustyBlueEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(TaklifetPinkSite, { ...props, visualVariant: 'dusty-blue-envelope' });
+
+const NavyEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(TaklifetPinkSite, { ...props, visualVariant: 'navy-envelope' });
+
+const BurgundyEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(TaklifetPinkSite, { ...props, visualVariant: 'burgundy-envelope' });
+
 // Map of Template ID / Slug to Component
 export const siteTemplatesRegistry: Record<string | number, React.ComponentType<WebsiteTemplateProps>> = {
   // Template ID 4: Zar Atlas Web
@@ -63,6 +78,18 @@ export const siteTemplatesRegistry: Record<string | number, React.ComponentType<
   // Template ID 14: emerald and gold envelope variation
   14: EmeraldEnvelopeWeddingSite,
   'emerald-envelope': EmeraldEnvelopeWeddingSite,
+
+  // Template IDs 15-19: additional envelope color collections
+  15: ChampagneEnvelopeWeddingSite,
+  'champagne-envelope': ChampagneEnvelopeWeddingSite,
+  16: DustyRoseEnvelopeWeddingSite,
+  'dusty-rose-envelope': DustyRoseEnvelopeWeddingSite,
+  17: DustyBlueEnvelopeWeddingSite,
+  'dusty-blue-envelope': DustyBlueEnvelopeWeddingSite,
+  18: NavyEnvelopeWeddingSite,
+  'navy-envelope': NavyEnvelopeWeddingSite,
+  19: BurgundyEnvelopeWeddingSite,
+  'burgundy-envelope': BurgundyEnvelopeWeddingSite,
 
   // Template ID 9: Malika & Ulugbek Silk Gold Luxury Web
   9: MalikaUlugbekWeddingSite,

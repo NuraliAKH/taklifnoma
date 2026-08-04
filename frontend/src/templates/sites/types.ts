@@ -69,7 +69,18 @@ export interface WebsiteTemplateProps {
   rsvpState?: RsvpState;
   isPreview?: boolean;
   isCatalogPreview?: boolean;
-  visualVariant?: 'default' | 'birthday' | 'sapphire' | 'rose' | 'pink-envelope' | 'emerald-envelope';
+  visualVariant?:
+    | 'default'
+    | 'birthday'
+    | 'sapphire'
+    | 'rose'
+    | 'pink-envelope'
+    | 'emerald-envelope'
+    | 'champagne-envelope'
+    | 'dusty-rose-envelope'
+    | 'dusty-blue-envelope'
+    | 'navy-envelope'
+    | 'burgundy-envelope';
   onToggleSection?: (sectionKey: string) => void;
   onLanguageChange?: (newLang: 'ru' | 'uz' | 'en') => void;
 }
