@@ -929,6 +929,21 @@ export class TemplatesService implements OnModuleInit {
           })),
         },
       });
+
+      defaultTemplates.push({
+        ...taklifetTemplate,
+        id: 14,
+        media_url: '/uploads/templates/taklifet_emerald_gold_web.png',
+        price: 149000.00,
+        discount_price: 119000.00,
+        text_config: {
+          ...taklifetTemplate.text_config,
+          fields: taklifetTemplate.text_config.fields.map((field: any) => ({
+            ...field,
+            color: field.color === '#7E22CE' ? '#0F4C3A' : field.color,
+          })),
+        },
+      });
     }
 
     for (const t of defaultTemplates as any[]) {

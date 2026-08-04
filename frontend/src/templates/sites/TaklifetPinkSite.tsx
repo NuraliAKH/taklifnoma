@@ -24,7 +24,15 @@ const getMediaUrl = (url?: string) => {
 // ==========================================
 // Falling Petal Particle System
 // ==========================================
-const PetalParticleSystem = ({ isPreview, isRose = false }: { isPreview?: boolean; isRose?: boolean }) => {
+const PetalParticleSystem = ({
+  isPreview,
+  isRose = false,
+  isEmerald = false,
+}: {
+  isPreview?: boolean;
+  isRose?: boolean;
+  isEmerald?: boolean;
+}) => {
   if (isPreview) return null;
 
   return (
@@ -38,16 +46,22 @@ const PetalParticleSystem = ({ isPreview, isRose = false }: { isPreview?: boolea
             left: `${(i * 19) % 100}%`,
             width: `${10 + (i % 4) * 4}px`,
             height: `${14 + (i % 4) * 5}px`,
-            background: isRose
+            background: isEmerald
               ? i % 2 === 0
-                ? 'linear-gradient(135deg, #FDA4AF 0%, #EC4899 100%)'
-                : 'linear-gradient(135deg, #FBCFE8 0%, #E11D48 100%)'
-              : i % 2 === 0
-                ? 'linear-gradient(135deg, #F472B6 0%, #C084FC 100%)'
-                : 'linear-gradient(135deg, #E879F9 0%, #F43F5E 100%)',
-            boxShadow: isRose
-              ? '0 2px 8px rgba(225, 29, 72, 0.3)'
-              : '0 2px 8px rgba(192, 132, 252, 0.3)',
+                ? 'linear-gradient(135deg, #D4AF37 0%, #1B4D3E 100%)'
+                : 'linear-gradient(135deg, #F3E0A0 0%, #0F4C3A 100%)'
+              : isRose
+                ? i % 2 === 0
+                  ? 'linear-gradient(135deg, #FDA4AF 0%, #EC4899 100%)'
+                  : 'linear-gradient(135deg, #FBCFE8 0%, #E11D48 100%)'
+                : i % 2 === 0
+                  ? 'linear-gradient(135deg, #F472B6 0%, #C084FC 100%)'
+                  : 'linear-gradient(135deg, #E879F9 0%, #F43F5E 100%)',
+            boxShadow: isEmerald
+              ? '0 2px 8px rgba(212, 175, 55, 0.32)'
+              : isRose
+                ? '0 2px 8px rgba(225, 29, 72, 0.3)'
+                : '0 2px 8px rgba(192, 132, 252, 0.3)',
           }}
           animate={{
             y: ['0vh', '110vh'],
@@ -253,6 +267,7 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
   onLanguageChange,
 }) => {
   const isRoseEnvelope = visualVariant === 'pink-envelope';
+  const isEmeraldEnvelope = visualVariant === 'emerald-envelope';
   const [currentLang, setCurrentLang] = useState<'uz' | 'ru' | 'en'>(lang || 'uz');
   const t = translations[currentLang] || translations.uz;
 
@@ -380,9 +395,9 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
   }, [targetYear, targetMonth]);
 
   return (
-    <div className={`relative min-h-screen bg-gradient-to-b from-[#FAF5FF] via-[#F3E8FF] to-[#FCE7F3] text-[#4C1D95] font-serif overflow-x-hidden selection:bg-[#C084FC] selection:text-white ${isRoseEnvelope ? 'taklifet-rose-envelope-theme' : ''}`}>
+    <div className={`relative min-h-screen bg-gradient-to-b from-[#FAF5FF] via-[#F3E8FF] to-[#FCE7F3] text-[#4C1D95] font-serif overflow-x-hidden selection:bg-[#C084FC] selection:text-white ${isEmeraldEnvelope ? 'taklifet-emerald-envelope-theme' : isRoseEnvelope ? 'taklifet-rose-envelope-theme' : ''}`}>
       {/* Background Falling Petals */}
-      <PetalParticleSystem isPreview={isPreview} isRose={isRoseEnvelope} />
+      <PetalParticleSystem isPreview={isPreview} isRose={isRoseEnvelope} isEmerald={isEmeraldEnvelope} />
 
       {/* Floating Audio & Language Controls */}
       {!isCatalogPreview && <div className="fixed top-4 right-4 z-50 flex items-center gap-2">

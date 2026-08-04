@@ -327,6 +327,150 @@ a {
   accent-color: #be185d !important;
 }
 
+/* Emerald & Gold Envelope keeps the Taklifet composition with an ivory canvas. */
+.taklifet-emerald-envelope-theme {
+  background-image: linear-gradient(to bottom, #fdfbf7, #f8f2e8, #fdfbf7) !important;
+  color: #1b4d3e;
+}
+
+.taklifet-emerald-envelope-theme::selection,
+.taklifet-emerald-envelope-theme *::selection {
+  background-color: #d4af37;
+  color: #082f25;
+}
+
+.taklifet-emerald-envelope-theme [class~="bg-[#F5EEF8]"] {
+  background-color: #fdfbf7 !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="bg-[#7C3AED]"] {
+  background-color: #1b4d3e !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="bg-[#7E22CE]"],
+.taklifet-emerald-envelope-theme [class~="bg-[#9333EA]"] {
+  background-color: #0f4c3a !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="from-[#7C3AED]"] {
+  --tw-gradient-from: #1b4d3e !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="via-[#6D28D9]"] {
+  --tw-gradient-via: #0f4c3a !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="to-[#581C87]"] {
+  --tw-gradient-to: #082f25 !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="from-[#8B5CF6]"] {
+  --tw-gradient-from: #2f6b57 !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="to-[#7C3AED]"] {
+  --tw-gradient-to: #0f4c3a !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="from-[#581C87]"] {
+  --tw-gradient-from: #1b4d3e !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="to-[#3B0764]"] {
+  --tw-gradient-to: #082f25 !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="text-[#4C1D95]"],
+.taklifet-emerald-envelope-theme [class~="text-[#581C87]"] {
+  color: #143d31 !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="text-[#6B21A8]"],
+.taklifet-emerald-envelope-theme [class~="text-[#7E22CE]"],
+.taklifet-emerald-envelope-theme [class~="text-[#7C3AED]"],
+.taklifet-emerald-envelope-theme [class~="text-[#9333EA]"] {
+  color: #0f4c3a !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="border-[#7E22CE]"],
+.taklifet-emerald-envelope-theme [class~="border-[#C084FC]/40"],
+.taklifet-emerald-envelope-theme [class~="border-[#C084FC]/50"] {
+  border-color: rgba(212, 175, 55, 0.62) !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="bg-purple-50"],
+.taklifet-emerald-envelope-theme [class~="bg-purple-50/50"],
+.taklifet-emerald-envelope-theme [class~="bg-purple-50/90"] {
+  background-color: #fdfbf7 !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="bg-purple-100"],
+.taklifet-emerald-envelope-theme [class~="bg-purple-200"] {
+  background-color: #f3ead7 !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="bg-purple-700"] {
+  background-color: #0f4c3a !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="border-purple-100"],
+.taklifet-emerald-envelope-theme [class~="border-purple-200"],
+.taklifet-emerald-envelope-theme [class~="border-purple-200/80"],
+.taklifet-emerald-envelope-theme [class~="border-purple-300"],
+.taklifet-emerald-envelope-theme [class~="border-purple-300/40"],
+.taklifet-emerald-envelope-theme [class~="border-purple-300/50"],
+.taklifet-emerald-envelope-theme [class~="border-purple-400"],
+.taklifet-emerald-envelope-theme [class~="border-purple-400/40"] {
+  border-color: rgba(212, 175, 55, 0.44) !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="text-purple-400"],
+.taklifet-emerald-envelope-theme [class~="text-purple-500"],
+.taklifet-emerald-envelope-theme [class~="text-purple-700"],
+.taklifet-emerald-envelope-theme [class~="text-purple-800"],
+.taklifet-emerald-envelope-theme [class~="text-purple-900"],
+.taklifet-emerald-envelope-theme [class~="text-purple-900/80"],
+.taklifet-emerald-envelope-theme [class~="text-purple-950"],
+.taklifet-emerald-envelope-theme [class~="text-purple-950/80"] {
+  color: #1b4d3e !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="placeholder-purple-400"]::placeholder {
+  color: rgba(27, 77, 62, 0.58) !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="from-purple-100/90"] {
+  --tw-gradient-from: rgba(243, 234, 215, 0.9) !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="via-pink-50/90"] {
+  --tw-gradient-via: rgba(253, 251, 247, 0.9) !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="to-purple-100/90"] {
+  --tw-gradient-to: rgba(243, 234, 215, 0.9) !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="hover:bg-purple-100"]:hover {
+  background-color: #f3ead7 !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="hover:text-purple-900"]:hover {
+  color: #0f4c3a !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="accent-[#7E22CE]"] {
+  accent-color: #d4af37 !important;
+}
+
+.taklifet-emerald-envelope-theme [class~="shadow-purple-500/10"],
+.taklifet-emerald-envelope-theme [class~="shadow-purple-500/20"],
+.taklifet-emerald-envelope-theme [class~="shadow-purple-500/40"],
+.taklifet-emerald-envelope-theme [class~="shadow-purple-900/10"],
+.taklifet-emerald-envelope-theme [class~="shadow-purple-900/5"] {
+  --tw-shadow-color: rgba(15, 76, 58, 0.24) !important;
+}
+
 .glow-ambient {
   position: absolute;
   border-radius: 50%;

@@ -362,6 +362,7 @@ const getTemplateName = (t: Template) => {
   if (t.id === 11) return 'Sapphire Hilal Web (Сайт)';
   if (t.id === 12) return 'Rose Hilal Web (Сайт)';
   if (t.id === 13) return 'Rose Envelope Web (Сайт)';
+  if (t.id === 14) return 'Emerald & Gold Envelope Web (Сайт)';
   
   const categoryRu = t.category === 'wedding' ? 'Свадебное' : t.category === 'birthday' ? 'День Рождения' : t.category;
   const typeRu = t.type === 'physical' ? '(Печать)' : t.type === 'website' ? '(Сайт)' : '(Электронное)';
