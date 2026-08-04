@@ -16,6 +16,9 @@ const SapphireHilalWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
 const RoseHilalWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
   React.createElement(HilalWeddingSite, { ...props, visualVariant: 'rose' });
 
+const RoseEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(TaklifetPinkSite, { ...props, visualVariant: 'pink-envelope' });
+
 // Map of Template ID / Slug to Component
 export const siteTemplatesRegistry: Record<string | number, React.ComponentType<WebsiteTemplateProps>> = {
   // Template ID 4: Zar Atlas Web
@@ -49,6 +52,10 @@ export const siteTemplatesRegistry: Record<string | number, React.ComponentType<
   'taklifet-pink': TaklifetPinkSite,
   'flower': TaklifetPinkSite,
   'pink': TaklifetPinkSite,
+
+  // Template ID 13: rose-pink envelope variation
+  13: RoseEnvelopeWeddingSite,
+  'rose-envelope': RoseEnvelopeWeddingSite,
 
   // Template ID 9: Malika & Ulugbek Silk Gold Luxury Web
   9: MalikaUlugbekWeddingSite,

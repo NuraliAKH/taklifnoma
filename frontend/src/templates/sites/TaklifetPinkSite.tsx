@@ -24,7 +24,7 @@ const getMediaUrl = (url?: string) => {
 // ==========================================
 // Falling Petal Particle System
 // ==========================================
-const PetalParticleSystem = ({ isPreview }: { isPreview?: boolean }) => {
+const PetalParticleSystem = ({ isPreview, isRose = false }: { isPreview?: boolean; isRose?: boolean }) => {
   if (isPreview) return null;
 
   return (
@@ -38,10 +38,16 @@ const PetalParticleSystem = ({ isPreview }: { isPreview?: boolean }) => {
             left: `${(i * 19) % 100}%`,
             width: `${10 + (i % 4) * 4}px`,
             height: `${14 + (i % 4) * 5}px`,
-            background: i % 2 === 0
-              ? 'linear-gradient(135deg, #F472B6 0%, #C084FC 100%)'
-              : 'linear-gradient(135deg, #E879F9 0%, #F43F5E 100%)',
-            boxShadow: '0 2px 8px rgba(192, 132, 252, 0.3)',
+            background: isRose
+              ? i % 2 === 0
+                ? 'linear-gradient(135deg, #FDA4AF 0%, #EC4899 100%)'
+                : 'linear-gradient(135deg, #FBCFE8 0%, #E11D48 100%)'
+              : i % 2 === 0
+                ? 'linear-gradient(135deg, #F472B6 0%, #C084FC 100%)'
+                : 'linear-gradient(135deg, #E879F9 0%, #F43F5E 100%)',
+            boxShadow: isRose
+              ? '0 2px 8px rgba(225, 29, 72, 0.3)'
+              : '0 2px 8px rgba(192, 132, 252, 0.3)',
           }}
           animate={{
             y: ['0vh', '110vh'],
@@ -242,9 +248,11 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
   rsvpState,
   isPreview = false,
   isCatalogPreview = false,
+  visualVariant = 'default',
   onToggleSection,
   onLanguageChange,
 }) => {
+  const isRoseEnvelope = visualVariant === 'pink-envelope';
   const [currentLang, setCurrentLang] = useState<'uz' | 'ru' | 'en'>(lang || 'uz');
   const t = translations[currentLang] || translations.uz;
 
@@ -372,9 +380,9 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
   }, [targetYear, targetMonth]);
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-[#FAF5FF] via-[#F3E8FF] to-[#FCE7F3] text-[#4C1D95] font-serif overflow-x-hidden selection:bg-[#C084FC] selection:text-white">
+    <div className={`relative min-h-screen bg-gradient-to-b from-[#FAF5FF] via-[#F3E8FF] to-[#FCE7F3] text-[#4C1D95] font-serif overflow-x-hidden selection:bg-[#C084FC] selection:text-white ${isRoseEnvelope ? 'taklifet-rose-envelope-theme' : ''}`}>
       {/* Background Falling Petals */}
-      <PetalParticleSystem isPreview={isPreview} />
+      <PetalParticleSystem isPreview={isPreview} isRose={isRoseEnvelope} />
 
       {/* Floating Audio & Language Controls */}
       {!isCatalogPreview && <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
@@ -540,9 +548,13 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
                   className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-0.5 shadow-[0_0_25px_rgba(251,191,36,0.7)] flex items-center justify-center cursor-pointer group"
                 >
                   <div className="w-full h-full rounded-full bg-gradient-to-br from-[#581C87] to-[#3B0764] border border-amber-300 flex items-center justify-center text-amber-300 shadow-inner">
-                    <span className="text-xs font-serif font-bold tracking-widest text-amber-200 group-hover:scale-110 transition-transform">
-                      {groomName.charAt(0)}♡{brideName.charAt(0)}
-                    </span>
+                    {isRoseEnvelope ? (
+                      <Heart className="w-5 h-5 fill-current text-amber-200 group-hover:scale-110 transition-transform" />
+                    ) : (
+                      <span className="text-xs font-serif font-bold tracking-widest text-amber-200 group-hover:scale-110 transition-transform">
+                        {groomName.charAt(0)}♡{brideName.charAt(0)}
+                      </span>
+                    )}
                   </div>
                 </motion.button>
               </div>

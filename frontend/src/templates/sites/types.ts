@@ -69,7 +69,7 @@ export interface WebsiteTemplateProps {
   rsvpState?: RsvpState;
   isPreview?: boolean;
   isCatalogPreview?: boolean;
-  visualVariant?: 'default' | 'birthday' | 'sapphire' | 'rose';
+  visualVariant?: 'default' | 'birthday' | 'sapphire' | 'rose' | 'pink-envelope';
   onToggleSection?: (sectionKey: string) => void;
   onLanguageChange?: (newLang: 'ru' | 'uz' | 'en') => void;
 }

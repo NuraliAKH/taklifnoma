@@ -913,6 +913,24 @@ export class TemplatesService implements OnModuleInit {
       });
     }
 
+    const taklifetTemplate = defaultTemplates.find((template) => template.id === 8);
+    if (taklifetTemplate) {
+      defaultTemplates.push({
+        ...taklifetTemplate,
+        id: 13,
+        media_url: '/uploads/templates/taklifet_rose_envelope_web.png',
+        price: 139000.00,
+        discount_price: 109000.00,
+        text_config: {
+          ...taklifetTemplate.text_config,
+          fields: taklifetTemplate.text_config.fields.map((field: any) => ({
+            ...field,
+            color: field.color === '#7E22CE' ? '#BE185D' : field.color,
+          })),
+        },
+      });
+    }
+
     for (const t of defaultTemplates as any[]) {
       await this.prisma.template.upsert({
         where: { id: t.id },
