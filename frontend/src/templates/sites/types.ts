@@ -66,7 +66,7 @@ export interface WebsiteTemplateProps {
   timeLeft?: TimeLeft;
   rsvpState?: RsvpState;
   isPreview?: boolean;
+  isCatalogPreview?: boolean;
   onToggleSection?: (sectionKey: string) => void;
   onLanguageChange?: (newLang: 'ru' | 'uz' | 'en') => void;
 }
-

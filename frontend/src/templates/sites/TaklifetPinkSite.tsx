@@ -241,6 +241,7 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
   timeLeft,
   rsvpState,
   isPreview = false,
+  isCatalogPreview = false,
   onToggleSection,
   onLanguageChange,
 }) => {
@@ -361,7 +362,7 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
       <PetalParticleSystem isPreview={isPreview} />
 
       {/* Floating Audio & Language Controls */}
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+      {!isCatalogPreview && <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
         {/* Language selector */}
         <div className="bg-white/80 border border-[#C084FC]/40 rounded-full px-3 py-1 flex items-center gap-1 text-xs text-[#6B21A8] backdrop-blur-md shadow-lg shadow-purple-900/10 font-sans">
           <Globe className="w-3.5 h-3.5" />
@@ -406,10 +407,10 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
             <SlidersHorizontal className="w-5 h-5" />
           </button>
         )}
-      </div>
+      </div>}
 
       {/* Preview Section Manager Drawer */}
-      {isPreview && showSectionManager && (
+      {isPreview && !isCatalogPreview && showSectionManager && (
         <div className="fixed top-16 right-4 z-50 bg-white/95 border border-[#C084FC]/50 rounded-2xl p-4 w-72 shadow-2xl backdrop-blur-xl text-xs font-sans text-purple-950">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-purple-200">
             <span className="font-bold text-[#7E22CE] flex items-center gap-1.5">

@@ -114,9 +114,9 @@ const SwipeToOpenButton = ({ onOpen }: { onOpen: () => void }) => {
         transition={{ duration: dragged ? 0.45 : 0.2, ease: 'easeOut' }}
       />
 
-      {/* Centered Text */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 pl-16 pr-4">
-        <span className="text-[10px] sm:text-xs font-sans font-bold uppercase tracking-[0.14em] sm:tracking-[0.18em] whitespace-nowrap text-amber-200 group-hover:text-amber-100 transition-colors drop-shadow-md">
+      {/* Text has its own safe area to the right of the animated knob */}
+      <div className="absolute inset-y-0 left-[72px] right-3 flex items-center justify-center pointer-events-none z-10 overflow-hidden">
+        <span className="text-[9px] sm:text-[10px] font-sans font-bold uppercase tracking-[0.08em] sm:tracking-[0.12em] whitespace-nowrap text-amber-200 group-hover:text-amber-100 transition-colors drop-shadow-md">
           OCHISH UCHUN SURING
         </span>
       </div>

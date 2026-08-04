@@ -104,12 +104,14 @@ const EnvelopeEntranceAnimation = ({
   groomName, 
   brideName, 
   onOpen, 
-  t 
+  t,
+  isPreview = false,
 }: { 
   groomName: string; 
   brideName: string; 
   onOpen?: () => void; 
   t: any;
+  isPreview?: boolean;
 }) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [burstActive, setBurstActive] = useState(false);
@@ -125,7 +127,7 @@ const EnvelopeEntranceAnimation = ({
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-stone-900 via-stone-950 to-black text-amber-100 flex flex-col items-center justify-center p-4 relative overflow-hidden select-none">
+    <div className={`${isPreview ? 'h-full min-h-full' : 'min-h-[100dvh]'} w-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-stone-900 via-stone-950 to-black text-amber-100 flex flex-col items-center justify-center p-4 relative overflow-hidden select-none`}>
       
       <div className="absolute w-96 h-96 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
       <GoldBurst active={burstActive} />
@@ -564,7 +566,8 @@ export const MarmarWeddingSite: React.FC<WebsiteTemplateProps> = ({
         groomName={groomName} 
         brideName={brideName} 
         onOpen={onOpenEnvelope} 
-        t={t} 
+        t={t}
+        isPreview={isPreview}
       />
     );
   }

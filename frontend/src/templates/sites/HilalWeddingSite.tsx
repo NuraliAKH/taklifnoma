@@ -266,6 +266,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
   timeLeft,
   rsvpState,
   isPreview = false,
+  isCatalogPreview = false,
   onToggleSection,
   onLanguageChange,
 }) => {
@@ -398,7 +399,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
       <HilalParticleSystem isPreview={isPreview} />
 
       {/* Floating Audio & Language Controls */}
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+      {!isCatalogPreview && <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
         {/* Language selector */}
         <div className="bg-[#0F1A13]/90 border border-[#D4AF37]/40 rounded-full px-3 py-1 flex items-center gap-1 text-xs text-[#D4AF37] backdrop-blur-md shadow-lg shadow-black/50">
           <Globe className="w-3.5 h-3.5" />
@@ -443,10 +444,10 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
             <SlidersHorizontal className="w-5 h-5" />
           </button>
         )}
-      </div>
+      </div>}
 
       {/* Preview Section Manager Drawer */}
-      {isPreview && showSectionManager && (
+      {isPreview && !isCatalogPreview && showSectionManager && (
         <div className="fixed top-16 right-4 z-50 bg-[#0F1A13] border border-[#D4AF37]/50 rounded-2xl p-4 w-72 shadow-2xl backdrop-blur-xl text-xs font-sans">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#D4AF37]/20">
             <span className="font-bold text-[#D4AF37] flex items-center gap-1.5">
@@ -538,7 +539,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
 
               {/* Top Subtitle */}
               <div className="pt-2 z-10 space-y-1">
-                <span className="text-[10px] tracking-[0.3em] uppercase text-[#D4AF37] font-sans font-bold">
+                <span className="block max-w-full px-3 text-[9px] tracking-[0.16em] sm:text-[10px] sm:tracking-[0.22em] leading-relaxed uppercase text-[#D4AF37] font-sans font-bold">
                   {t.weddingInvitation}
                 </span>
               </div>

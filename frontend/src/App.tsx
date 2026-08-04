@@ -1497,7 +1497,7 @@ function EditorPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left: Preview Panel */}
-        <div className="lg:col-span-7 lg:sticky lg:top-28 flex flex-col gap-4">
+        <div className="lg:col-span-7 lg:sticky lg:top-28 w-full min-w-0 flex flex-col items-center gap-4 overflow-x-clip">
           {template.type === 'website' && (
             <div className="flex items-center justify-center gap-2 font-sans text-xs">
               <button
@@ -1524,7 +1524,7 @@ function EditorPage() {
               </button>
             </div>
           )}
-          <div className="relative rounded-2xl overflow-hidden glass-panel border border-white/10 flex items-center justify-center p-2 sm:p-4">
+          <div className="relative w-full min-w-0 rounded-2xl overflow-hidden glass-panel border border-white/10 flex items-center justify-center p-2 sm:p-4">
             <TemplatePreview 
               template={template} 
               formData={formData} 
@@ -2423,12 +2423,13 @@ function TemplatePreview({
           <div className="w-16 h-1.5 bg-black rounded-full z-40"></div>
         </div>
 
-        <div ref={scrollRef} className="w-full h-full overflow-y-auto pt-4 flex flex-col scrollbar-none">
+        <div ref={scrollRef} className="w-full h-full overflow-x-hidden overflow-y-auto pt-4 flex flex-col scrollbar-none">
           <WebsiteTemplateDispatcher 
             templateId={template.id}
             data={previewData}
             customFields={customDynamicFields}
             isPreview={true}
+            isCatalogPreview={catalogMode}
             isOpened={isOpened}
             onOpenEnvelope={onOpenEnvelope}
             onToggleSection={onToggleSection}
