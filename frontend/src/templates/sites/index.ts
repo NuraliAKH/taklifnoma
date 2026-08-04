@@ -16,6 +16,21 @@ const SapphireHilalWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
 const RoseHilalWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
   React.createElement(HilalWeddingSite, { ...props, visualVariant: 'rose' });
 
+const ChampagneHilalWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(HilalWeddingSite, { ...props, visualVariant: 'champagne-hilal' });
+
+const DustyRoseHilalWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(HilalWeddingSite, { ...props, visualVariant: 'dusty-rose-hilal' });
+
+const DustyBlueHilalWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(HilalWeddingSite, { ...props, visualVariant: 'dusty-blue-hilal' });
+
+const NavyHilalWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(HilalWeddingSite, { ...props, visualVariant: 'navy-hilal' });
+
+const BurgundyHilalWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(HilalWeddingSite, { ...props, visualVariant: 'burgundy-hilal' });
+
 const RoseEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
   React.createElement(TaklifetPinkSite, { ...props, visualVariant: 'pink-envelope' });
 
@@ -64,6 +79,18 @@ export const siteTemplatesRegistry: Record<string | number, React.ComponentType<
   // Template ID 12: Rose & blush Hilal variation
   12: RoseHilalWeddingSite,
   'rose-hilal': RoseHilalWeddingSite,
+
+  // Template IDs 20-24: additional Hilal color collections
+  20: ChampagneHilalWeddingSite,
+  'champagne-hilal': ChampagneHilalWeddingSite,
+  21: DustyRoseHilalWeddingSite,
+  'dusty-rose-hilal': DustyRoseHilalWeddingSite,
+  22: DustyBlueHilalWeddingSite,
+  'dusty-blue-hilal': DustyBlueHilalWeddingSite,
+  23: NavyHilalWeddingSite,
+  'navy-hilal': NavyHilalWeddingSite,
+  24: BurgundyHilalWeddingSite,
+  'burgundy-hilal': BurgundyHilalWeddingSite,
 
   // Template ID 8: Taklifet Pink Lavender Floral Web
   8: TaklifetPinkSite,

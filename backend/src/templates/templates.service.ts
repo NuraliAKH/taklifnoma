@@ -882,35 +882,32 @@ export class TemplatesService implements OnModuleInit {
 
     const hilalTemplate = defaultTemplates.find((template) => template.id === 7);
     if (hilalTemplate) {
-      defaultTemplates.push({
-        ...hilalTemplate,
-        id: 11,
-        media_url: '/uploads/templates/hilal_sapphire_web.png',
-        price: 149000.00,
-        discount_price: 119000.00,
-        text_config: {
-          ...hilalTemplate.text_config,
-          fields: hilalTemplate.text_config.fields.map((field: any) => ({
-            ...field,
-            color: field.color === '#D4AF37' ? '#7DD3FC' : field.color,
-          })),
-        },
-      });
+      const hilalVariants = [
+        { id: 11, file: 'hilal_sapphire_web.png', color: '#7DD3FC' },
+        { id: 12, file: 'hilal_rose_web.png', color: '#F9A8D4' },
+        { id: 20, file: 'hilal_champagne_nude_web.png', color: '#D8C3A5' },
+        { id: 21, file: 'hilal_dusty_rose_peach_web.png', color: '#D8A7B1' },
+        { id: 22, file: 'hilal_dusty_blue_sage_web.png', color: '#AEB8C7' },
+        { id: 23, file: 'hilal_midnight_navy_web.png', color: '#C0C0C0' },
+        { id: 24, file: 'hilal_burgundy_wine_web.png', color: '#D4AF37' },
+      ];
 
-      defaultTemplates.push({
-        ...hilalTemplate,
-        id: 12,
-        media_url: '/uploads/templates/hilal_rose_web.png',
-        price: 149000.00,
-        discount_price: 119000.00,
-        text_config: {
-          ...hilalTemplate.text_config,
-          fields: hilalTemplate.text_config.fields.map((field: any) => ({
-            ...field,
-            color: field.color === '#D4AF37' ? '#F9A8D4' : field.color,
-          })),
-        },
-      });
+      for (const variant of hilalVariants) {
+        defaultTemplates.push({
+          ...hilalTemplate,
+          id: variant.id,
+          media_url: `/uploads/templates/${variant.file}`,
+          price: 149000.00,
+          discount_price: 119000.00,
+          text_config: {
+            ...hilalTemplate.text_config,
+            fields: hilalTemplate.text_config.fields.map((field: any) => ({
+              ...field,
+              color: field.color === '#D4AF37' ? variant.color : field.color,
+            })),
+          },
+        });
+      }
     }
 
     const taklifetTemplate = defaultTemplates.find((template) => template.id === 8);

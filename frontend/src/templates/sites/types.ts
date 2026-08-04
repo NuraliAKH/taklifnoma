@@ -80,7 +80,12 @@ export interface WebsiteTemplateProps {
     | 'dusty-rose-envelope'
     | 'dusty-blue-envelope'
     | 'navy-envelope'
-    | 'burgundy-envelope';
+    | 'burgundy-envelope'
+    | 'champagne-hilal'
+    | 'dusty-rose-hilal'
+    | 'dusty-blue-hilal'
+    | 'navy-hilal'
+    | 'burgundy-hilal';
   onToggleSection?: (sectionKey: string) => void;
   onLanguageChange?: (newLang: 'ru' | 'uz' | 'en') => void;
 }

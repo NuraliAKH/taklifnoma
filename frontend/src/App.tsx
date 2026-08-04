@@ -368,6 +368,11 @@ const getTemplateName = (t: Template) => {
   if (t.id === 17) return 'Dusty Blue & Sage Envelope Web (Сайт)';
   if (t.id === 18) return 'Midnight Navy Envelope Web (Сайт)';
   if (t.id === 19) return 'Burgundy & Wine Envelope Web (Сайт)';
+  if (t.id === 20) return 'Champagne Nude Hilal Web (Сайт)';
+  if (t.id === 21) return 'Dusty Rose & Peach Hilal Web (Сайт)';
+  if (t.id === 22) return 'Dusty Blue & Sage Hilal Web (Сайт)';
+  if (t.id === 23) return 'Midnight Navy Hilal Web (Сайт)';
+  if (t.id === 24) return 'Burgundy & Wine Hilal Web (Сайт)';
   
   const categoryRu = t.category === 'wedding' ? 'Свадебное' : t.category === 'birthday' ? 'День Рождения' : t.category;
   const typeRu = t.type === 'physical' ? '(Печать)' : t.type === 'website' ? '(Сайт)' : '(Электронное)';

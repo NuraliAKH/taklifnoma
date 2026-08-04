@@ -201,6 +201,241 @@ a {
   accent-color: #ec4899 !important;
 }
 
+/* Shared palette system for the Hilal invitation collection. */
+.hilal-palette-theme {
+  background-color: var(--hilal-bg) !important;
+  color: var(--hilal-text);
+}
+
+.hilal-sapphire-theme {
+  --hilal-bg: #050b1a;
+  --hilal-panel: #0b1730;
+  --hilal-panel-dark: #040817;
+  --hilal-text: #eef7ff;
+  --hilal-accent: #7dd3fc;
+  --hilal-accent-light: #c4b5fd;
+  --hilal-accent-dark: #6366f1;
+  --hilal-border: rgba(125, 211, 252, 0.72);
+  --hilal-glow: rgba(56, 189, 248, 0.34);
+}
+
+.hilal-rose-theme {
+  --hilal-bg: #190812;
+  --hilal-panel: #351028;
+  --hilal-panel-dark: #14050f;
+  --hilal-text: #fff1f7;
+  --hilal-accent: #f9a8d4;
+  --hilal-accent-light: #fbcfe8;
+  --hilal-accent-dark: #e11d48;
+  --hilal-border: rgba(249, 168, 212, 0.72);
+  --hilal-glow: rgba(236, 72, 153, 0.34);
+}
+
+.hilal-champagne-theme {
+  --hilal-bg: #2f261f;
+  --hilal-panel: #5b4938;
+  --hilal-panel-dark: #211a15;
+  --hilal-text: #faf8f5;
+  --hilal-accent: #d8c3a5;
+  --hilal-accent-light: #f3e0c5;
+  --hilal-accent-dark: #a66c3f;
+  --hilal-border: rgba(216, 195, 165, 0.7);
+  --hilal-glow: rgba(182, 129, 76, 0.34);
+}
+
+.hilal-dusty-rose-theme {
+  --hilal-bg: #2a111b;
+  --hilal-panel: #6e3349;
+  --hilal-panel-dark: #1b0a11;
+  --hilal-text: #fff9fa;
+  --hilal-accent: #d8a7b1;
+  --hilal-accent-light: #f3c5b5;
+  --hilal-accent-dark: #9a5f75;
+  --hilal-border: rgba(216, 167, 177, 0.72);
+  --hilal-glow: rgba(196, 139, 159, 0.36);
+}
+
+.hilal-dusty-blue-theme {
+  --hilal-bg: #18202b;
+  --hilal-panel: #465263;
+  --hilal-panel-dark: #101720;
+  --hilal-text: #f4f6f8;
+  --hilal-accent: #aeb8c7;
+  --hilal-accent-light: #e6eaee;
+  --hilal-accent-dark: #9a9eab;
+  --hilal-border: rgba(174, 184, 199, 0.72);
+  --hilal-glow: rgba(142, 154, 175, 0.38);
+}
+
+.hilal-navy-theme {
+  --hilal-bg: #070d17;
+  --hilal-panel: #1b263b;
+  --hilal-panel-dark: #0d1b2a;
+  --hilal-text: #f2f6fa;
+  --hilal-accent: #c0c0c0;
+  --hilal-accent-light: #f8fafc;
+  --hilal-accent-dark: #8894a4;
+  --hilal-border: rgba(192, 192, 192, 0.7);
+  --hilal-glow: rgba(192, 192, 192, 0.32);
+}
+
+.hilal-burgundy-theme {
+  --hilal-bg: #200711;
+  --hilal-panel: #581845;
+  --hilal-panel-dark: #13030a;
+  --hilal-text: #faf4ea;
+  --hilal-accent: #d4af37;
+  --hilal-accent-light: #f2d47b;
+  --hilal-accent-dark: #aa7c11;
+  --hilal-border: rgba(212, 175, 55, 0.74);
+  --hilal-glow: rgba(212, 175, 55, 0.34);
+}
+
+.hilal-palette-theme::selection,
+.hilal-palette-theme *::selection {
+  background-color: var(--hilal-accent);
+  color: var(--hilal-bg);
+}
+
+.hilal-palette-theme [class*="text-[#D4AF37]"],
+.hilal-palette-theme [class*="text-[#F3E0A0]"] {
+  color: var(--hilal-accent) !important;
+}
+
+.hilal-palette-theme [class*="text-[#AA7C11]"] {
+  color: var(--hilal-accent-dark) !important;
+}
+
+.hilal-palette-theme [class*="text-[#0A120D]"] {
+  color: var(--hilal-bg) !important;
+}
+
+.hilal-palette-theme [class*="text-[#E5E9E6]"] {
+  color: var(--hilal-text) !important;
+}
+
+.hilal-palette-theme [class*="border-[#D4AF37]"],
+.hilal-palette-theme [class*="border-[#F3E0A0]"] {
+  border-color: var(--hilal-border) !important;
+}
+
+.hilal-palette-theme [class~="bg-[#0A120D]"] {
+  background-color: var(--hilal-bg) !important;
+}
+
+.hilal-palette-theme [class~="bg-[#0A120D]/80"] {
+  background-color: color-mix(in srgb, var(--hilal-bg) 80%, transparent) !important;
+}
+
+.hilal-palette-theme [class~="bg-[#0F1A13]"],
+.hilal-palette-theme [class~="bg-[#0F1A13]/80"],
+.hilal-palette-theme [class~="bg-[#0F1A13]/90"] {
+  background-color: var(--hilal-panel) !important;
+}
+
+.hilal-palette-theme [class~="bg-[#D4AF37]"] {
+  background-color: var(--hilal-accent) !important;
+}
+
+.hilal-palette-theme [class~="bg-[#D4AF37]/30"] {
+  background-color: color-mix(in srgb, var(--hilal-accent) 30%, transparent) !important;
+}
+
+.hilal-palette-theme [class*="from-[#D4AF37]"] {
+  --tw-gradient-from: var(--hilal-accent) !important;
+}
+
+.hilal-palette-theme [class*="from-[#F3E0A0]"] {
+  --tw-gradient-from: var(--hilal-accent-light) !important;
+}
+
+.hilal-palette-theme [class*="via-[#D4AF37]"] {
+  --tw-gradient-via: var(--hilal-accent) !important;
+}
+
+.hilal-palette-theme [class*="via-[#F3E0A0]"] {
+  --tw-gradient-via: var(--hilal-accent-light) !important;
+}
+
+.hilal-palette-theme [class*="to-[#AA7C11]"] {
+  --tw-gradient-to: var(--hilal-accent-dark) !important;
+}
+
+.hilal-palette-theme [class*="to-[#D4AF37]"] {
+  --tw-gradient-to: var(--hilal-accent) !important;
+}
+
+.hilal-palette-theme [class*="from-[#0F2618]"],
+.hilal-palette-theme [class*="from-[#0F1A13]"],
+.hilal-palette-theme [class*="from-[#0A120D]"],
+.hilal-palette-theme [class*="from-[#0B1833]"],
+.hilal-palette-theme [class*="from-[#4A1438]"] {
+  --tw-gradient-from: var(--hilal-panel) !important;
+}
+
+.hilal-palette-theme [class*="via-[#0F1A13]"],
+.hilal-palette-theme [class*="via-[#0A120D]"],
+.hilal-palette-theme [class*="via-[#07101F]"],
+.hilal-palette-theme [class*="via-[#230A1D]"] {
+  --tw-gradient-via: var(--hilal-bg) !important;
+}
+
+.hilal-palette-theme [class*="to-[#050B07]"],
+.hilal-palette-theme [class*="to-[#0F1A13]"],
+.hilal-palette-theme [class*="to-[#101B3A]"],
+.hilal-palette-theme [class*="to-[#561B42]"] {
+  --tw-gradient-to: var(--hilal-panel-dark) !important;
+}
+
+.hilal-palette-theme [class*="bg-[radial-gradient(ellipse_at_center"] {
+  background-image: radial-gradient(ellipse at center, var(--hilal-panel) 0%, var(--hilal-bg) 100%) !important;
+}
+
+.hilal-palette-theme [class*="bg-[radial-gradient(circle_at_center"],
+.hilal-palette-theme [class*="bg-[radial-gradient(circle,rgba(212,175,55"] {
+  background-image: radial-gradient(circle at center, var(--hilal-glow) 0%, transparent 70%) !important;
+}
+
+.hilal-palette-theme [class*="accent-[#D4AF37]"] {
+  accent-color: var(--hilal-accent) !important;
+}
+
+.hilal-palette-theme [class~="hover:bg-[#D4AF37]"]:hover {
+  background-color: var(--hilal-accent) !important;
+}
+
+.hilal-palette-theme [class~="hover:border-[#D4AF37]/30"]:hover {
+  border-color: var(--hilal-border) !important;
+}
+
+.hilal-palette-theme [class~="shadow-[#D4AF37]/30"] {
+  --tw-shadow-color: var(--hilal-glow) !important;
+}
+
+.hilal-palette-theme [class*="shadow-[0_0_10px_rgba(212,175,55"] {
+  box-shadow: 0 0 10px var(--hilal-glow) !important;
+}
+
+.hilal-palette-theme [class*="shadow-[0_0_12px_rgba(212,175,55"] {
+  box-shadow: 0 0 12px var(--hilal-glow) !important;
+}
+
+.hilal-palette-theme [class*="shadow-[0_0_25px_rgba(212,175,55"] {
+  box-shadow: 0 0 25px var(--hilal-glow) !important;
+}
+
+.hilal-palette-theme [class*="shadow-[0_0_30px_rgba(212,175,55"] {
+  box-shadow: 0 0 30px var(--hilal-glow) !important;
+}
+
+.hilal-palette-theme [class*="shadow-[0_0_40px_rgba(212,175,55"] {
+  box-shadow: 0 0 40px var(--hilal-glow) !important;
+}
+
+.hilal-palette-theme [class*="shadow-[0_0_60px_rgba(212,175,55"] {
+  box-shadow: 0 0 60px var(--hilal-glow) !important;
+}
+
 /* Rose Envelope keeps the Taklifet layout but replaces violet with blush and raspberry. */
 .taklifet-rose-envelope-theme {
   background-image: linear-gradient(to bottom, #fff7fa, #ffe4ed, #fff1f5) !important;

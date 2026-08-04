@@ -21,10 +21,116 @@ const getMediaUrl = (url?: string) => {
   return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
+type HilalPalette = {
+  themeClass: string;
+  particles: [string, string, string];
+  particleShadow: string;
+  burstColor: string;
+  burstShadow: string;
+};
+
+const DEFAULT_HILAL_PALETTE: HilalPalette = {
+  themeClass: '',
+  particles: [
+    'radial-gradient(circle, rgba(243,224,160,0.9) 0%, rgba(212,175,55,0) 70%)',
+    'radial-gradient(circle, rgba(212,175,55,0.8) 0%, rgba(170,124,17,0) 70%)',
+    'radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(212,175,55,0) 70%)',
+  ],
+  particleShadow: '0 0 10px rgba(212, 175, 55, 0.4)',
+  burstColor: '#D4AF37',
+  burstShadow: '0 0 10px rgba(212, 175, 55, 0.9)',
+};
+
+const HILAL_PALETTES: Record<string, HilalPalette> = {
+  sapphire: {
+    themeClass: 'hilal-sapphire-theme',
+    particles: [
+      'radial-gradient(circle, rgba(186,230,253,0.95) 0%, rgba(56,189,248,0) 70%)',
+      'radial-gradient(circle, rgba(125,211,252,0.9) 0%, rgba(99,102,241,0) 70%)',
+      'radial-gradient(circle, rgba(224,231,255,0.9) 0%, rgba(129,140,248,0) 70%)',
+    ],
+    particleShadow: '0 0 10px rgba(56, 189, 248, 0.46)',
+    burstColor: '#7DD3FC',
+    burstShadow: '0 0 10px rgba(56, 189, 248, 0.9)',
+  },
+  rose: {
+    themeClass: 'hilal-rose-theme',
+    particles: [
+      'radial-gradient(circle, rgba(251,207,232,0.95) 0%, rgba(236,72,153,0) 70%)',
+      'radial-gradient(circle, rgba(244,114,182,0.9) 0%, rgba(225,29,72,0) 70%)',
+      'radial-gradient(circle, rgba(255,241,247,0.9) 0%, rgba(249,168,212,0) 70%)',
+    ],
+    particleShadow: '0 0 10px rgba(236, 72, 153, 0.45)',
+    burstColor: '#EC4899',
+    burstShadow: '0 0 10px rgba(236, 72, 153, 0.9)',
+  },
+  'champagne-hilal': {
+    themeClass: 'hilal-champagne-theme',
+    particles: [
+      'radial-gradient(circle, rgba(250,248,245,0.95) 0%, rgba(230,215,195,0) 70%)',
+      'radial-gradient(circle, rgba(216,195,165,0.9) 0%, rgba(166,108,63,0) 70%)',
+      'radial-gradient(circle, rgba(241,231,218,0.9) 0%, rgba(182,129,76,0) 70%)',
+    ],
+    particleShadow: '0 0 10px rgba(216, 195, 165, 0.44)',
+    burstColor: '#D8C3A5',
+    burstShadow: '0 0 10px rgba(182, 129, 76, 0.88)',
+  },
+  'dusty-rose-hilal': {
+    themeClass: 'hilal-dusty-rose-theme',
+    particles: [
+      'radial-gradient(circle, rgba(255,249,250,0.95) 0%, rgba(216,167,177,0) 70%)',
+      'radial-gradient(circle, rgba(216,167,177,0.9) 0%, rgba(196,139,159,0) 70%)',
+      'radial-gradient(circle, rgba(243,197,181,0.9) 0%, rgba(184,115,51,0) 70%)',
+    ],
+    particleShadow: '0 0 10px rgba(216, 167, 177, 0.48)',
+    burstColor: '#D8A7B1',
+    burstShadow: '0 0 10px rgba(196, 139, 159, 0.88)',
+  },
+  'dusty-blue-hilal': {
+    themeClass: 'hilal-dusty-blue-theme',
+    particles: [
+      'radial-gradient(circle, rgba(244,246,248,0.95) 0%, rgba(174,184,199,0) 70%)',
+      'radial-gradient(circle, rgba(174,184,199,0.9) 0%, rgba(142,154,175,0) 70%)',
+      'radial-gradient(circle, rgba(205,210,202,0.9) 0%, rgba(154,158,171,0) 70%)',
+    ],
+    particleShadow: '0 0 10px rgba(174, 184, 199, 0.48)',
+    burstColor: '#AEB8C7',
+    burstShadow: '0 0 10px rgba(142, 154, 175, 0.88)',
+  },
+  'navy-hilal': {
+    themeClass: 'hilal-navy-theme',
+    particles: [
+      'radial-gradient(circle, rgba(248,250,252,0.95) 0%, rgba(192,192,192,0) 70%)',
+      'radial-gradient(circle, rgba(192,192,192,0.9) 0%, rgba(27,38,59,0) 70%)',
+      'radial-gradient(circle, rgba(136,148,164,0.9) 0%, rgba(13,27,42,0) 70%)',
+    ],
+    particleShadow: '0 0 10px rgba(192, 192, 192, 0.5)',
+    burstColor: '#C0C0C0',
+    burstShadow: '0 0 10px rgba(192, 192, 192, 0.9)',
+  },
+  'burgundy-hilal': {
+    themeClass: 'hilal-burgundy-theme',
+    particles: [
+      'radial-gradient(circle, rgba(242,212,123,0.95) 0%, rgba(212,175,55,0) 70%)',
+      'radial-gradient(circle, rgba(212,175,55,0.9) 0%, rgba(107,23,36,0) 70%)',
+      'radial-gradient(circle, rgba(250,244,234,0.9) 0%, rgba(88,24,69,0) 70%)',
+    ],
+    particleShadow: '0 0 10px rgba(212, 175, 55, 0.46)',
+    burstColor: '#D4AF37',
+    burstShadow: '0 0 10px rgba(212, 175, 55, 0.9)',
+  },
+};
+
 // ==========================================
 // Hilal Emerald & Gold Floating Dust Particle System
 // ==========================================
-const HilalParticleSystem = ({ isPreview, isRose = false }: { isPreview?: boolean; isRose?: boolean }) => {
+const HilalParticleSystem = ({
+  isPreview,
+  palette = DEFAULT_HILAL_PALETTE,
+}: {
+  isPreview?: boolean;
+  palette?: HilalPalette;
+}) => {
   if (isPreview) return null;
 
   return (
@@ -38,20 +144,8 @@ const HilalParticleSystem = ({ isPreview, isRose = false }: { isPreview?: boolea
             left: `${(i * 23) % 100}%`,
             width: `${3 + (i % 4) * 2}px`,
             height: `${3 + (i % 4) * 2}px`,
-            background: isRose
-              ? i % 3 === 0
-                ? 'radial-gradient(circle, rgba(251,207,232,0.95) 0%, rgba(236,72,153,0) 70%)'
-                : i % 3 === 1
-                  ? 'radial-gradient(circle, rgba(244,114,182,0.9) 0%, rgba(225,29,72,0) 70%)'
-                  : 'radial-gradient(circle, rgba(255,241,247,0.9) 0%, rgba(249,168,212,0) 70%)'
-              : i % 3 === 0
-                ? 'radial-gradient(circle, rgba(243,224,160,0.9) 0%, rgba(212,175,55,0) 70%)'
-                : i % 3 === 1
-                  ? 'radial-gradient(circle, rgba(212,175,55,0.8) 0%, rgba(170,124,17,0) 70%)'
-                  : 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(212,175,55,0) 70%)',
-            boxShadow: isRose
-              ? '0 0 10px rgba(236, 72, 153, 0.45)'
-              : '0 0 10px rgba(212, 175, 55, 0.4)',
+            background: palette.particles[i % palette.particles.length],
+            boxShadow: palette.particleShadow,
           }}
           animate={{
             y: [0, -80, 0],
@@ -74,7 +168,13 @@ const HilalParticleSystem = ({ isPreview, isRose = false }: { isPreview?: boolea
 // ==========================================
 // Golden Particle Ripple Burst
 // ==========================================
-const GoldBurst = ({ active, isRose = false }: { active: boolean; isRose?: boolean }) => {
+const GoldBurst = ({
+  active,
+  palette = DEFAULT_HILAL_PALETTE,
+}: {
+  active: boolean;
+  palette?: HilalPalette;
+}) => {
   if (!active) return null;
 
   return (
@@ -88,13 +188,12 @@ const GoldBurst = ({ active, isRose = false }: { active: boolean; isRose?: boole
         return (
           <motion.div
             key={`gold-burst-${i}`}
-            className={`absolute rounded-full ${isRose ? 'bg-[#EC4899]' : 'bg-[#D4AF37]'}`}
+            className="absolute rounded-full"
             style={{
               width: `${4 + Math.random() * 5}px`,
               height: `${4 + Math.random() * 5}px`,
-              boxShadow: isRose
-                ? '0 0 10px rgba(236, 72, 153, 0.9)'
-                : '0 0 10px rgba(212, 175, 55, 0.9)',
+              backgroundColor: palette.burstColor,
+              boxShadow: palette.burstShadow,
             }}
             initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
             animate={{ 
@@ -284,10 +383,13 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
 }) => {
   const isSapphire = visualVariant === 'sapphire';
   const isRose = visualVariant === 'rose';
-  const ThemeMark = isRose ? Heart : isSapphire ? MoonStar : Crown;
-  const ThemeDateIcon = isRose ? Flower2 : isSapphire ? Sparkles : Calendar;
-  const ThemeVenueIcon = isRose ? Navigation : isSapphire ? Compass : MapPin;
-  const ThemeGiftIcon = isRose ? Sparkles : isSapphire ? Gem : Gift;
+  const hilalPalette = HILAL_PALETTES[visualVariant];
+  const isRomanticPalette = isRose || visualVariant === 'dusty-rose-hilal';
+  const isCelestialPalette = isSapphire || visualVariant === 'dusty-blue-hilal' || visualVariant === 'navy-hilal';
+  const ThemeMark = isRomanticPalette ? Heart : isCelestialPalette ? MoonStar : Crown;
+  const ThemeDateIcon = isRomanticPalette ? Flower2 : isCelestialPalette ? Sparkles : Calendar;
+  const ThemeVenueIcon = isRomanticPalette ? Navigation : isCelestialPalette ? Compass : MapPin;
+  const ThemeGiftIcon = isRomanticPalette ? Sparkles : isCelestialPalette ? Gem : Gift;
   const [currentLang, setCurrentLang] = useState<'uz' | 'ru' | 'en'>(lang || 'uz');
   const t = translations[currentLang] || translations.uz;
 
@@ -435,9 +537,9 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
   }, [targetYear, targetMonth]);
 
   return (
-    <div className={`relative min-h-screen bg-[#0A120D] text-[#E5E9E6] font-serif overflow-x-hidden selection:bg-[#D4AF37] selection:text-[#0A120D] ${isRose ? 'hilal-rose-theme' : isSapphire ? 'hilal-sapphire-theme' : ''}`}>
+    <div className={`relative min-h-screen bg-[#0A120D] text-[#E5E9E6] font-serif overflow-x-hidden selection:bg-[#D4AF37] selection:text-[#0A120D] ${hilalPalette ? 'hilal-palette-theme' : ''} ${hilalPalette?.themeClass || ''}`}>
       {/* Background Floating Gold Dust Particle Animation */}
-      <HilalParticleSystem isPreview={isPreview} isRose={isRose} />
+      <HilalParticleSystem isPreview={isPreview} palette={hilalPalette} />
 
       {/* Floating Audio & Language Controls */}
       {!isCatalogPreview && <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
@@ -550,7 +652,7 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
             }`}
           >
             {/* Particle Burst on Wax Seal Tap */}
-            <GoldBurst active={burstActive} isRose={isRose} />
+            <GoldBurst active={burstActive} palette={hilalPalette} />
 
             {/* Background Ambient Radial Glow */}
             <div className="absolute w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.18)_0%,transparent_70%)] pointer-events-none blur-2xl" />
