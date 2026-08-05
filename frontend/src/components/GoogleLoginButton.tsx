@@ -10,7 +10,7 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   className = '',
 }) => {
   const handleGoogleLogin = () => {
-    const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const rawApiUrl = import.meta.env.VITE_API_URL || '/api';
     const baseUrl = rawApiUrl.replace(/\/+$/, '');
     const googleAuthUrl = baseUrl.endsWith('/api')
       ? `${baseUrl}/auth/google`
