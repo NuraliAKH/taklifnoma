@@ -216,7 +216,7 @@ const GoldBurst = ({
 const translations = {
   uz: {
     bismillah: "بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ",
-    openInvitation: "TAKLIFACHIQ",
+    openInvitation: "TAKLIFNOMANI OCHISH",
     openInvitationSub: "Taklifnomani ochish uchun muhrni bosing",
     weddingInvitation: "NIKOH TO'YI TAKLIFNOMASI",
     weddingTitle: "NIKOH TO'YI",
@@ -760,11 +760,13 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
               <button
                 onClick={handleOpenClick}
                 disabled={isOpening}
-                className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E0A0] to-[#AA7C11] text-[#0A120D] font-sans font-bold tracking-widest text-xs uppercase shadow-[0_0_30px_rgba(212,175,55,0.5)] hover:shadow-[0_0_40px_rgba(212,175,55,0.8)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                className="group relative w-full min-h-12 px-8 border border-[#D4AF37]/70 bg-gradient-to-r from-[#0F1A13] via-[#0A120D] to-[#0F1A13] text-[#F3E0A0] font-sans font-bold tracking-[0.16em] text-[10px] sm:text-xs uppercase shadow-[0_0_30px_rgba(212,175,55,0.35)] hover:shadow-[0_0_40px_rgba(212,175,55,0.65)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 whitespace-nowrap overflow-hidden"
+                style={{ clipPath: 'polygon(14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0 50%)' }}
               >
-                <ThemeMark className="w-4 h-4 text-[#0A120D]" />
-                {isOpening ? "OCHILMOQDA..." : t.openInvitation}
-                <ThemeMark className="w-4 h-4 text-[#0A120D]" />
+                <span className="absolute inset-x-8 top-1 h-px bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-60" />
+                <ThemeMark className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 transition-transform group-hover:-rotate-12" />
+                <span>{isOpening ? "OCHILMOQDA..." : t.openInvitation}</span>
+                <ThemeMark className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 transition-transform group-hover:rotate-12" />
               </button>
             </motion.div>
           </motion.div>

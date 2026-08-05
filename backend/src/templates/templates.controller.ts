@@ -23,6 +23,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
+const MAX_UPLOAD_SIZE_BYTES = 100 * 1024 * 1024;
+
 @Controller('templates')
 export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}
@@ -88,6 +90,9 @@ export class TemplatesController {
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
+      limits: {
+        fileSize: MAX_UPLOAD_SIZE_BYTES,
+      },
       storage: diskStorage({
         destination: './uploads/templates',
         filename: (req, file, cb) => {
