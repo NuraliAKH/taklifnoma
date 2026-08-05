@@ -877,6 +877,130 @@ export class TemplatesService implements OnModuleInit {
             },
           ],
         },
+      },
+      {
+        id: 25,
+        type: 'website' as any,
+        category: 'wedding',
+        media_url: '/olive-editorial-hero.webp',
+        price: 169000.00,
+        discount_price: 129000.00,
+        text_config: {
+          dimensions: { width: 1200, height: 1600 },
+          fields: [
+            {
+              id: 'groomName',
+              label: 'Имя жениха',
+              placeholder: 'Даниил',
+              fontFamily: 'Great Vibes',
+              fontSize: 54,
+              color: '#3F4630',
+              x: 600,
+              y: 560,
+              align: 'center',
+              maxLength: 24,
+            },
+            {
+              id: 'brideName',
+              label: 'Имя невесты',
+              placeholder: 'Анна',
+              fontFamily: 'Great Vibes',
+              fontSize: 54,
+              color: '#3F4630',
+              x: 600,
+              y: 650,
+              align: 'center',
+              maxLength: 24,
+            },
+            {
+              id: 'date',
+              label: 'Дата свадьбы (ГГГГ-ММ-ДД)',
+              placeholder: '2026-08-12',
+              fontFamily: 'Montserrat',
+              fontSize: 24,
+              color: '#3F4630',
+              x: 600,
+              y: 790,
+              align: 'center',
+              maxLength: 10,
+            },
+            {
+              id: 'time',
+              label: 'Время сбора гостей',
+              placeholder: '17:00',
+              fontFamily: 'Montserrat',
+              fontSize: 22,
+              color: '#3F4630',
+              x: 600,
+              y: 850,
+              align: 'center',
+              maxLength: 5,
+            },
+            {
+              id: 'venue',
+              label: 'Название площадки',
+              placeholder: 'Villa Verde',
+              fontFamily: 'Cormorant Garamond',
+              fontSize: 30,
+              color: '#3F4630',
+              x: 600,
+              y: 930,
+              align: 'center',
+              maxLength: 50,
+            },
+            {
+              id: 'address',
+              label: 'Адрес проведения',
+              placeholder: 'Ташкент, ул. Амира Темура, 108',
+              fontFamily: 'Montserrat',
+              fontSize: 18,
+              color: '#626A49',
+              x: 600,
+              y: 990,
+              align: 'center',
+              maxLength: 100,
+            },
+            {
+              id: 'photoUrl',
+              label: 'Главное фото пары — первый экран',
+              placeholder: '',
+              type: 'image',
+            },
+            {
+              id: 'photos',
+              label: 'Два фото: площадка и детали',
+              placeholder: '',
+              type: 'gallery',
+              max: 2,
+            },
+            {
+              id: 'loveStory',
+              label: 'Письмо гостям',
+              placeholder: 'Мы очень хотим сделать этот день особенным и приглашаем вас разделить его с нами.',
+              type: 'textarea',
+              maxLength: 300,
+            },
+            {
+              id: 'details',
+              label: 'Текст блока «Детали»',
+              placeholder: 'Самое главное для нас — ваше присутствие и прекрасное настроение.',
+              type: 'textarea',
+              maxLength: 300,
+            },
+            {
+              id: 'phone',
+              label: 'Телефон организатора — внизу сайта',
+              placeholder: '+998 (90) 123-45-67',
+              fontFamily: 'Montserrat',
+              fontSize: 18,
+              color: '#3F4630',
+              x: 600,
+              y: 1120,
+              align: 'center',
+              maxLength: 24,
+            },
+          ],
+        },
       }
     ];
 
@@ -935,6 +1059,32 @@ export class TemplatesService implements OnModuleInit {
               ...field,
               color: field.color === '#7E22CE' ? variant.color : field.color,
             })),
+          },
+        });
+      }
+    }
+
+    const oliveEditorialTemplate = defaultTemplates.find((template) => template.id === 25);
+    if (oliveEditorialTemplate) {
+      const oliveEditorialVariants = [
+        { id: 26, palette: 'emerald-gold' },
+        { id: 27, palette: 'champagne-nude' },
+        { id: 28, palette: 'dusty-rose-peach' },
+        { id: 29, palette: 'dusty-blue-sage' },
+        { id: 30, palette: 'midnight-navy' },
+        { id: 31, palette: 'burgundy-wine' },
+      ];
+
+      for (const variant of oliveEditorialVariants) {
+        defaultTemplates.push({
+          ...oliveEditorialTemplate,
+          id: variant.id,
+          price: 169000.00,
+          discount_price: 129000.00,
+          text_config: {
+            ...oliveEditorialTemplate.text_config,
+            palette: variant.palette,
+            fields: oliveEditorialTemplate.text_config.fields.map((field: any) => ({ ...field })),
           },
         });
       }

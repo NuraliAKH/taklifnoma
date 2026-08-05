@@ -344,9 +344,91 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 const getMediaUrl = (url: string) => {
   if (!url) return '';
   if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
+  if (url.startsWith('/olive-editorial-')) return url;
   const serverHost = API_URL.replace(/\/api\/?$/, '');
   const cleanPath = url.startsWith('/') ? url : `/${url}`;
   return `${serverHost}${cleanPath}`;
+};
+
+const isOliveEditorialTemplate = (templateId: number | string | undefined) => {
+  const numericId = Number(templateId);
+  return numericId >= 25 && numericId <= 31;
+};
+
+const getEditorFieldsForTemplate = (template: any): any[] => {
+  const fields = [...(template.text_config?.fields || [])];
+
+  // Template 25 has a strict, design-specific schema. No legacy fields from
+  // other website templates may be appended to it.
+  if (isOliveEditorialTemplate(template.id)) {
+    const oliveLabels: Record<string, string> = {
+      photoUrl: 'Главное фото пары — первый экран',
+      photos: 'Два фото: площадка и детали',
+      loveStory: 'Письмо гостям',
+      details: 'Текст блока «Детали»',
+      phone: 'Телефон организатора — внизу сайта',
+    };
+    return fields.map((field: any) => ({
+      ...field,
+      label: oliveLabels[field.id] || field.label,
+      ...(field.id === 'photos' ? { max: 2 } : {}),
+    }));
+  }
+
+  // Preserve the existing editor behaviour for every other template.
+  if (template.type !== 'website') return fields;
+
+  const extraFields = [...fields];
+  if (!extraFields.some((field: any) => field.id === 'photoUrl' || field.type === 'image')) {
+    let insertIndex = extraFields.findIndex((field: any) => field.id === 'time');
+    if (insertIndex === -1) insertIndex = extraFields.findIndex((field: any) => field.id === 'brideName');
+    const photoField = {
+      id: 'photoUrl',
+      label: 'Главное фото молодоженов (Surat)',
+      type: 'image',
+      placeholder: '',
+    };
+    if (insertIndex === -1) extraFields.push(photoField);
+    else extraFields.splice(insertIndex + 1, 0, photoField);
+  }
+
+  if (!extraFields.some((field: any) => field.id === 'photos' || field.type === 'gallery')) {
+    let insertIndex = extraFields.findIndex((field: any) => field.id === 'loveStory');
+    if (insertIndex === -1) insertIndex = extraFields.findIndex((field: any) => field.id === 'address');
+    const galleryField = {
+      id: 'photos',
+      label: 'Галерея фотографий (Suratlar)',
+      type: 'gallery',
+      max: Number(template.id) === 9 ? 6 : 10,
+    };
+    if (insertIndex === -1) extraFields.push(galleryField);
+    else extraFields.splice(insertIndex + 1, 0, galleryField);
+  }
+
+  if (!extraFields.some((field: any) => field.id === 'giftCardNumber')) {
+    let insertIndex = extraFields.findIndex((field: any) => field.id === 'phone');
+    if (insertIndex === -1) insertIndex = extraFields.length;
+    extraFields.splice(insertIndex, 0, {
+      id: 'giftCardNumber',
+      label: 'Номер карты для подарков (Click/Uzcard)',
+      placeholder: '8600 7710 4420 8911',
+      maxLength: 30,
+    });
+  }
+
+  if (!extraFields.some((field: any) => field.id === 'giftCardOwner')) {
+    const insertIndex = extraFields.findIndex((field: any) => field.id === 'giftCardNumber');
+    if (insertIndex !== -1) {
+      extraFields.splice(insertIndex + 1, 0, {
+        id: 'giftCardOwner',
+        label: 'Имя получателя карты',
+        placeholder: 'Сардор С.',
+        maxLength: 30,
+      });
+    }
+  }
+
+  return extraFields;
 };
 
 const getTemplateName = (t: Template) => {
@@ -373,6 +455,13 @@ const getTemplateName = (t: Template) => {
   if (t.id === 22) return 'Dusty Blue & Sage Hilal Web (Сайт)';
   if (t.id === 23) return 'Midnight Navy Hilal Web (Сайт)';
   if (t.id === 24) return 'Burgundy & Wine Hilal Web (Сайт)';
+  if (t.id === 25) return 'Olive Editorial Envelope Web (Сайт)';
+  if (t.id === 26) return 'Emerald & Gold Editorial Envelope Web (Сайт)';
+  if (t.id === 27) return 'Champagne Nude Editorial Envelope Web (Сайт)';
+  if (t.id === 28) return 'Dusty Rose & Peach Editorial Envelope Web (Сайт)';
+  if (t.id === 29) return 'Dusty Blue & Sage Editorial Envelope Web (Сайт)';
+  if (t.id === 30) return 'Midnight Navy Editorial Envelope Web (Сайт)';
+  if (t.id === 31) return 'Burgundy & Wine Editorial Envelope Web (Сайт)';
   
   const categoryRu = t.category === 'wedding' ? 'Свадебное' : t.category === 'birthday' ? 'День Рождения' : t.category;
   const typeRu = t.type === 'physical' ? '(Печать)' : t.type === 'website' ? '(Сайт)' : '(Электронное)';
@@ -1197,7 +1286,8 @@ function EditorPage() {
     if (files.length === 0) return;
 
     const currentPhotos = Array.isArray(formData.photos) ? formData.photos : [];
-    const maxPhotos = (template?.id === 9 || template?.id === '9') ? 6 : 10;
+    const galleryField = customFields.find((field: any) => field.type === 'gallery' || field.id === 'photos');
+    const maxPhotos = Number(galleryField?.max) || 10;
 
     if (currentPhotos.length + files.length > maxPhotos) {
       alert(`Maksimal ${maxPhotos} ta rasm yuklash mumkin! Hozirda ${currentPhotos.length} ta rasm bor.`);
@@ -1259,89 +1349,23 @@ function EditorPage() {
       })
       .then(data => {
         setTemplate(data);
-        const fields = data.text_config?.fields || [];
-        if (data.type === 'website') {
-          const extraFields = [...fields];
-
-          // 1. Ensure photoUrl (Main Photo Upload) exists right after time or brideName
-          if (!extraFields.some((f: any) => f.id === 'photoUrl' || f.type === 'image')) {
-            let insertIdx = extraFields.findIndex((f: any) => f.id === 'time');
-            if (insertIdx === -1) insertIdx = extraFields.findIndex((f: any) => f.id === 'brideName');
-            const photoField = {
-              id: 'photoUrl',
-              label: 'Главное фото молодоженов (Surat)',
-              type: 'image',
-              placeholder: ''
-            };
-            if (insertIdx !== -1) {
-              extraFields.splice(insertIdx + 1, 0, photoField);
-            } else {
-              extraFields.push(photoField);
-            }
-          }
-
-          // 2. Ensure photos (Gallery Upload) exists
-          if (!extraFields.some((f: any) => f.id === 'photos' || f.type === 'gallery')) {
-            let insertIdx = extraFields.findIndex((f: any) => f.id === 'loveStory');
-            if (insertIdx === -1) insertIdx = extraFields.findIndex((f: any) => f.id === 'address');
-            const galleryField = {
-              id: 'photos',
-              label: 'Галерея фотографий (Suratlar)',
-              type: 'gallery',
-              max: (data.id === 9 || data.id === '9') ? 6 : 10
-            };
-            if (insertIdx !== -1) {
-              extraFields.splice(insertIdx + 1, 0, galleryField);
-            } else {
-              extraFields.push(galleryField);
-            }
-          }
-
-          // 3. Ensure giftCardNumber field exists
-          if (!extraFields.some((f: any) => f.id === 'giftCardNumber')) {
-            let insertIdx = extraFields.findIndex((f: any) => f.id === 'phone');
-            if (insertIdx === -1) insertIdx = extraFields.length;
-            extraFields.splice(insertIdx, 0, {
-              id: 'giftCardNumber',
-              label: 'Номер карты для подарков (Click/Uzcard)',
-              placeholder: '8600 7710 4420 8911',
-              maxLength: 30
-            });
-          }
-
-          // 4. Ensure giftCardOwner field exists
-          if (!extraFields.some((f: any) => f.id === 'giftCardOwner')) {
-            let insertIdx = extraFields.findIndex((f: any) => f.id === 'giftCardNumber');
-            if (insertIdx !== -1) {
-              extraFields.splice(insertIdx + 1, 0, {
-                id: 'giftCardOwner',
-                label: 'Имя получателя карты',
-                placeholder: 'Сардор С.',
-                maxLength: 30
-              });
-            }
-          }
-
-          setCustomFields(extraFields);
-        } else {
-          setCustomFields(fields);
-        }
+        const fields = getEditorFieldsForTemplate(data);
+        setCustomFields(fields);
         
         // Restore formData from sessionStorage if user was redirected from auth flow
         const savedForm = sessionStorage.getItem(`draft_order_${id}`);
         if (savedForm) {
           const parsed = JSON.parse(savedForm);
-          setFormData(parsed);
-          if (parsed._customFields) {
+          if (isOliveEditorialTemplate(data.id)) {
+            delete parsed._customFields;
+          } else if (parsed._customFields) {
             setCustomFields(parsed._customFields);
           }
+          setFormData(parsed);
           sessionStorage.removeItem(`draft_order_${id}`);
         } else {
-          const initialForm: Record<string, string> = {
-            giftCardNumber: '8600 7710 4420 8911',
-            giftCardOwner: 'Сардор С.'
-          };
-          data.text_config.fields.forEach((f: any) => {
+          const initialForm: Record<string, string> = {};
+          fields.forEach((f: any) => {
             initialForm[f.id] = f.placeholder;
           });
           setFormData(initialForm);
@@ -1592,7 +1616,11 @@ function EditorPage() {
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <h2 className="text-lg font-semibold tracking-wide">Персонализация</h2>
-                <p className="text-xs text-slate-400 mt-1">Внесите изменения в поля шаблона</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  {isOliveEditorialTemplate(template.id)
+                    ? 'Только параметры, используемые в этом приглашении'
+                    : 'Внесите изменения в поля шаблона'}
+                </p>
               </div>
               <Sliders className="w-5 h-5 text-amber-500" />
             </div>
@@ -1602,10 +1630,26 @@ function EditorPage() {
                 const isImageField = field.type === 'image' || field.id === 'photoUrl' || field.id === 'heroPhoto';
                 const isGalleryField = field.type === 'gallery' || field.id === 'photos';
                 const isVideoField = field.type === 'video' || field.id === 'videoUrl';
+                const oliveGroupTitle = isOliveEditorialTemplate(template.id)
+                  ? ({
+                      groomName: 'Пара и дата',
+                      venue: 'Место проведения',
+                      photoUrl: 'Фотографии',
+                      loveStory: 'Тексты приглашения',
+                      phone: 'Контакт организатора',
+                    } as Record<string, string>)[field.id]
+                  : undefined;
+                const groupHeading = oliveGroupTitle ? (
+                  <div className="mb-1 flex items-center gap-3 pt-2">
+                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-400">{oliveGroupTitle}</span>
+                    <span className="h-px flex-1 bg-amber-400/20" />
+                  </div>
+                ) : null;
 
                 if (isImageField) {
                   return (
                     <div key={field.id} className="flex flex-col gap-2 relative">
+                      {groupHeading}
                       <label className="text-xs font-semibold text-slate-300 flex justify-between items-center">
                         <span>{field.label || 'Главное фото'}</span>
                         {formData.photoUrl && (
@@ -1642,12 +1686,18 @@ function EditorPage() {
                   const maxCount = field.max || ((template?.id === 9 || template?.id === '9') ? 6 : 10);
                   return (
                     <div key={field.id} className="flex flex-col gap-2 relative">
+                      {groupHeading}
                       <label className="text-xs font-semibold text-slate-300 flex justify-between items-center">
                         <span>{field.label || 'Галерея фотографий'}</span>
                         <span className="text-[10px] text-amber-400 font-mono">
                           {Array.isArray(formData.photos) ? formData.photos.length : 0} / {maxCount}
                         </span>
                       </label>
+                      {isOliveEditorialTemplate(template.id) && (
+                        <p className="text-[10px] leading-relaxed text-slate-500">
+                          Первое фото используется в блоке площадки, второе — в блоке «Детали».
+                        </p>
+                      )}
                       {Array.isArray(formData.photos) && formData.photos.length > 0 && (
                         <div className="grid grid-cols-4 gap-2 my-1">
                           {formData.photos.map((pUrl: string, idx: number) => (
@@ -1685,6 +1735,7 @@ function EditorPage() {
                 if (isVideoField) {
                   return (
                     <div key={field.id} className="flex flex-col gap-2 relative">
+                      {groupHeading}
                       <label className="text-xs font-semibold text-slate-300 flex justify-between items-center">
                         <span>{field.label || 'Видео-ролик / Заставка'}</span>
                         {formData.videoUrl && (
@@ -1717,6 +1768,7 @@ function EditorPage() {
 
                 return (
                   <div key={field.id} className="flex flex-col gap-2 relative">
+                    {groupHeading}
                     <label className="text-xs font-semibold text-slate-300 tracking-wide flex justify-between items-center">
                       <span>{field.label}</span>
                       <div className="flex items-center gap-2">
@@ -1725,14 +1777,16 @@ function EditorPage() {
                             {(formData[field.id] || '').length}/{field.maxLength}
                           </span>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveUserField(field.id)}
-                          className="text-slate-500 hover:text-rose-500 transition-colors p-1"
-                          title="Удалить поле"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        {!isOliveEditorialTemplate(template.id) && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveUserField(field.id)}
+                            className="text-slate-500 hover:text-rose-500 transition-colors p-1"
+                            title="Удалить поле"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     </label>
                     
@@ -1759,13 +1813,15 @@ function EditorPage() {
                 );
               })}
 
-              <button
-                type="button"
-                onClick={handleAddUserField}
-                className="w-full py-2.5 border border-dashed border-white/15 hover:border-amber-500/50 hover:bg-white/5 rounded-xl text-xs font-semibold text-slate-400 hover:text-amber-400 transition-all flex items-center justify-center gap-1.5 mt-1"
-              >
-                <Plus className="w-4 h-4" /> Добавить новое текстовое поле
-              </button>
+              {!isOliveEditorialTemplate(template.id) && (
+                <button
+                  type="button"
+                  onClick={handleAddUserField}
+                  className="w-full py-2.5 border border-dashed border-white/15 hover:border-amber-500/50 hover:bg-white/5 rounded-xl text-xs font-semibold text-slate-400 hover:text-amber-400 transition-all flex items-center justify-center gap-1.5 mt-1"
+                >
+                  <Plus className="w-4 h-4" /> Добавить новое текстовое поле
+                </button>
+              )}
 
               {/* BACKGROUND MUSIC SELECTOR */}
               <div className="border-t border-white/10 pt-4 mt-2 flex flex-col gap-4">
@@ -1923,7 +1979,16 @@ function EditorPage() {
                 </p>
 
                 <div className="grid grid-cols-2 gap-2">
-                  {[
+                  {(isOliveEditorialTemplate(template.id) ? [
+                    { id: 'letter', label: 'Письмо гостям' },
+                    { id: 'calendar', label: 'Отмеченная дата' },
+                    { id: 'schedule', label: 'Программа и время' },
+                    { id: 'venue', label: 'Место проведения' },
+                    { id: 'dressCode', label: 'Дресс-код' },
+                    { id: 'details', label: 'Детали вечера' },
+                    { id: 'countdown', label: 'Таймер отсчёта' },
+                    { id: 'rsvp', label: 'Анкета гостей' },
+                  ] : [
                     { id: 'hero', label: 'Главная карточка' },
                     { id: 'photo', label: 'Главное фото' },
                     { id: 'video', label: 'Видео-ролик' },
@@ -1936,7 +2001,7 @@ function EditorPage() {
                     { id: 'rsvp', label: 'Анкета гостей' },
                     { id: 'giftCard', label: 'Подарки и карта' },
                     { id: 'phone', label: 'Контакты' },
-                  ].map(sec => {
+                  ]).map(sec => {
                     const isHidden = Array.isArray(formData.hiddenSections) && formData.hiddenSections.includes(sec.id);
                     return (
                       <button
@@ -2364,6 +2429,11 @@ function TemplatePreview({
   const previewTimeLeft = useCountdownTimer(previewData.date, previewData.time);
 
   useEffect(() => {
+    if (template.type !== 'website' || !scrollRef.current) return;
+    scrollRef.current.scrollTop = 0;
+  }, [template.id, template.type, isOpened]);
+
+  useEffect(() => {
     if (!autoScrollOnHover || !scrollRef.current) return;
     const el = scrollRef.current;
     let animationFrameId: number;
@@ -2471,7 +2541,12 @@ function TemplatePreview({
           <div className="w-16 h-1.5 bg-black rounded-full z-40"></div>
         </div>
 
-        <div ref={scrollRef} className="w-full h-full overflow-x-hidden overflow-y-auto pt-4 flex flex-col scrollbar-none">
+        <div
+          ref={scrollRef}
+          className={`website-preview-scroll h-full w-full touch-pan-y overflow-x-hidden overscroll-contain pt-4 ${
+            isOpened ? 'overflow-y-auto' : 'overflow-y-hidden'
+          }`}
+        >
           <WebsiteTemplateDispatcher 
             templateId={template.id}
             data={previewData}
@@ -4342,7 +4417,7 @@ export function InvitationPage() {
   
   // Interactive State
   const [isOpened, setIsOpened] = useState(false);
-  const [lang] = useState<'ru' | 'uz'>('ru');
+  const [lang, setLang] = useState<'ru' | 'uz' | 'en'>('ru');
   const [isPlaying, setIsPlaying] = useState(false);
 
   // RSVP Form state
@@ -4506,6 +4581,7 @@ export function InvitationPage() {
         data={order.user_data}
         customFields={customDynamicFields}
         lang={lang}
+        onLanguageChange={setLang}
         isOpened={isOpened}
         onOpenEnvelope={handleOpenEnvelope}
         isPlaying={isPlaying}

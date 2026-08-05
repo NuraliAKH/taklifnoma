@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
+    "smoke:olive": "node scripts/smoke-olive.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

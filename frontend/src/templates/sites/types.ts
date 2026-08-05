@@ -85,7 +85,13 @@ export interface WebsiteTemplateProps {
     | 'dusty-rose-hilal'
     | 'dusty-blue-hilal'
     | 'navy-hilal'
-    | 'burgundy-hilal';
+    | 'burgundy-hilal'
+    | 'olive-emerald'
+    | 'olive-champagne'
+    | 'olive-dusty-rose'
+    | 'olive-dusty-blue'
+    | 'olive-navy'
+    | 'olive-burgundy';
   onToggleSection?: (sectionKey: string) => void;
   onLanguageChange?: (newLang: 'ru' | 'uz' | 'en') => void;
 }

@@ -5,6 +5,7 @@ import { AnorWeddingSite } from './AnorWeddingSite';
 import { HilalWeddingSite } from './HilalWeddingSite';
 import { TaklifetPinkSite } from './TaklifetPinkSite';
 import { MalikaUlugbekWeddingSite } from './MalikaUlugbekWeddingSite';
+import { OliveEnvelopeWeddingSite } from './OliveEnvelopeWeddingSite';
 import type { WebsiteTemplateProps } from './types';
 
 const BirthdayCelebrationSite: React.FC<WebsiteTemplateProps> = (props) =>
@@ -51,6 +52,24 @@ const NavyEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
 
 const BurgundyEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
   React.createElement(TaklifetPinkSite, { ...props, visualVariant: 'burgundy-envelope' });
+
+const EmeraldOliveWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(OliveEnvelopeWeddingSite, { ...props, visualVariant: 'olive-emerald' });
+
+const ChampagneOliveWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(OliveEnvelopeWeddingSite, { ...props, visualVariant: 'olive-champagne' });
+
+const DustyRoseOliveWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(OliveEnvelopeWeddingSite, { ...props, visualVariant: 'olive-dusty-rose' });
+
+const DustyBlueOliveWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(OliveEnvelopeWeddingSite, { ...props, visualVariant: 'olive-dusty-blue' });
+
+const NavyOliveWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(OliveEnvelopeWeddingSite, { ...props, visualVariant: 'olive-navy' });
+
+const BurgundyOliveWeddingSite: React.FC<WebsiteTemplateProps> = (props) =>
+  React.createElement(OliveEnvelopeWeddingSite, { ...props, visualVariant: 'olive-burgundy' });
 
 // Map of Template ID / Slug to Component
 export const siteTemplatesRegistry: Record<string | number, React.ComponentType<WebsiteTemplateProps>> = {
@@ -128,6 +147,25 @@ export const siteTemplatesRegistry: Record<string | number, React.ComponentType<
   10: BirthdayCelebrationSite,
   'violet-birthday': BirthdayCelebrationSite,
 
+  // Template ID 25: editorial olive envelope inspired by the reference video
+  25: OliveEnvelopeWeddingSite,
+  'olive-envelope': OliveEnvelopeWeddingSite,
+  'olive-editorial': OliveEnvelopeWeddingSite,
+
+  // Template IDs 26-31: color-only Olive Editorial collection
+  26: EmeraldOliveWeddingSite,
+  'olive-emerald': EmeraldOliveWeddingSite,
+  27: ChampagneOliveWeddingSite,
+  'olive-champagne': ChampagneOliveWeddingSite,
+  28: DustyRoseOliveWeddingSite,
+  'olive-dusty-rose': DustyRoseOliveWeddingSite,
+  29: DustyBlueOliveWeddingSite,
+  'olive-dusty-blue': DustyBlueOliveWeddingSite,
+  30: NavyOliveWeddingSite,
+  'olive-navy': NavyOliveWeddingSite,
+  31: BurgundyOliveWeddingSite,
+  'olive-burgundy': BurgundyOliveWeddingSite,
+
   simple: SimpleWeddingSite,
   default: SimpleWeddingSite,
 };
@@ -155,3 +193,4 @@ export * from './AnorWeddingSite';
 export * from './HilalWeddingSite';
 export * from './TaklifetPinkSite';
 export * from './MalikaUlugbekWeddingSite';
+export * from './OliveEnvelopeWeddingSite';
