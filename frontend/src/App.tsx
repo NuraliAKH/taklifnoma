@@ -2338,13 +2338,13 @@ function EditorPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-6"
+            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md overflow-y-auto flex items-center justify-center p-4 sm:p-6"
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="glass-panel-heavy p-8 rounded-3xl max-w-md w-full border border-white/10 flex flex-col items-center text-center gap-6 shadow-2xl"
+              className="glass-panel-heavy p-6 sm:p-8 rounded-3xl max-w-md w-full border border-white/10 flex flex-col items-center text-center gap-6 shadow-2xl my-auto max-h-[90vh] overflow-y-auto"
             >
               {currentOrder.status === 'completed' ? (
                 <motion.div 
@@ -4098,14 +4098,14 @@ function AdminPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md overflow-y-auto flex items-center justify-center p-4 sm:p-6"
           >
             <motion.form
               onSubmit={handleCreatePromocodeSubmit}
               initial={{ scale: 0.95, y: 15 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 15 }}
-              className="glass-panel-heavy p-6 md:p-8 rounded-3xl max-w-md w-full border border-white/10 flex flex-col gap-5 shadow-2xl relative"
+              className="glass-panel-heavy p-6 md:p-8 rounded-3xl max-w-md w-full border border-white/10 flex flex-col gap-5 shadow-2xl relative my-auto max-h-[90vh] overflow-y-auto"
             >
               <button
                 type="button"
@@ -4226,7 +4226,7 @@ function AdminPage() {
               initial={{ scale: 0.95, y: 15 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 15 }}
-              className="glass-panel-heavy p-6 md:p-8 rounded-3xl max-w-[1200px] w-full border border-white/10 flex flex-col gap-6 shadow-2xl relative my-8"
+              className="glass-panel-heavy p-6 md:p-8 rounded-3xl max-w-[1200px] w-full border border-white/10 flex flex-col gap-6 shadow-2xl relative my-auto max-h-[90vh] overflow-y-auto"
             >
               <button
                 type="button"
