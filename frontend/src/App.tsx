@@ -352,15 +352,126 @@ const getMediaUrl = (url: string) => {
 
 const isOliveEditorialTemplate = (templateId: number | string | undefined) => {
   const numericId = Number(templateId);
-  return numericId >= 25 && numericId <= 31;
+  if (numericId >= 25 && numericId <= 31) return true;
+  const idStr = String(templateId || '');
+  return idStr.includes('olive');
+};
+
+const getTemplateFamily = (templateId: number | string | undefined): 'hilal' | 'envelope' | 'malika' | 'marmar' | 'anor' | 'olive' | 'simple' => {
+  const numericId = Number(templateId);
+  const strId = String(templateId || '');
+
+  if ((numericId >= 25 && numericId <= 31) || strId.includes('olive')) return 'olive';
+  if (numericId === 7 || numericId === 11 || numericId === 12 || (numericId >= 20 && numericId <= 24) || strId.includes('hilal') || strId === 'emerald') return 'hilal';
+  if (numericId === 8 || (numericId >= 13 && numericId <= 19) || strId.includes('envelope') || strId.includes('pink') || strId === 'flower' || strId === 'taklifet-pink') return 'envelope';
+  if (numericId === 9 || strId.includes('malika') || strId.includes('silk')) return 'malika';
+  if (numericId === 5 || strId === 'marmar') return 'marmar';
+  if (numericId === 6 || strId === 'anor') return 'anor';
+  return 'simple';
+};
+
+const getTemplateSections = (templateId: number | string | undefined) => {
+  const family = getTemplateFamily(templateId);
+
+  switch (family) {
+    case 'olive':
+      return [
+        { id: 'letter', label: 'Письмо гостям' },
+        { id: 'calendar', label: 'Отмеченная дата' },
+        { id: 'schedule', label: 'Программа и время' },
+        { id: 'venue', label: 'Место проведения' },
+        { id: 'dressCode', label: 'Дресс-код' },
+        { id: 'details', label: 'Детали вечера' },
+        { id: 'countdown', label: 'Таймер отсчёта' },
+        { id: 'rsvp', label: 'Анкета гостей' },
+      ];
+    case 'hilal':
+      return [
+        { id: 'hero', label: 'Главный баннер / Конверт' },
+        { id: 'quran', label: 'Коранический аят / Bismillah' },
+        { id: 'countdown', label: 'Обратный отсчет' },
+        { id: 'calendar', label: 'Дата и время' },
+        { id: 'gallery', label: 'Фотогалерея' },
+        { id: 'venue', label: 'Место проведения' },
+        { id: 'rsvp', label: 'Подтверждение присутствия' },
+        { id: 'gift', label: 'Подарки и карта' },
+      ];
+    case 'envelope':
+      return [
+        { id: 'hero', label: 'Главная карточка' },
+        { id: 'couple', label: 'Молодожены / Текст' },
+        { id: 'gallery', label: 'Фотогалерея' },
+        { id: 'calendar', label: 'Календарь' },
+        { id: 'countdown', label: 'Таймер отсчета' },
+        { id: 'venue', label: 'Место проведения' },
+        { id: 'wish', label: 'Пожелания' },
+        { id: 'rsvp', label: 'Анкета гостей' },
+        { id: 'giftCard', label: 'Подарки и карта' },
+      ];
+    case 'malika':
+      return [
+        { id: 'hero', label: 'Обложка конверта' },
+        { id: 'couple', label: 'Блок приглашения' },
+        { id: 'parents', label: 'Имена родителей' },
+        { id: 'countdown', label: 'Таймер отсчета' },
+        { id: 'loveStory', label: 'История любви' },
+        { id: 'gallery', label: 'Фотогалерея' },
+        { id: 'venue', label: 'Место проведения' },
+        { id: 'rsvp', label: 'Анкета гостей' },
+        { id: 'giftCard', label: 'Подарки и карта' },
+      ];
+    case 'marmar':
+      return [
+        { id: 'hero', label: 'Главная карточка' },
+        { id: 'photo', label: 'Главное фото' },
+        { id: 'video', label: 'Видео-ролик' },
+        { id: 'loveStory', label: 'История любви' },
+        { id: 'dateVenue', label: 'Дата и место' },
+        { id: 'countdown', label: 'Таймер отсчета' },
+        { id: 'schedule', label: 'Программа дня' },
+        { id: 'gallery', label: 'Фотогалерея' },
+        { id: 'dressCode', label: 'Дресс-код' },
+        { id: 'rsvp', label: 'Анкета гостей' },
+        { id: 'giftCard', label: 'Подарки и карта' },
+        { id: 'phone', label: 'Контакты' },
+      ];
+    case 'anor':
+      return [
+        { id: 'hero', label: 'Главная карточка' },
+        { id: 'photo', label: 'Главное фото' },
+        { id: 'video', label: 'Видео-ролик' },
+        { id: 'loveStory', label: 'История любви' },
+        { id: 'dateVenue', label: 'Дата и место' },
+        { id: 'countdown', label: 'Таймер отсчета' },
+        { id: 'schedule', label: 'Программа дня' },
+        { id: 'gallery', label: 'Фотогалерея' },
+        { id: 'dressCode', label: 'Дресс-код' },
+        { id: 'rsvp', label: 'Анкета гостей' },
+        { id: 'giftCard', label: 'Подарки и карта' },
+      ];
+    case 'simple':
+    default:
+      return [
+        { id: 'hero', label: 'Главная карточка' },
+        { id: 'photo', label: 'Главное фото' },
+        { id: 'video', label: 'Видео-ролик' },
+        { id: 'loveStory', label: 'Наша история' },
+        { id: 'dateVenue', label: 'Дата и место' },
+        { id: 'countdown', label: 'Таймер отсчета' },
+        { id: 'gallery', label: 'Фотогалерея' },
+        { id: 'rsvp', label: 'Анкета гостей' },
+        { id: 'giftCard', label: 'Подарки и карта' },
+      ];
+  }
 };
 
 const getEditorFieldsForTemplate = (template: any): any[] => {
+  if (!template) return [];
   const fields = [...(template.text_config?.fields || [])];
 
-  // Template 25 has a strict, design-specific schema. No legacy fields from
-  // other website templates may be appended to it.
-  if (isOliveEditorialTemplate(template.id)) {
+  const family = getTemplateFamily(template.id);
+
+  if (family === 'olive') {
     const oliveLabels: Record<string, string> = {
       photoUrl: 'Главное фото пары — первый экран',
       photos: 'Два фото: площадка и детали',
@@ -375,60 +486,63 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
     }));
   }
 
-  // Preserve the existing editor behaviour for every other template.
   if (template.type !== 'website') return fields;
 
-  const extraFields = [...fields];
-  if (!extraFields.some((field: any) => field.id === 'photoUrl' || field.type === 'image')) {
-    let insertIndex = extraFields.findIndex((field: any) => field.id === 'time');
-    if (insertIndex === -1) insertIndex = extraFields.findIndex((field: any) => field.id === 'brideName');
-    const photoField = {
-      id: 'photoUrl',
-      label: 'Главное фото молодоженов (Surat)',
-      type: 'image',
-      placeholder: '',
-    };
-    if (insertIndex === -1) extraFields.push(photoField);
-    else extraFields.splice(insertIndex + 1, 0, photoField);
+  const standardFieldsMap: Record<string, any> = {
+    groomName: { id: 'groomName', label: 'Имя жениха / Заголовок', placeholder: 'Даврон' },
+    brideName: { id: 'brideName', label: 'Имя невесты', placeholder: 'Севинч' },
+    date: { id: 'date', label: 'Дата события', placeholder: '2026-10-10' },
+    time: { id: 'time', label: 'Время торжества', placeholder: '18:00' },
+    venue: { id: 'venue', label: 'Название ресторана / площадки', placeholder: 'Versal Saroyi' },
+    address: { id: 'address', label: 'Адрес и локация', placeholder: 'г. Ташкент, ул. Бобура, 45' },
+    photoUrl: { id: 'photoUrl', label: 'Главное фото молодоженов (Surat)', type: 'image', placeholder: '' },
+    photos: { id: 'photos', label: 'Галерея фотографий (Suratlar)', type: 'gallery', max: family === 'malika' ? 6 : 10 },
+    videoUrl: { id: 'videoUrl', label: 'Видео-ролик / Заставка', type: 'video', placeholder: '' },
+    loveStory: { id: 'loveStory', label: 'Наша история / Описание', type: 'textarea', placeholder: 'История наших отношений...' },
+    giftCardNumber: { id: 'giftCardNumber', label: 'Номер карты для подарков (Click/Uzcard)', placeholder: '8600 7710 4420 8911', maxLength: 30 },
+    giftCardOwner: { id: 'giftCardOwner', label: 'Имя получателя карты', placeholder: 'Сардор С.', maxLength: 30 },
+    phone: { id: 'phone', label: 'Телефон организатора / Контакты', placeholder: '+998 90 123-45-67' },
+  };
+
+  let familyFieldIds: string[] = [];
+
+  switch (family) {
+    case 'hilal':
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
+      break;
+    case 'envelope':
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
+      break;
+    case 'malika':
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
+      break;
+    case 'marmar':
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner', 'phone'];
+      break;
+    case 'anor':
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner'];
+      break;
+    case 'simple':
+    default:
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner'];
+      break;
   }
 
-  if (!extraFields.some((field: any) => field.id === 'photos' || field.type === 'gallery')) {
-    let insertIndex = extraFields.findIndex((field: any) => field.id === 'loveStory');
-    if (insertIndex === -1) insertIndex = extraFields.findIndex((field: any) => field.id === 'address');
-    const galleryField = {
-      id: 'photos',
-      label: 'Галерея фотографий (Suratlar)',
-      type: 'gallery',
-      max: Number(template.id) === 9 ? 6 : 10,
-    };
-    if (insertIndex === -1) extraFields.push(galleryField);
-    else extraFields.splice(insertIndex + 1, 0, galleryField);
-  }
-
-  if (!extraFields.some((field: any) => field.id === 'giftCardNumber')) {
-    let insertIndex = extraFields.findIndex((field: any) => field.id === 'phone');
-    if (insertIndex === -1) insertIndex = extraFields.length;
-    extraFields.splice(insertIndex, 0, {
-      id: 'giftCardNumber',
-      label: 'Номер карты для подарков (Click/Uzcard)',
-      placeholder: '8600 7710 4420 8911',
-      maxLength: 30,
-    });
-  }
-
-  if (!extraFields.some((field: any) => field.id === 'giftCardOwner')) {
-    const insertIndex = extraFields.findIndex((field: any) => field.id === 'giftCardNumber');
-    if (insertIndex !== -1) {
-      extraFields.splice(insertIndex + 1, 0, {
-        id: 'giftCardOwner',
-        label: 'Имя получателя карты',
-        placeholder: 'Сардор С.',
-        maxLength: 30,
-      });
+  const result: any[] = [];
+  
+  fields.forEach(f => {
+    if (familyFieldIds.includes(f.id) || (!standardFieldsMap[f.id] && f.id)) {
+      result.push(f);
     }
-  }
+  });
 
-  return extraFields;
+  familyFieldIds.forEach(id => {
+    if (!result.some(f => f.id === id)) {
+      result.push(standardFieldsMap[id]);
+    }
+  });
+
+  return result;
 };
 
 const getTemplateName = (t: Template) => {
@@ -1813,15 +1927,7 @@ function EditorPage() {
                 );
               })}
 
-              {!isOliveEditorialTemplate(template.id) && (
-                <button
-                  type="button"
-                  onClick={handleAddUserField}
-                  className="w-full py-2.5 border border-dashed border-white/15 hover:border-amber-500/50 hover:bg-white/5 rounded-xl text-xs font-semibold text-slate-400 hover:text-amber-400 transition-all flex items-center justify-center gap-1.5 mt-1"
-                >
-                  <Plus className="w-4 h-4" /> Добавить новое текстовое поле
-                </button>
-              )}
+
 
               {/* BACKGROUND MUSIC SELECTOR */}
               <div className="border-t border-white/10 pt-4 mt-2 flex flex-col gap-4">
@@ -1979,29 +2085,7 @@ function EditorPage() {
                 </p>
 
                 <div className="grid grid-cols-2 gap-2">
-                  {(isOliveEditorialTemplate(template.id) ? [
-                    { id: 'letter', label: 'Письмо гостям' },
-                    { id: 'calendar', label: 'Отмеченная дата' },
-                    { id: 'schedule', label: 'Программа и время' },
-                    { id: 'venue', label: 'Место проведения' },
-                    { id: 'dressCode', label: 'Дресс-код' },
-                    { id: 'details', label: 'Детали вечера' },
-                    { id: 'countdown', label: 'Таймер отсчёта' },
-                    { id: 'rsvp', label: 'Анкета гостей' },
-                  ] : [
-                    { id: 'hero', label: 'Главная карточка' },
-                    { id: 'photo', label: 'Главное фото' },
-                    { id: 'video', label: 'Видео-ролик' },
-                    { id: 'loveStory', label: 'История любви' },
-                    { id: 'dateVenue', label: 'Дата и Место' },
-                    { id: 'countdown', label: 'Таймер отсчета' },
-                    { id: 'schedule', label: 'Программа дня' },
-                    { id: 'gallery', label: 'Фотогалерея' },
-                    { id: 'dressCode', label: 'Дресс-код' },
-                    { id: 'rsvp', label: 'Анкета гостей' },
-                    { id: 'giftCard', label: 'Подарки и карта' },
-                    { id: 'phone', label: 'Контакты' },
-                  ]).map(sec => {
+                  {getTemplateSections(template.id).map(sec => {
                     const isHidden = Array.isArray(formData.hiddenSections) && formData.hiddenSections.includes(sec.id);
                     return (
                       <button

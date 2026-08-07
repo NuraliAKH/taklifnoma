@@ -406,7 +406,8 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
     ];
   }, [data.photos]);
 
-  const [galleryMedia, setGalleryMedia] = useState<string[]>(defaultGallery);
+  const galleryMedia = defaultGallery;
+  const setGalleryMedia = (_: string[]) => {}; // kept for compat, gallery is now derived from data.photos
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeModalMedia, setActiveModalMedia] = useState<string | null>(null);
   const [showWishModal, setShowWishModal] = useState(false);

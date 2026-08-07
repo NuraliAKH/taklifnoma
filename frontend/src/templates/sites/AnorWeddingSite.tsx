@@ -789,28 +789,6 @@ export const AnorWeddingSite: React.FC<WebsiteTemplateProps> = ({
                   </div>
                 ))}
               </div>
-
-              {isPreview && (
-                <div className="w-full border-t border-amber-500/20 pt-3 mt-1 flex flex-col gap-2">
-                  <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      value={newPhotoUrl}
-                      onChange={(e) => setNewPhotoUrl(e.target.value)}
-                      placeholder={t.addPhotoPlaceholder}
-                      className="flex-1 bg-stone-950 border border-amber-500/30 rounded-xl px-3 py-1.5 text-xs text-rose-100 outline-none"
-                    />
-                    <button onClick={handleAddPhoto} className="px-3 py-1.5 bg-amber-600 text-stone-950 font-bold text-xs rounded-xl">
-                      +
-                    </button>
-                  </div>
-                  <label className="cursor-pointer py-1.5 px-3 bg-stone-950 border border-amber-500/30 rounded-xl text-[11px] text-amber-400 font-bold flex items-center justify-center gap-1">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Загрузить фото</span>
-                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                  </label>
-                </div>
-              )}
             </motion.div>
           </div>
         )}

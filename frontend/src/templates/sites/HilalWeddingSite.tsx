@@ -469,7 +469,8 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
   // the live preview.
   const heroPhoto = defaultPhoto;
   const heroVideo = defaultVideo;
-  const [galleryMedia, setGalleryMedia] = useState<string[]>(defaultGallery);
+  const galleryMedia = defaultGallery;
+  const setGalleryMedia = (_: string[]) => {}; // kept for compat, gallery is now derived from data.photos
   const [newMediaUrl, setNewMediaUrl] = useState<string>('');
   const [activeModalMedia, setActiveModalMedia] = useState<string | null>(null);
 
@@ -1006,34 +1007,6 @@ export const HilalWeddingSite: React.FC<WebsiteTemplateProps> = ({
                 </motion.div>
               ))}
             </div>
-
-            {isPreview && (
-              <div className="p-4 rounded-2xl bg-[#0F1A13] border border-[#D4AF37]/40 space-y-2 text-xs font-sans text-left">
-                <label className="text-[#D4AF37] font-semibold flex items-center gap-1.5">
-                  <Upload className="w-4 h-4" /> {t.addMedia}
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newMediaUrl}
-                    onChange={(e) => setNewMediaUrl(e.target.value)}
-                    placeholder="https://example.com/photo.jpg yoki video.mp4"
-                    className="flex-1 px-3 py-2 rounded-lg bg-[#0A120D] border border-white/10 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
-                  />
-                  <button
-                    onClick={() => {
-                      if (newMediaUrl.trim()) {
-                        setGalleryMedia(prev => [...prev, newMediaUrl.trim()]);
-                        setNewMediaUrl('');
-                      }
-                    }}
-                    className="px-3 py-2 rounded-lg bg-[#D4AF37] text-[#0A120D] font-bold"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
           </motion.section>
         )}
 

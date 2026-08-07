@@ -1106,34 +1106,6 @@ export const MarmarWeddingSite: React.FC<WebsiteTemplateProps> = ({
                   </motion.div>
                 ))}
               </div>
-
-              {/* Upload Controls only shown in preview mode */}
-              {isPreview && (
-                <div className="w-full border-t border-amber-200/70 pt-3 mt-1 flex flex-col gap-2">
-                  <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      value={newPhotoUrl}
-                      onChange={(e) => setNewPhotoUrl(e.target.value)}
-                      placeholder={t.addPhotoPlaceholder}
-                      className="flex-1 bg-amber-50/60 border border-amber-200 rounded-xl px-3 py-1.5 text-xs outline-none focus:border-amber-500"
-                    />
-                    <button
-                      onClick={handleAddPhoto}
-                      className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-stone-950 font-bold text-xs rounded-xl flex items-center gap-1 shadow-sm"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      {t.addPhotoBtn}
-                    </button>
-                  </div>
-
-                  <label className="cursor-pointer py-1.5 px-3 bg-stone-900 hover:bg-stone-800 text-amber-300 font-bold rounded-xl text-[11px] flex items-center justify-center gap-1.5 border border-amber-400/50 shadow-sm">
-                    <Upload className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Загрузить фото с устройства</span>
-                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                  </label>
-                </div>
-              )}
             </motion.div>
           </div>
         )}
