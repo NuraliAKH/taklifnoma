@@ -46,7 +46,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'virtual',
         category: 'wedding',
         media_url: '/uploads/templates/classic_wedding.png',
-        price: 75000.00,
+        price: 39000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
@@ -95,7 +95,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'physical',
         category: 'birthday',
         media_url: '/uploads/templates/birthday_card.png',
-        price: 150000.00,
+        price: 39000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 2480, height: 3508 }, // A5 at 300 DPI
@@ -144,7 +144,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'virtual',
         category: 'wedding',
         media_url: '/uploads/templates/modern_wedding.mp4',
-        price: 75000.00,
+        price: 39000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 1080, height: 1920 }, // 1080p Portrait video
@@ -181,8 +181,8 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/uploads/templates/zar_atlas_web.png',
-        price: 129000.00,
-        discount_price: 99000.00,
+        price: 39000.00,
+        discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
           fields: [
@@ -301,8 +301,8 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/uploads/templates/marmar_web.png',
-        price: 149000.00,
-        discount_price: 119000.00,
+        price: 39000.00,
+        discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
           fields: [
@@ -410,8 +410,8 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/uploads/templates/anor_web.png',
-        price: 99000.00,
-        discount_price: 79000.00,
+        price: 39000.00,
+        discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
           fields: [
@@ -519,8 +519,8 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/uploads/templates/hilal_web.png',
-        price: 149000.00,
-        discount_price: 119000.00,
+        price: 59000.00,
+        discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
           fields: [
@@ -640,8 +640,8 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/uploads/templates/taklifet_pink_web.png',
-        price: 139000.00,
-        discount_price: 109000.00,
+        price: 49000.00,
+        discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
           fields: [
@@ -737,8 +737,8 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/uploads/templates/malika_ulugbek_web.png',
-        price: 159000.00,
-        discount_price: 129000.00,
+        price: 39000.00,
+        discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
           fields: [
@@ -818,73 +818,12 @@ export class TemplatesService implements OnModuleInit {
         },
       },
       {
-        id: 10,
-        type: 'website' as any,
-        category: 'birthday',
-        media_url: '/uploads/templates/birthday_card.png',
-        price: 99000.00,
-        discount_price: 79000.00,
-        text_config: {
-          dimensions: { width: 1200, height: 1600 },
-          fields: [
-            {
-              id: 'groomName',
-              label: 'Имя именинника',
-              placeholder: 'Екатерина',
-              fontFamily: 'Playfair Display',
-              fontSize: 48,
-              color: '#FF69B4',
-              x: 600,
-              y: 600,
-              align: 'center',
-              maxLength: 20,
-            },
-            {
-              id: 'date',
-              label: 'Дата (ГГГГ-ММ-ДД)',
-              placeholder: '2026-10-05',
-              fontFamily: 'Montserrat',
-              fontSize: 24,
-              color: '#333333',
-              x: 600,
-              y: 850,
-              align: 'center',
-              maxLength: 10,
-            },
-            {
-              id: 'time',
-              label: 'Время начала',
-              placeholder: '19:00',
-              fontFamily: 'Montserrat',
-              fontSize: 24,
-              color: '#333333',
-              x: 600,
-              y: 920,
-              align: 'center',
-              maxLength: 5,
-            },
-            {
-              id: 'venue',
-              label: 'Место проведения',
-              placeholder: 'Лофт "Небо"',
-              fontFamily: 'Montserrat',
-              fontSize: 24,
-              color: '#444444',
-              x: 600,
-              y: 1000,
-              align: 'center',
-              maxLength: 40,
-            },
-          ],
-        },
-      },
-      {
         id: 25,
         type: 'website' as any,
         category: 'wedding',
         media_url: '/olive-editorial-hero.webp',
-        price: 169000.00,
-        discount_price: 129000.00,
+        price: 69000.00,
+        discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
           fields: [
@@ -1021,8 +960,8 @@ export class TemplatesService implements OnModuleInit {
           ...hilalTemplate,
           id: variant.id,
           media_url: `/uploads/templates/${variant.file}`,
-          price: 149000.00,
-          discount_price: 119000.00,
+          price: 59000.00,
+          discount_price: null,
           text_config: {
             ...hilalTemplate.text_config,
             fields: hilalTemplate.text_config.fields.map((field: any) => ({
@@ -1051,8 +990,8 @@ export class TemplatesService implements OnModuleInit {
           ...taklifetTemplate,
           id: variant.id,
           media_url: `/uploads/templates/${variant.file}`,
-          price: variant.price,
-          discount_price: variant.discount,
+          price: 49000.00,
+          discount_price: null,
           text_config: {
             ...taklifetTemplate.text_config,
             fields: taklifetTemplate.text_config.fields.map((field: any) => ({
@@ -1079,8 +1018,8 @@ export class TemplatesService implements OnModuleInit {
         defaultTemplates.push({
           ...oliveEditorialTemplate,
           id: variant.id,
-          price: 169000.00,
-          discount_price: 129000.00,
+          price: 69000.00,
+          discount_price: null,
           text_config: {
             ...oliveEditorialTemplate.text_config,
             palette: variant.palette,
@@ -1112,5 +1051,9 @@ export class TemplatesService implements OnModuleInit {
         },
       });
     }
+
+    await this.prisma.template.deleteMany({
+      where: { id: 10 },
+    });
   }
 }

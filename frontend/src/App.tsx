@@ -568,7 +568,6 @@ const getTemplateName = (t: Template) => {
   if (t.id === 6) return 'Anor Web (Сайт)';
   if (t.id === 7) return 'Hilal Web (Сайт)';
   if (t.id === 8) return 'Taklifet Pink Floral Web (Сайт)';
-  if (t.id === 10) return 'Violet Birthday Web (Сайт)';
   if (t.id === 11) return 'Sapphire Hilal Web (Сайт)';
   if (t.id === 12) return 'Rose Hilal Web (Сайт)';
   if (t.id === 13) return 'Rose Envelope Web (Сайт)';

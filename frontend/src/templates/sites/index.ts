@@ -143,9 +143,6 @@ export const siteTemplatesRegistry: Record<string | number, React.ComponentType<
   'gold-silk': MalikaUlugbekWeddingSite,
   'silk': MalikaUlugbekWeddingSite,
 
-  // Template ID 10: Violet birthday variation
-  10: BirthdayCelebrationSite,
-  'violet-birthday': BirthdayCelebrationSite,
 
   // Template ID 25: editorial olive envelope inspired by the reference video
   25: OliveEnvelopeWeddingSite,
