@@ -52,6 +52,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WebsiteTemplateDispatcher } from './templates/sites';
+import { DRESS_PALETTES } from './templates/sites/OliveEnvelopeWeddingSite';
 import { HeroThreeCanvas } from './components/HeroThreeCanvas';
 import { ClickPayButtons } from './components/ClickPayButtons';
 import { GoogleLoginButton } from './components/GoogleLoginButton';
@@ -478,12 +479,25 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
       loveStory: 'Письмо гостям',
       details: 'Текст блока «Детали»',
       phone: 'Телефон организатора — внизу сайта',
+      dressColors: 'Цвета дресс-кода',
     };
-    return fields.map((field: any) => ({
+    const result = fields.map((field: any) => ({
       ...field,
       label: oliveLabels[field.id] || field.label,
       ...(field.id === 'photos' ? { max: 2 } : {}),
     }));
+
+    if (!result.some((f: any) => f.id === 'dressColors' || f.id === 'dressCode')) {
+      const detailsIdx = result.findIndex((f: any) => f.id === 'details');
+      const insertIdx = detailsIdx !== -1 ? detailsIdx + 1 : result.length;
+      result.splice(insertIdx, 0, {
+        id: 'dressColors',
+        label: 'Цвета дресс-кода',
+        type: 'color_palette',
+      });
+    }
+
+    return result;
   }
 
   if (template.type !== 'website') return fields;
@@ -1744,12 +1758,14 @@ function EditorPage() {
                 const isImageField = field.type === 'image' || field.id === 'photoUrl' || field.id === 'heroPhoto';
                 const isGalleryField = field.type === 'gallery' || field.id === 'photos';
                 const isVideoField = field.type === 'video' || field.id === 'videoUrl';
+                const isColorPaletteField = field.id === 'dressColors' || field.id === 'dressCode' || field.type === 'color_palette';
                 const oliveGroupTitle = isOliveEditorialTemplate(template.id)
                   ? ({
                       groomName: 'Пара и дата',
                       venue: 'Место проведения',
                       photoUrl: 'Фотографии',
                       loveStory: 'Тексты приглашения',
+                      dressColors: 'Дресс-код',
                       phone: 'Контакт организатора',
                     } as Record<string, string>)[field.id]
                   : undefined;
@@ -1759,6 +1775,101 @@ function EditorPage() {
                     <span className="h-px flex-1 bg-amber-400/20" />
                   </div>
                 ) : null;
+
+                if (isColorPaletteField) {
+                  const variantKey = template.id === 26 || template.id === '26' ? 'olive-emerald'
+                    : template.id === 27 || template.id === '27' ? 'olive-champagne'
+                    : template.id === 28 || template.id === '28' ? 'olive-dusty-rose'
+                    : template.id === 29 || template.id === '29' ? 'olive-dusty-blue'
+                    : template.id === 30 || template.id === '30' ? 'olive-navy'
+                    : template.id === 31 || template.id === '31' ? 'olive-burgundy'
+                    : 'default';
+
+                  const defaultPalette = DRESS_PALETTES[variantKey] || DRESS_PALETTES.default;
+                  const currentColors: string[] = Array.isArray(formData.dressColors)
+                    ? formData.dressColors
+                    : (typeof formData.dressColors === 'string' && formData.dressColors.trim()
+                        ? formData.dressColors.split(',').map((c: string) => c.trim()).filter(Boolean)
+                        : defaultPalette);
+
+                  const handleColorChange = (index: number, newColor: string) => {
+                    const updated = [...currentColors];
+                    updated[index] = newColor;
+                    setFormData(prev => ({ ...prev, dressColors: updated }));
+                  };
+
+                  const handleAddColor = () => {
+                    if (currentColors.length >= 8) return;
+                    const updated = [...currentColors, '#D8C3A5'];
+                    setFormData(prev => ({ ...prev, dressColors: updated }));
+                  };
+
+                  const handleRemoveColor = (index: number) => {
+                    if (currentColors.length <= 1) return;
+                    const updated = currentColors.filter((_, i) => i !== index);
+                    setFormData(prev => ({ ...prev, dressColors: updated }));
+                  };
+
+                  const handleResetColors = () => {
+                    setFormData(prev => ({ ...prev, dressColors: defaultPalette }));
+                  };
+
+                  return (
+                    <div key={field.id} className="flex flex-col gap-2 relative">
+                      {groupHeading}
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs font-semibold text-slate-300">
+                          <span>{field.label || 'Цвета дресс-кода'}</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleResetColors}
+                          className="text-[10px] text-amber-400/80 hover:text-amber-400 hover:underline"
+                        >
+                          Сбросить цвета
+                        </button>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2.5 p-3 bg-white/5 border border-white/10 rounded-xl">
+                        {currentColors.map((color, idx) => (
+                          <div key={idx} className="relative group flex flex-col items-center">
+                            <label className="relative w-9 h-9 rounded-full border border-white/20 shadow-md cursor-pointer overflow-hidden flex items-center justify-center transition-transform hover:scale-110">
+                              <input
+                                type="color"
+                                value={color.startsWith('#') ? color : '#ffffff'}
+                                onChange={(e) => handleColorChange(idx, e.target.value)}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              />
+                              <span className="w-full h-full rounded-full" style={{ backgroundColor: color }} />
+                            </label>
+                            {currentColors.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveColor(idx)}
+                                className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-600 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] transition-opacity"
+                                title="Удалить цвет"
+                              >
+                                ×
+                              </button>
+                            )}
+                          </div>
+                        ))}
+
+                        {currentColors.length < 8 && (
+                          <button
+                            type="button"
+                            onClick={handleAddColor}
+                            className="w-9 h-9 rounded-full border border-dashed border-white/30 hover:border-amber-400 text-slate-400 hover:text-amber-400 flex items-center justify-center transition-all text-sm font-bold"
+                            title="Добавить цвет"
+                          >
+                            +
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-slate-500">Нажмите на любой кружок, чтобы изменить цвет палитры</p>
+                    </div>
+                  );
+                }
 
                 if (isImageField) {
                   return (

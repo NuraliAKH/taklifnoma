@@ -18,7 +18,7 @@ const DEFAULT_HERO = '/olive-editorial-hero.webp';
 const DEFAULT_VENUE = '/olive-editorial-venue.webp';
 const DEFAULT_DETAIL = '/olive-editorial-details.webp';
 
-const DRESS_PALETTES: Record<string, string[]> = {
+export const DRESS_PALETTES: Record<string, string[]> = {
   default: ['#465443', '#73806a', '#a9ad98', '#aabbd0', '#d8e0e5', '#f6f2e9'],
   'olive-emerald': ['#0F4C3A', '#1B4D3E', '#537C6C', '#D4AF37', '#E8D7A1', '#FDFBF7'],
   'olive-champagne': ['#D8C3A5', '#E6D7C3', '#C7A17A', '#D6B680', '#F0E5D7', '#FAF8F5'],
@@ -219,7 +219,16 @@ export const OliveEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = ({
   const guestCount = rsvpState?.guestCount ?? localGuestCount;
   const wishes = rsvpState?.wishes ?? localWishes;
   const paletteClass = visualVariant.startsWith('olive-') ? `olive-palette-${visualVariant.slice(6)}` : '';
-  const dressPalette = DRESS_PALETTES[visualVariant] || DRESS_PALETTES.default;
+  const defaultDressPalette = DRESS_PALETTES[visualVariant] || DRESS_PALETTES.default;
+  const dressPalette = useMemo(() => {
+    if (Array.isArray(data.dressColors) && data.dressColors.length > 0) {
+      return data.dressColors;
+    }
+    if (typeof data.dressColors === 'string' && data.dressColors.trim()) {
+      return data.dressColors.split(',').map((c: string) => c.trim()).filter(Boolean);
+    }
+    return defaultDressPalette;
+  }, [data.dressColors, visualVariant, defaultDressPalette]);
 
   return (
     <div className={`olive-invite ${paletteClass}`}>
