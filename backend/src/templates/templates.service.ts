@@ -46,7 +46,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'virtual',
         category: 'wedding',
         media_url: '/uploads/templates/classic_wedding.png',
-        price: 39000.00,
+        price: 29000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
@@ -95,7 +95,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'physical',
         category: 'birthday',
         media_url: '/uploads/templates/birthday_card.png',
-        price: 39000.00,
+        price: 29000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 2480, height: 3508 }, // A5 at 300 DPI
@@ -144,7 +144,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'virtual',
         category: 'wedding',
         media_url: '/uploads/templates/modern_wedding.mp4',
-        price: 39000.00,
+        price: 29000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 1080, height: 1920 }, // 1080p Portrait video
@@ -181,7 +181,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/uploads/templates/zar_atlas_web.png',
-        price: 39000.00,
+        price: 29000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
@@ -301,7 +301,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/uploads/templates/marmar_web.png',
-        price: 39000.00,
+        price: 29000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
@@ -410,7 +410,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/uploads/templates/anor_web.png',
-        price: 39000.00,
+        price: 29000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
@@ -519,7 +519,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/uploads/templates/hilal_web.png',
-        price: 59000.00,
+        price: 49000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
@@ -640,7 +640,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/uploads/templates/taklifet_pink_web.png',
-        price: 49000.00,
+        price: 39000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
@@ -737,7 +737,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/uploads/templates/malika_ulugbek_web.png',
-        price: 39000.00,
+        price: 29000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
@@ -822,7 +822,7 @@ export class TemplatesService implements OnModuleInit {
         type: 'website' as any,
         category: 'wedding',
         media_url: '/olive-editorial-hero.webp',
-        price: 69000.00,
+        price: 59000.00,
         discount_price: null,
         text_config: {
           dimensions: { width: 1200, height: 1600 },
@@ -960,7 +960,7 @@ export class TemplatesService implements OnModuleInit {
           ...hilalTemplate,
           id: variant.id,
           media_url: `/uploads/templates/${variant.file}`,
-          price: 59000.00,
+          price: 49000.00,
           discount_price: null,
           text_config: {
             ...hilalTemplate.text_config,
@@ -990,7 +990,7 @@ export class TemplatesService implements OnModuleInit {
           ...taklifetTemplate,
           id: variant.id,
           media_url: `/uploads/templates/${variant.file}`,
-          price: 49000.00,
+          price: 39000.00,
           discount_price: null,
           text_config: {
             ...taklifetTemplate.text_config,
@@ -1018,7 +1018,7 @@ export class TemplatesService implements OnModuleInit {
         defaultTemplates.push({
           ...oliveEditorialTemplate,
           id: variant.id,
-          price: 69000.00,
+          price: 59000.00,
           discount_price: null,
           text_config: {
             ...oliveEditorialTemplate.text_config,

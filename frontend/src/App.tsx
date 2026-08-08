@@ -59,6 +59,7 @@ import { GoogleLoginButton } from './components/GoogleLoginButton';
 import { AuthCallbackPage } from './components/AuthCallbackPage';
 import { parseEventDateTime, calculateTimeLeft, useCountdownTimer } from './utils/timer';
 import { PRESET_MUSIC_TRACKS, DEFAULT_MUSIC_TRACK, getMusicTrackTitle } from './constants/musicTracks';
+import { translations, type Language, type TranslationKey } from './i18n/translations';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -103,6 +104,44 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
+  );
+}
+
+// ----------------- LANGUAGE CONTEXT -----------------
+interface LanguageContextType {
+  lang: Language;
+  setLang: (lang: Language) => void;
+  t: (key: TranslationKey) => string;
+}
+
+const LanguageContext = createContext<LanguageContextType>({
+  lang: 'ru',
+  setLang: () => {},
+  t: (key: TranslationKey) => translations.ru[key] || key,
+});
+
+export const useLanguage = () => useContext(LanguageContext);
+
+function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const [lang, setLangState] = useState<Language>(() => {
+    const saved = localStorage.getItem('app-lang') as Language;
+    if (saved && ['ru', 'uz', 'en'].includes(saved)) return saved;
+    return 'ru';
+  });
+
+  const setLang = (newLang: Language) => {
+    setLangState(newLang);
+    localStorage.setItem('app-lang', newLang);
+  };
+
+  const t = useCallback((key: TranslationKey): string => {
+    return translations[lang]?.[key] || translations.ru[key] || key;
+  }, [lang]);
+
+  return (
+    <LanguageContext.Provider value={{ lang, setLang, t }}>
+      {children}
+    </LanguageContext.Provider>
   );
 }
 
@@ -599,6 +638,7 @@ const getTemplateName = (t: Template) => {
 function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { lang, setLang, t } = useLanguage();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -615,32 +655,53 @@ function Layout({ children }: { children: React.ReactNode }) {
       <header className={`sticky top-0 z-40 border-b transition-colors duration-300 backdrop-blur-xl ${
         isDark ? 'bg-[#090d16]/80 border-white/5 text-slate-100' : 'bg-white/80 border-slate-200 text-slate-900 shadow-sm'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-0 h-[72px] flex items-center justify-between gap-4">
-          <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 group min-w-0">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-10 xl:px-0 h-[68px] sm:h-[72px] flex items-center justify-between gap-2 sm:gap-4">
+          <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 sm:gap-3 group min-w-0">
             <img
               src="/logo_icon.png"
               alt="Web-Taklifnoma"
-              className="h-10 sm:h-11 w-auto max-w-[48px] object-contain drop-shadow-md group-hover:scale-105 transition-transform"
+              className="h-8 sm:h-11 w-auto max-w-[36px] sm:max-w-[48px] object-contain drop-shadow-md group-hover:scale-105 transition-transform"
             />
             <div className="min-w-0">
-              <h1 className="text-sm sm:text-lg font-extrabold tracking-[0.12em] gold-gradient-text whitespace-nowrap">WEB-TAKLIFNOMA</h1>
+              <h1 className="text-xs sm:text-lg font-extrabold tracking-[0.1em] sm:tracking-[0.12em] gold-gradient-text whitespace-nowrap">WEB-TAKLIFNOMA</h1>
               <p className="hidden sm:block text-[9px] text-amber-500/70 tracking-[0.22em] font-semibold uppercase">Приглашения нового формата</p>
             </div>
           </Link>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-2 lg:gap-3" aria-label="Основная навигация">
             <Link to="/" className={`px-3 py-2 text-sm font-semibold rounded-xl transition-colors ${
               isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
             }`}>
-              Каталог
+              {t('navCatalog')}
             </Link>
             {user && (
               <Link to="/cabinet" className={`px-3 py-2 text-sm font-semibold rounded-xl transition-colors ${
                 isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
               }`}>
-                Мои приглашения
+                {t('navMyInvitations')}
               </Link>
             )}
+
+            {/* Language Switcher Pills */}
+            <div className={`flex items-center p-1 rounded-xl border text-xs font-bold transition-all ${
+              isDark ? 'bg-slate-900/80 border-amber-500/25 text-slate-300' : 'bg-slate-100 border-amber-500/30 text-slate-700'
+            }`}>
+              <Globe className="w-3.5 h-3.5 mx-1.5 text-amber-500 shrink-0" />
+              {(['uz', 'ru', 'en'] as const).map(l => (
+                <button
+                  key={l}
+                  onClick={() => setLang(l)}
+                  className={`px-2 py-1 rounded-lg uppercase tracking-wider text-[10px] sm:text-xs transition-all font-semibold cursor-pointer ${
+                    lang === l
+                      ? 'bg-amber-500 text-slate-950 font-extrabold shadow-sm'
+                      : isDark ? 'hover:text-white text-slate-400' : 'hover:text-slate-950 text-slate-600'
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
 
             {/* Day / Night Theme Toggle Button */}
             <button
@@ -650,8 +711,8 @@ function Layout({ children }: { children: React.ReactNode }) {
                   ? 'bg-slate-900/80 border-amber-500/25 text-amber-400 hover:bg-slate-800 hover:border-amber-400'
                   : 'bg-amber-50 border-amber-500/30 text-amber-800 hover:bg-amber-100'
               }`}
-              title={isDark ? 'Включить дневной режим' : 'Включить ночной режим'}
-              aria-label={isDark ? 'Включить дневной режим' : 'Включить ночной режим'}
+              title={isDark ? t('navLightMode') : t('navDarkMode')}
+              aria-label={isDark ? t('navLightMode') : t('navDarkMode')}
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
@@ -663,7 +724,7 @@ function Layout({ children }: { children: React.ReactNode }) {
                     to="/admin"
                     className="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 text-amber-400 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition-all"
                   >
-                    <Shield className="w-4 h-4" /> Админка
+                    <Shield className="w-4 h-4" /> {t('navAdmin')}
                   </Link>
                 )}
                 <button
@@ -673,8 +734,8 @@ function Layout({ children }: { children: React.ReactNode }) {
                       ? 'bg-white/5 hover:bg-rose-500/15 border-white/5 hover:border-rose-500/25 text-slate-400 hover:text-rose-400'
                       : 'bg-slate-100 hover:bg-rose-100 border-slate-200 hover:border-rose-300 text-slate-600 hover:text-rose-600'
                   }`}
-                  title="Выйти"
-                  aria-label="Выйти"
+                  title={t('navLogout')}
+                  aria-label={t('navLogout')}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -684,27 +745,48 @@ function Layout({ children }: { children: React.ReactNode }) {
                 to="/login"
                 className="px-5 py-2.5 bg-amber-500 text-slate-950 text-sm font-extrabold rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-amber-500/15 hover:bg-amber-400"
               >
-                Войти
+                {t('navLogin')}
               </Link>
             )}
           </nav>
 
-          <div className="flex md:hidden items-center gap-2">
-          <button
-            onClick={toggleTheme}
-              className={`p-2.5 rounded-xl border transition-all ${
-              isDark 
+          {/* Mobile Right Controls */}
+          <div className="flex md:hidden items-center gap-1.5 sm:gap-2">
+            {/* Language Switcher for Mobile Header */}
+            <div className={`flex items-center p-0.5 rounded-lg border text-xs font-bold transition-all ${
+              isDark ? 'bg-slate-900/80 border-amber-500/25 text-slate-300' : 'bg-slate-100 border-amber-500/30 text-slate-700'
+            }`}>
+              {(['uz', 'ru', 'en'] as const).map(l => (
+                <button
+                  key={l}
+                  onClick={() => setLang(l)}
+                  className={`px-1.5 py-1 rounded uppercase tracking-wider text-[9px] font-bold transition-all cursor-pointer ${
+                    lang === l
+                      ? 'bg-amber-500 text-slate-950 font-extrabold shadow-sm'
+                      : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-950'
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-xl border transition-all ${
+                isDark 
                   ? 'bg-slate-900/80 border-amber-500/25 text-amber-400'
                   : 'bg-amber-50 border-amber-500/30 text-amber-800'
-            }`}
-            title={isDark ? 'Включить дневной режим' : 'Включить ночной режим'}
-              aria-label={isDark ? 'Включить дневной режим' : 'Включить ночной режим'}
-          >
+              }`}
+              title={isDark ? t('navLightMode') : t('navDarkMode')}
+              aria-label={isDark ? t('navLightMode') : t('navDarkMode')}
+            >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
+            </button>
+
             <button
               onClick={() => setMobileMenuOpen(prev => !prev)}
-              className={`p-2.5 rounded-xl border transition-all ${
+              className={`p-2 rounded-xl border transition-all ${
                 isDark ? 'bg-white/5 border-white/10 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-800'
               }`}
               aria-label={mobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
@@ -725,15 +807,27 @@ function Layout({ children }: { children: React.ReactNode }) {
               aria-label="Мобильная навигация"
             >
               <div className="px-4 sm:px-6 py-3 flex flex-col gap-1">
-                <Link onClick={() => setMobileMenuOpen(false)} to="/" className="px-4 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500/10">Каталог</Link>
+                <Link onClick={() => setMobileMenuOpen(false)} to="/" className="px-4 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500/10">
+                  {t('navCatalog')}
+                </Link>
                 {user ? (
                   <>
-                    <Link onClick={() => setMobileMenuOpen(false)} to="/cabinet" className="px-4 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500/10 flex items-center gap-2"><UserIcon className="w-4 h-4 text-amber-400" /> Мои приглашения</Link>
-                    {user.role === 'admin' && <Link onClick={() => setMobileMenuOpen(false)} to="/admin" className="px-4 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500/10 flex items-center gap-2"><Shield className="w-4 h-4 text-amber-400" /> Админка</Link>}
-                    <button onClick={() => { setMobileMenuOpen(false); logout(); navigate('/'); }} className="px-4 py-3 rounded-xl text-sm font-semibold text-left hover:bg-rose-500/10 text-rose-400 flex items-center gap-2"><LogOut className="w-4 h-4" /> Выйти</button>
+                    <Link onClick={() => setMobileMenuOpen(false)} to="/cabinet" className="px-4 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500/10 flex items-center gap-2">
+                      <UserIcon className="w-4 h-4 text-amber-400" /> {t('navMyInvitations')}
+                    </Link>
+                    {user.role === 'admin' && (
+                      <Link onClick={() => setMobileMenuOpen(false)} to="/admin" className="px-4 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500/10 flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-amber-400" /> {t('navAdmin')}
+                      </Link>
+                    )}
+                    <button onClick={() => { setMobileMenuOpen(false); logout(); navigate('/'); }} className="px-4 py-3 rounded-xl text-sm font-semibold text-left hover:bg-rose-500/10 text-rose-400 flex items-center gap-2">
+                      <LogOut className="w-4 h-4" /> {t('navLogout')}
+                    </button>
                   </>
                 ) : (
-                  <Link onClick={() => setMobileMenuOpen(false)} to="/login" className="mt-1 px-4 py-3 bg-amber-500 text-slate-950 text-sm font-extrabold rounded-xl text-center">Войти в аккаунт</Link>
+                  <Link onClick={() => setMobileMenuOpen(false)} to="/login" className="mt-1 px-4 py-3 bg-amber-500 text-slate-950 text-sm font-extrabold rounded-xl text-center">
+                    {t('loginAccount')}
+                  </Link>
                 )}
               </div>
             </motion.nav>
@@ -742,7 +836,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Page Content */}
-      <main className="flex-1 px-4 sm:px-6 lg:px-10 xl:px-0 py-6 md:py-10 max-w-7xl mx-auto w-full flex flex-col z-10 relative">
+      <main className="flex-1 px-3 sm:px-6 lg:px-10 xl:px-0 py-4 sm:py-6 md:py-10 max-w-7xl mx-auto w-full flex flex-col z-10 relative">
         {children}
       </main>
 
@@ -756,12 +850,12 @@ function Layout({ children }: { children: React.ReactNode }) {
             <img 
               src="/logo_text.png" 
               alt="Web-Taklifnoma Logo" 
-              className="h-24 md:h-32 max-w-[320px] md:max-w-[420px] object-contain group-hover:scale-[1.02] transition-transform drop-shadow-lg" 
+              className="h-20 sm:h-24 md:h-32 max-w-[280px] sm:max-w-[320px] md:max-w-[420px] object-contain group-hover:scale-[1.02] transition-transform drop-shadow-lg" 
             />
           </Link>
 
           <p className="text-slate-400 text-xs md:text-sm max-w-lg leading-relaxed">
-            Персональные интерактивные сайты-приглашения и карточки на свадьбу и мероприятия в Узбекистане
+            {t('footerDesc')}
           </p>
 
           {/* Social Links: Telegram & Instagram */}
@@ -792,8 +886,8 @@ function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="border-t border-white/5 pt-4 w-full text-[11px] text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
-            <span>© 2026 web-taklifnoma.uz. Все права защищены.</span>
-            <span>Электронные сайты-приглашения №1 в Узбекистане</span>
+            <span>{t('footerRights')}</span>
+            <span>{t('footerTag')}</span>
           </div>
         </div>
       </footer>
@@ -846,9 +940,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </BrowserRouter>
   );
@@ -862,6 +958,7 @@ function CatalogPage() {
   const [typeFilter, setTypeFilter] = useState('website');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { theme } = useTheme();
+  const { t, lang } = useLanguage();
   const isDark = theme === 'dark';
 
   useEffect(() => {
@@ -886,30 +983,30 @@ function CatalogPage() {
 
   const faqItems = [
     {
-      q: 'Как гости открывают онлайн таклифному?',
-      a: 'Вы отправляете гостям персональную веб-ссылку через Telegram, WhatsApp или SMS. Гости открывают её на смартфоне или компьютере без установки любых приложений.'
+      q: t('faqQ1'),
+      a: t('faqA1')
     },
     {
-      q: 'Как работает сбор ответов (RSVP)?',
-      a: 'Гости выбирают, придут ли они на мероприятие, и указывают количество человек. Все ответы мгновенно сохраняются и отображаются в вашем личном кабинете.'
+      q: t('faqQ2'),
+      a: t('faqA2')
     },
     {
-      q: 'Можно ли добавить свою музыку и фото?',
-      a: 'Да! В редакторе сайтов-пригласительных вы можете загрузить собственные фотографии, выбрать фоновую песню и изменить текст приглашения.'
+      q: t('faqQ3'),
+      a: t('faqA3')
     },
     {
-      q: 'Сколько времени доступен готовый сайт?',
-      a: 'Ваше веб-приглашение будет активно до и после проведения вашего торжества.'
+      q: t('faqQ4'),
+      a: t('faqA4')
     }
   ];
 
   return (
-    <div className="flex flex-col gap-14 md:gap-20 flex-1 relative">
+    <div className="flex flex-col gap-10 sm:gap-14 md:gap-20 flex-1 relative">
       {/* Glow background highlight */}
       <div className="glow-ambient w-96 h-96 bg-amber-500 top-0 left-1/4 -z-10" />
 
       {/* Hero Header Section */}
-      <section className={`relative overflow-hidden rounded-[2rem] border px-5 py-10 sm:px-8 md:px-12 md:py-14 flex flex-col lg:flex-row justify-between items-center gap-10 lg:gap-14 ${
+      <section className={`relative overflow-hidden rounded-2xl sm:rounded-[2rem] border px-4 py-8 sm:px-8 md:px-12 md:py-14 flex flex-col lg:flex-row justify-between items-center gap-8 lg:gap-14 ${
         isDark
           ? 'bg-[linear-gradient(145deg,rgba(30,41,59,.78),rgba(9,13,22,.92))] border-white/10 shadow-2xl shadow-black/20'
           : 'bg-[linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,247,237,.9))] border-amber-900/10 shadow-xl shadow-amber-900/5'
@@ -917,56 +1014,57 @@ function CatalogPage() {
         <div className="absolute -top-24 -right-20 w-72 h-72 rounded-full bg-amber-400/20 blur-[90px] pointer-events-none" />
         <div className="absolute -bottom-32 left-1/3 w-80 h-80 rounded-full bg-teal-400/10 blur-[100px] pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col gap-5 max-w-2xl text-center lg:text-left">
+        <div className="relative z-10 flex flex-col gap-4 sm:gap-5 max-w-2xl text-center lg:text-left">
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-            <span className={`border text-xs px-4 py-1.5 rounded-full font-bold uppercase tracking-widest backdrop-blur-md shadow-lg flex items-center gap-2 ${
+            <span className={`border text-[10px] sm:text-xs px-3 sm:px-4 py-1.5 rounded-full font-bold uppercase tracking-wider sm:tracking-widest backdrop-blur-md shadow-lg flex items-center gap-2 ${
               isDark 
                 ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' 
                 : 'bg-amber-100 text-amber-800 border-amber-400/50'
             }`}>
-              <img src="/logo_icon.png" alt="" className="w-4 h-4 object-contain" /> Электронная Таклифнома #1 в Узбекистане
+              <img src="/logo_icon.png" alt="" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain shrink-0" /> 
+              <span>{t('heroBadge')}</span>
             </span>
           </div>
 
-          <h1 className={`text-[2.2rem] sm:text-5xl md:text-[3.5rem] font-extrabold tracking-[-0.035em] leading-[1.06] transition-colors ${
+          <h1 className={`text-2xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold tracking-[-0.035em] leading-[1.1] transition-colors ${
             isDark ? 'text-slate-100' : 'text-slate-900'
           }`}>
-            Ваш праздник начинается с <span className="gold-gradient-text">красивого приглашения</span>
+            {t('heroTitlePart1')} <span className="gold-gradient-text">{t('heroTitleHighlight')}</span>
           </h1>
 
-          <p className={`text-base sm:text-lg leading-relaxed max-w-xl transition-colors ${
+          <p className={`text-sm sm:text-base md:text-lg leading-relaxed max-w-xl transition-colors ${
             isDark ? 'text-slate-300' : 'text-slate-600'
           }`}>
-            Создайте персональный сайт за несколько минут: RSVP гостей, карта, таймер, фотографии и любимая музыка — всё в одной ссылке.
+            {t('heroSubtitle')}
           </p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 pt-1">
             <a href="#catalog" className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-extrabold shadow-lg shadow-amber-500/20 transition-all active:scale-[0.98]">
-              Выбрать дизайн <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              {t('heroChooseDesign')} <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </a>
             <a href="#how-it-works" className={`inline-flex items-center justify-center px-6 py-3.5 rounded-xl border text-sm font-bold transition-all ${
               isDark ? 'border-white/10 bg-white/5 hover:bg-white/10 text-slate-200' : 'border-slate-200 bg-white/70 hover:bg-white text-slate-700'
             }`}>
-              Как это работает
+              {t('heroHowItWorks')}
             </a>
           </div>
 
           {/* Feature Badges */}
-          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2 text-xs font-semibold">
-            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${
+          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-3 pt-2 text-[11px] sm:text-xs font-semibold">
+            <span className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border ${
               isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
             }`}>
-              <Zap className="w-3.5 h-3.5 text-amber-400" /> Мгновенный редактор
+              <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" /> {t('heroFeatureEditor')}
             </span>
-            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${
+            <span className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border ${
               isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
             }`}>
-              <MapPin className="w-3.5 h-3.5 text-teal-400" /> Навигатор для гостей
+              <MapPin className="w-3.5 h-3.5 text-teal-400 shrink-0" /> {t('heroFeatureMap')}
             </span>
-            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${
+            <span className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border ${
               isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
             }`}>
-              <Music className="w-3.5 h-3.5 text-rose-400" /> Фоновая музыка
+              <Music className="w-3.5 h-3.5 text-rose-400 shrink-0" /> {t('heroFeatureMusic')}
             </span>
           </div>
         </div>
@@ -977,46 +1075,46 @@ function CatalogPage() {
             ? 'bg-slate-900/70 border-amber-500/20 text-slate-100' 
             : 'bg-white/90 border-amber-500/30 text-slate-900'
         }`}>
-          <div className="flex flex-col items-center justify-center border-r border-slate-500/20 px-3 py-4 sm:px-6">
-            <span className="text-xl sm:text-3xl font-extrabold text-amber-500 font-mono whitespace-nowrap">5 мин</span>
-            <span className={`text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>До запуска</span>
+          <div className="flex flex-col items-center justify-center border-r border-slate-500/20 px-2 sm:px-6 py-3 sm:py-4 text-center">
+            <span className="text-lg sm:text-2xl md:text-3xl font-extrabold text-amber-500 font-mono whitespace-nowrap">{t('heroStat1Value')}</span>
+            <span className={`text-[8px] sm:text-[10px] md:text-[11px] font-semibold uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('heroStat1Label')}</span>
           </div>
-          <div className="flex flex-col items-center justify-center px-3 py-4 sm:px-6 border-r border-slate-500/20">
-            <span className="text-xl sm:text-3xl font-extrabold text-amber-500 font-mono">100%</span>
-            <span className={`text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Адаптивно</span>
+          <div className="flex flex-col items-center justify-center px-2 sm:px-6 py-3 sm:py-4 border-r border-slate-500/20 text-center">
+            <span className="text-lg sm:text-2xl md:text-3xl font-extrabold text-amber-500 font-mono">{t('heroStat2Value')}</span>
+            <span className={`text-[8px] sm:text-[10px] md:text-[11px] font-semibold uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('heroStat2Label')}</span>
           </div>
-          <div className="flex flex-col items-center justify-center px-3 py-4 sm:px-6">
+          <div className="flex flex-col items-center justify-center px-2 sm:px-6 py-3 sm:py-4 text-center">
             <div className="flex items-center gap-1 text-amber-400">
-              <Star className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-400" />
-              <span className="text-xl sm:text-2xl font-bold font-mono">4.9</span>
+              <Star className="w-3.5 h-3.5 sm:w-5 sm:h-5 fill-amber-400 shrink-0" />
+              <span className="text-lg sm:text-2xl font-bold font-mono">{t('heroStat3Value')}</span>
             </div>
-            <span className={`text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Рейтинг</span>
+            <span className={`text-[8px] sm:text-[10px] md:text-[11px] font-semibold uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('heroStat3Label')}</span>
           </div>
         </div>
       </section>
 
       {/* Catalog Filters Section */}
       <section id="catalog" className="flex flex-col gap-6 scroll-mt-28">
-        <div className={`flex flex-wrap items-center justify-between gap-4 border-b pb-6 transition-colors ${
+        <div className={`flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b pb-6 transition-colors ${
           isDark ? 'border-white/10' : 'border-slate-200'
         }`}>
           <div className="flex flex-col gap-1">
             <h2 className={`text-xl font-bold tracking-wide ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-              Каталог шаблонов
+              {t('catalogTitle')}
             </h2>
             <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Выберите готовый стиль для вашего праздника
+              {t('catalogSubtitle')}
             </p>
           </div>
 
           <div className="w-full lg:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div className={`flex overflow-x-auto scrollbar-none p-1 rounded-xl border gap-1 transition-colors ${
+            <div className={`flex overflow-x-auto scrollbar-none p-1 rounded-xl border gap-1 transition-colors max-w-full ${
               isDark ? 'bg-white/5 border-white/10' : 'bg-slate-200/70 border-slate-300/80'
             }`}>
               {[
-                { id: 'virtual_photo', label: 'Электронные фото', disabled: false },
-                { id: 'website', label: 'Сайты-приглашения', disabled: false },
-                { id: 'physical', label: 'Макеты для печати', disabled: true }
+                { id: 'virtual_photo', label: t('filterTypePhoto'), disabled: false },
+                { id: 'website', label: t('filterTypeWebsite'), disabled: false },
+                { id: 'physical', label: t('filterTypePhysical'), disabled: true }
               ].map(item => (
                 <button 
                   key={item.id}
@@ -1029,25 +1127,25 @@ function CatalogPage() {
                         ? 'bg-amber-500 text-slate-950 shadow-md font-bold cursor-pointer' 
                         : isDark ? 'text-slate-400 hover:text-slate-200 cursor-pointer' : 'text-slate-600 hover:text-slate-900 cursor-pointer'
                   }`}
-                  title={item.disabled ? 'Раздел временно недоступен' : undefined}
+                  title={item.disabled ? t('disabledNotice') : undefined}
                 >
                   {item.label}
                   {item.disabled && (
                     <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30">
-                      Скоро
+                      {t('badgeSoon')}
                     </span>
                   )}
                 </button>
               ))}
             </div>
 
-            <div className={`flex overflow-x-auto scrollbar-none p-1 rounded-xl border gap-1 transition-colors ${
+            <div className={`flex overflow-x-auto scrollbar-none p-1 rounded-xl border gap-1 transition-colors max-w-full ${
               isDark ? 'bg-white/5 border-white/10' : 'bg-slate-200/70 border-slate-300/80'
             }`}>
               {[
-                { id: 'all', label: 'Все категории' },
-                { id: 'wedding', label: 'Свадьба' },
-                { id: 'birthday', label: 'День рождения' }
+                { id: 'all', label: t('catAll') },
+                { id: 'wedding', label: t('catWedding') },
+                { id: 'birthday', label: t('catBirthday') }
               ].map(item => (
                 <button 
                   key={item.id}
@@ -1125,7 +1223,7 @@ function CatalogPage() {
                       <span className={`text-[10px] border px-2 py-0.5 rounded-full tracking-wider capitalize shrink-0 ${
                         isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'
                       }`}>
-                        {template.category === 'wedding' ? 'Свадебный' : template.category === 'birthday' ? 'День рождения' : template.category}
+                        {template.category === 'wedding' ? t('catWedding') : template.category === 'birthday' ? t('catBirthday') : template.category}
                       </span>
                     </div>
                     {template.type === 'website' ? (
@@ -1140,21 +1238,21 @@ function CatalogPage() {
                       {template.discount_price !== null && template.discount_price !== undefined ? (
                         <>
                           <span className="text-[10px] text-slate-500 line-through font-mono">
-                            {Number(template.price).toLocaleString('ru-RU')} сум
+                            {Number(template.price).toLocaleString('ru-RU')} {t('cardPriceCurrency')}
                           </span>
                           <span className="text-sm font-bold font-mono text-amber-400">
-                            {Number(template.discount_price).toLocaleString('ru-RU')} сум
+                            {Number(template.discount_price).toLocaleString('ru-RU')} {t('cardPriceCurrency')}
                           </span>
                         </>
                       ) : (
                         <span className="text-sm font-bold font-mono text-amber-400">
-                          {Number(template.price || 0).toLocaleString('ru-RU')} сум
+                          {Number(template.price || 0).toLocaleString('ru-RU')} {t('cardPriceCurrency')}
                         </span>
                       )}
                     </div>
 
                     <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-2 rounded-lg font-bold flex items-center gap-1 shrink-0 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all">
-                      Создать <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      {t('cardCreate')} <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </span>
                   </div>
                 </div>
@@ -1163,7 +1261,8 @@ function CatalogPage() {
           </div>
         ) : (
           <div className="text-center py-20 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center justify-center gap-3">
-            <p className="text-slate-400 text-sm">Шаблоны не найдены</p>
+            <p className="text-slate-400 text-sm">{t('noTemplatesFound')}</p>
+            <p className="text-slate-500 text-xs">{t('tryChangingFilter')}</p>
           </div>
         )}
       </section>
@@ -1172,10 +1271,10 @@ function CatalogPage() {
       <section id="how-it-works" className="py-8 flex flex-col gap-8 border-t border-white/10 pt-12 scroll-mt-28">
         <div className="text-center max-w-2xl mx-auto flex flex-col gap-2">
           <h2 className={`text-2xl sm:text-3xl font-extrabold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-            Почему выбирают <span className="gold-gradient-text">Web-Taklifnoma</span>
+            {t('whyTitlePart1')} <span className="gold-gradient-text">{t('whyTitleHighlight')}</span>
           </h2>
           <p className={`text-xs sm:text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            Самый удобный способ пригласить родных и близких на главное событие вашей жизни
+            {t('whySubtitle')}
           </p>
         </div>
 
@@ -1183,23 +1282,23 @@ function CatalogPage() {
           {[
             {
               icon: <Zap className="w-6 h-6 text-amber-400" />,
-              title: 'Мгновенное редактирование',
-              desc: 'Меняйте имена, дату, время и фотографии прямо в браузере за 1 минуту.'
+              title: t('adv1Title'),
+              desc: t('adv1Desc')
             },
             {
               icon: <MessageSquare className="w-6 h-6 text-teal-400" />,
-              title: 'Сбор ответов гостей (RSVP)',
-              desc: 'Гости легко подтверждают присутствие, а вы сразу видите список в кабинете.'
+              title: t('adv2Title'),
+              desc: t('adv2Desc')
             },
             {
               icon: <MapPin className="w-6 h-6 text-rose-400" />,
-              title: 'Интерактивная навигация',
-              desc: 'Прямые ссылки на Яндекс.Карты и Google Maps для быстрой ориентации гостей.'
+              title: t('adv3Title'),
+              desc: t('adv3Desc')
             },
             {
               icon: <Music className="w-6 h-6 text-indigo-400" />,
-              title: 'Музыка и обратный отсчет',
-              desc: 'Романтичное звуковое сопровождение и таймер отсчета до дня торжества.'
+              title: t('adv4Title'),
+              desc: t('adv4Desc')
             }
           ].map((item, idx) => (
             <div 
@@ -1228,7 +1327,7 @@ function CatalogPage() {
       <section className="py-8 flex flex-col gap-8 border-t border-white/10 pt-12">
         <div className="text-center max-w-2xl mx-auto flex flex-col gap-2">
           <h2 className={`text-2xl sm:text-3xl font-extrabold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-            3 простых шага к <span className="gold-gradient-text">вашему приглашению</span>
+            {t('stepsTitlePart1')} <span className="gold-gradient-text">{t('stepsTitleHighlight')}</span>
           </h2>
         </div>
 
@@ -1236,18 +1335,18 @@ function CatalogPage() {
           {[
             {
               step: '01',
-              title: 'Выберите стиль',
-              desc: 'Ознакомьтесь с премиум макетами (Hilal, Anor, Marmar, Taklifet) и кликните "Настроить".'
+              title: t('step1Title'),
+              desc: t('step1Desc')
             },
             {
               step: '02',
-              title: 'Заполните детали',
-              desc: 'Внесите имена молодоженов, дату, время, место ресторана и загрузите фото.'
+              title: t('step2Title'),
+              desc: t('step2Desc')
             },
             {
               step: '03',
-              title: 'Отправьте ссылку',
-              desc: 'Скопируйте уникальную ссылку и отправьте её вашим гостям в Telegram или WhatsApp.'
+              title: t('step3Title'),
+              desc: t('step3Desc')
             }
           ].map((item, idx) => (
             <div 
@@ -1274,10 +1373,10 @@ function CatalogPage() {
       <section className="py-8 flex flex-col gap-8 border-t border-white/10 pt-12">
         <div className="text-center max-w-2xl mx-auto flex flex-col gap-2">
           <h2 className={`text-2xl sm:text-3xl font-extrabold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-            Часто задаваемые вопросы (FAQ)
+            {t('faqTitle')}
           </h2>
           <p className={`text-xs sm:text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            Всё, что вам нужно знать об онлайн-пригласительных Web-Taklifnoma
+            {t('faqSubtitle')}
           </p>
         </div>
 
