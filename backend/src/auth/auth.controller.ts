@@ -37,7 +37,10 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: any, @Res() res: any) {
     const authData = await this.authService.googleLogin(req);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const host = req.get('host') || '';
+    const isProdDomain = host.includes('web-taklifnoma.uz') || host.includes('taklifnoma');
+    const defaultUrl = isProdDomain ? 'https://web-taklifnoma.uz' : 'http://localhost:5173';
+    const frontendUrl = process.env.FRONTEND_URL || defaultUrl;
     return res.redirect(`${frontendUrl}/auth/callback?token=${authData.access_token}`);
   }
 }

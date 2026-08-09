@@ -2915,10 +2915,11 @@ function TemplatePreview({
 // ----------------- LOGIN PAGE -----------------
 function LoginPage() {
   const { login, error, loading, clearError } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const initialEmail = searchParams.get('email') || '';
+  const [email, setEmail] = useState(initialEmail);
+  const [password, setPassword] = useState('');
   
   const redirect = searchParams.get('redirect') || '/';
 
@@ -3005,7 +3006,7 @@ function LoginPage() {
 
         <div className="text-center text-xs text-slate-400 mt-2 border-t border-white/5 pt-4">
           Нет аккаунта?{' '}
-          <Link to={`/register?redirect=${encodeURIComponent(redirect)}`} className="text-amber-400 font-semibold hover:underline">
+          <Link to={`/register?email=${encodeURIComponent(email)}&redirect=${encodeURIComponent(redirect)}`} className="text-amber-400 font-semibold hover:underline">
             Зарегистрироваться
           </Link>
         </div>
@@ -3017,10 +3018,11 @@ function LoginPage() {
 // ----------------- REGISTER PAGE -----------------
 function RegisterPage() {
   const { register, error, loading, clearError } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const initialEmail = searchParams.get('email') || '';
+  const [email, setEmail] = useState(initialEmail);
+  const [password, setPassword] = useState('');
 
   const redirect = searchParams.get('redirect') || '/';
 
@@ -3052,9 +3054,19 @@ function RegisterPage() {
         </div>
 
         {error && (
-          <div className="bg-rose-500/15 border border-rose-500/25 p-3.5 rounded-xl text-xs text-rose-400 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{error}</span>
+          <div className="bg-rose-500/15 border border-rose-500/25 p-3.5 rounded-xl text-xs text-rose-400 flex flex-col gap-2">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+            {error.toLowerCase().includes('already exists') && (
+              <Link 
+                to={`/login?email=${encodeURIComponent(email)}&redirect=${encodeURIComponent(redirect)}`} 
+                className="text-amber-400 font-semibold hover:underline ml-6 inline-flex items-center gap-1 text-xs"
+              >
+                Войти в этот аккаунт →
+              </Link>
+            )}
           </div>
         )}
 
@@ -3107,7 +3119,7 @@ function RegisterPage() {
 
         <div className="text-center text-xs text-slate-400 mt-2 border-t border-white/5 pt-4">
           Уже есть аккаунт?{' '}
-          <Link to={`/login?redirect=${encodeURIComponent(redirect)}`} className="text-amber-400 font-semibold hover:underline">
+          <Link to={`/login?email=${encodeURIComponent(email)}&redirect=${encodeURIComponent(redirect)}`} className="text-amber-400 font-semibold hover:underline">
             Войти
           </Link>
         </div>
