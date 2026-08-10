@@ -3280,6 +3280,9 @@ function CabinetPage() {
   const [loading, setLoading] = useState(true);
   const [selectedRsvpOrderId, setSelectedRsvpOrderId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+  const totalPages = Math.ceil(ordersList.length / itemsPerPage) || 1;
 
   useEffect(() => {
     if (!selectedRsvpOrderId) return;
@@ -3332,156 +3335,145 @@ function CabinetPage() {
   }, [token, logout, navigate, refreshKey]);
 
   return (
-    <div className="flex flex-col gap-8 flex-1">
-      {/* Header Summary */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-6">
+    <div className="flex flex-col gap-8 flex-1 max-w-6xl w-full mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-6">
         <div>
-          <h2 className="text-2xl font-bold tracking-wide flex items-center gap-2">
-            <History className="w-6 h-6 text-amber-400" /> Личный кабинет
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Пользователь: <span className="font-semibold text-slate-300">{user?.email}</span>
-          </p>
+          <h2 className="text-2xl font-bold tracking-wide">Мои приглашения</h2>
+          <p className="text-xs text-slate-400 mt-1">Все созданные вами электронные и печатные открытки</p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="bg-white/5 px-4 py-2 border border-white/10 rounded-xl text-xs">
-          Всего заказов: <span className="font-bold text-amber-400 font-mono">{ordersList.length}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setLoading(true);
-              setRefreshKey(value => value + 1);
-            }}
-            className="p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-slate-400 hover:text-amber-400 transition-colors"
-            title="Обновить ответы гостей"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
+        <Link 
+          to="/" 
+          className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/10"
+        >
+          <Plus className="w-4 h-4" /> Создать новое
+        </Link>
       </div>
 
       {loading ? (
-        <div className="flex-1 flex justify-center py-20">
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
           <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+          <span className="text-xs text-slate-400 font-medium">Загрузка ваших заказов...</span>
         </div>
       ) : ordersList.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {ordersList.map(order => (
-            <div key={order.id} className="glass-panel rounded-2xl border border-white/5 overflow-hidden flex flex-col md:flex-row shadow-lg">
-              {/* Media Preview (Left/Top) */}
-              <div className="w-full md:w-36 aspect-[3/4] bg-slate-900/40 shrink-0 relative flex items-center justify-center border-b md:border-b-0 md:border-r border-white/5 overflow-hidden">
-                {order.template.type === 'website' ? (
-                  <div className="scale-[0.45] origin-center shrink-0">
-                    <TemplatePreview template={order.template} formData={order.user_data || {}} autoScrollOnHover={true} />
-                  </div>
-                ) : order.template.media_url.endsWith('.mp4') ? (
-                  <video 
-                    src={getMediaUrl(order.template.media_url)} 
-                    className="w-full h-full object-cover" 
-                    muted 
-                    loop 
-                    playsInline 
-                    onMouseOver={(e) => (e.target as HTMLVideoElement).play()}
-                    onMouseOut={(e) => (e.target as HTMLVideoElement).pause()}
-                  />
-                ) : (
-                  <img 
-                    src={getMediaUrl(order.template.media_url)} 
-                    className="w-full h-full object-cover" 
-                    alt="" 
-                  />
-                )}
-                
-                <div className="absolute top-2 left-2 z-10">
+        <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {ordersList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((order) => (
+              <div 
+                key={order.id}
+                className="glass-panel rounded-2xl overflow-hidden border border-white/10 flex flex-col justify-between group hover:border-amber-500/30 transition-all duration-300 shadow-lg"
+              >
+                {/* Media Preview (Left/Top) */}
+                <div className="h-48 w-full bg-slate-950 relative overflow-hidden flex items-center justify-center border-b border-white/5">
                   {order.template.media_url.endsWith('.mp4') ? (
-                    <span className="text-[9px] bg-indigo-500/90 text-indigo-950 font-bold px-2 py-0.5 rounded-full">Видео</span>
+                    <video 
+                      src={getMediaUrl(order.template.media_url)} 
+                      className="w-full h-full object-cover" 
+                      muted 
+                      loop 
+                      autoPlay 
+                      playsInline 
+                    />
                   ) : order.template.type === 'website' ? (
-                    <span className="text-[9px] bg-teal-500/90 text-teal-950 font-bold px-2 py-0.5 rounded-full">Сайт</span>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none scale-75 origin-center">
+                      <TemplatePreview 
+                        template={order.template} 
+                        formData={order.user_data} 
+                        autoScrollOnHover={true}
+                      />
+                    </div>
                   ) : (
-                    <span className="text-[9px] bg-amber-500/90 text-amber-950 font-bold px-2 py-0.5 rounded-full">Фото</span>
+                    <img 
+                      src={getMediaUrl(order.template.media_url)} 
+                      alt={order.template.category} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" 
+                    />
                   )}
+                  
+                  <div className="absolute top-3 left-3 z-10">
+                    <span className="px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider bg-slate-950/80 backdrop-blur-md text-amber-400 border border-amber-500/20">
+                      {order.template.type === 'website' ? 'Сайт' : order.template.type === 'physical' ? 'Печать' : 'Фото'}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Order Info (Right/Bottom) */}
-              <div className="p-5 flex-1 flex flex-col justify-between gap-4">
-                <div>
-                  <div className="flex justify-between items-start gap-1">
-                    <div>
-                      <h4 className="font-semibold text-sm text-slate-100">
-                        {getTemplateName(order.template)}
-                      </h4>
-                      <p className="text-[10px] text-slate-500 font-mono mt-0.5">ID: {order.id.slice(0, 13)}...</p>
+                {/* Order Info (Right/Bottom) */}
+                <div className="p-5 flex-1 flex flex-col justify-between gap-4">
+                  <div>
+                    <div className="flex justify-between items-start gap-1">
+                      <div>
+                        <h4 className="font-semibold text-sm text-slate-100">
+                          {getTemplateName(order.template)}
+                        </h4>
+                        <p className="text-[10px] text-slate-500 font-mono mt-0.5">ID: {order.id.slice(0, 13)}...</p>
+                      </div>
+
+                      {/* Status Badge */}
+                      {order.status === 'completed' && (
+                        <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-semibold border border-emerald-400/10 shrink-0">Готов</span>
+                      )}
+                      {order.status === 'processing' && (
+                        <span className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded font-semibold border border-amber-400/10 flex items-center gap-1 shrink-0">
+                          <Loader2 className="w-2.5 h-2.5 animate-spin" /> Рендер
+                        </span>
+                      )}
+                      {order.status === 'pending' && (
+                        <span className="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold border border-blue-400/10 shrink-0">В очереди</span>
+                      )}
+                      {order.status === 'failed' && (
+                        <span className="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded font-semibold border border-rose-400/10 shrink-0">Ошибка</span>
+                      )}
                     </div>
 
-                    {/* Status Badge */}
-                    {order.status === 'completed' && (
-                      <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-semibold border border-emerald-400/10 shrink-0">Готов</span>
-                    )}
-                    {order.status === 'processing' && (
-                      <span className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded font-semibold border border-amber-400/10 flex items-center gap-1 shrink-0">
-                        <Loader2 className="w-2.5 h-2.5 animate-spin" /> Рендер
-                      </span>
-                    )}
-                    {order.status === 'pending' && (
-                      <span className="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded font-semibold border border-blue-400/10 shrink-0">В очереди</span>
-                    )}
-                    {order.status === 'failed' && (
-                      <span className="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded font-semibold border border-rose-400/10 shrink-0">Ошибка</span>
-                    )}
-                  </div>
-
-                  {/* Config texts preview */}
-                  <div className="mt-3 bg-white/5 border border-white/5 rounded-lg p-2.5 text-[10px] text-slate-400 max-h-24 overflow-y-auto">
-                    {Object.entries(order.user_data)
-                      .filter(([k, v]) => k !== 'rsvps' && k !== '_customFields' && typeof v === 'string' && (v as string).trim() !== '')
-                      .map(([k, v]) => {
-                        const fieldLabels: Record<string, string> = {
-                          groomName: 'Жених',
-                          brideName: 'Невеста',
-                          date: 'Дата',
-                          time: 'Время',
-                          venue: 'Зал',
-                          address: 'Адрес',
-                          loveStory: 'История',
-                          phone: 'Телефон',
-                          names: 'Имена',
-                          title: 'Заголовок',
-                          details: 'Детали',
-                        };
+                    {/* Config texts preview */}
+                    <div className="mt-3 bg-white/5 border border-white/5 rounded-lg p-2.5 text-[10px] text-slate-400 max-h-24 overflow-y-auto">
+                      {Object.entries(order.user_data)
+                        .filter(([k, v]) => k !== 'rsvps' && k !== '_customFields' && typeof v === 'string' && (v as string).trim() !== '')
+                        .map(([k, v]) => {
+                          const fieldLabels: Record<string, string> = {
+                            groomName: 'Жених',
+                            brideName: 'Невеста',
+                            date: 'Дата',
+                            time: 'Время',
+                            venue: 'Зал',
+                            address: 'Адрес',
+                            loveStory: 'История',
+                            phone: 'Телефон',
+                            names: 'Имена',
+                            title: 'Заголовок',
+                            details: 'Детали',
+                          };
+                          return (
+                            <div key={k} className="flex justify-between py-0.5 border-b border-white/5 last:border-0 gap-2">
+                              <span className="text-slate-400 shrink-0 font-medium">{fieldLabels[k] || k}:</span>
+                              <span className="text-[#f8fafc] font-medium truncate max-w-[170px]">{String(v)}</span>
+                            </div>
+                          );
+                        })}
+                      {Array.isArray(order.user_data?._customFields) && order.user_data._customFields.map((cf: any) => {
+                        const val = order.user_data[cf.id];
+                        if (!val) return null;
                         return (
-                          <div key={k} className="flex justify-between py-0.5 border-b border-white/5 last:border-0 gap-2">
-                            <span className="text-slate-400 shrink-0 font-medium">{fieldLabels[k] || k}:</span>
-                            <span className="text-slate-200 font-medium truncate max-w-[170px]">{String(v)}</span>
+                          <div key={cf.id} className="flex justify-between py-0.5 border-b border-white/5 last:border-0 gap-2">
+                            <span className="text-slate-400 shrink-0 font-medium">{cf.label}:</span>
+                            <span className="text-[#f8fafc] font-medium truncate max-w-[170px]">{String(val)}</span>
                           </div>
                         );
                       })}
-                    {Array.isArray(order.user_data?._customFields) && order.user_data._customFields.map((cf: any) => {
-                      const val = order.user_data[cf.id];
-                      if (!val) return null;
-                      return (
-                        <div key={cf.id} className="flex justify-between py-0.5 border-b border-white/5 last:border-0 gap-2">
-                          <span className="text-slate-400 shrink-0 font-medium">{cf.label}:</span>
-                          <span className="text-slate-200 font-medium truncate max-w-[170px]">{String(val)}</span>
-                        </div>
-                      );
-                    })}
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex flex-col gap-2 border-t border-white/5 pt-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-slate-400">{Number(order.total_price).toLocaleString('ru-RU')} сум</span>
-                    {order.template.type === 'website' && (
-                      <button
-                        onClick={() => setSelectedRsvpOrderId(order.id)}
-                        className="px-2.5 py-1 bg-white/5 border border-white/10 hover:bg-white/10 rounded-lg text-[10px] font-semibold text-amber-400 transition-all"
-                      >
-                        Ответы гостей ({order.user_data?.rsvps?.length || 0})
-                      </button>
-                    )}
-                  </div>
+                  <div className="flex flex-col gap-2 border-t border-white/5 pt-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold text-slate-400">{Number(order.total_price).toLocaleString('ru-RU')} сум</span>
+                      {order.template.type === 'website' && (
+                        <button
+                          onClick={() => setSelectedRsvpOrderId(order.id)}
+                          className="px-2.5 py-1 bg-white/5 border border-white/10 hover:bg-white/10 rounded-lg text-[10px] font-semibold text-amber-400 transition-all"
+                        >
+                          Ответы гостей ({order.user_data?.rsvps?.length || 0})
+                        </button>
+                      )}
+                    </div>
 
                   {order.template.type === 'website' && (
                     <div className="grid grid-cols-3 gap-1.5">
@@ -3549,7 +3541,17 @@ function CabinetPage() {
             </div>
           ))}
         </div>
-      ) : (
+
+        <PaginationBar
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={ordersList.length}
+          itemsPerPage={itemsPerPage}
+          isDark={true}
+        />
+      </div>
+    ) : (
         <div className="text-center py-20 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center justify-center gap-3">
           <p className="text-slate-400 text-sm">У вас пока нет оформленных приглашений</p>
           <Link to="/" className="text-xs bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-lg shadow-lg shadow-amber-500/10 mt-1">
