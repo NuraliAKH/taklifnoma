@@ -2537,6 +2537,10 @@ function EditorPage() {
                     ref={editorAudioRef}
                     src={getMediaUrl(formData.musicUrl || DEFAULT_MUSIC_TRACK.url)}
                     onEnded={() => setEditorMusicPlaying(false)}
+                    onError={() => {
+                      setEditorMusicPlaying(false);
+                      console.warn('Audio source failed to load. Try selecting a different track or upload your own.');
+                    }}
                   />
                 </div>
 
@@ -5330,7 +5334,15 @@ export function InvitationPage() {
 
   return (
     <>
-      <audio ref={audioRef} src={audioUrl} loop />
+      <audio
+        ref={audioRef}
+        src={audioUrl}
+        loop
+        onError={() => {
+          setIsPlaying(false);
+          console.warn('Audio source is not available.');
+        }}
+      />
       <WebsiteTemplateDispatcher 
         templateId={order.template.id}
         data={order.user_data}

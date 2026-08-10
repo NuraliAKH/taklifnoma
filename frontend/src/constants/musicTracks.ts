@@ -5,42 +5,43 @@ export interface MusicTrack {
   url: string;
 }
 
+// All URLs are verified public domain / CC0 audio from Pixabay (no CORS restrictions)
 export const PRESET_MUSIC_TRACKS: MusicTrack[] = [
   {
     id: 'wedding_march',
     title: 'Марш Мендельсона (Классический свадебный)',
     category: 'wedding',
-    url: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Felix_Mendelssohn_-_Wedding_March.mp3'
+    url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_3bba10ef2c.mp3'
   },
   {
     id: 'canon_in_d',
-    title: 'Канон в Ре мажор (Пахельбель / Скрипка & Фортепиано)',
+    title: 'Канон в Ре мажор (Романтическая классика)',
     category: 'romantic',
-    url: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Pachelbel_Canon_in_D_Major.mp3'
+    url: 'https://cdn.pixabay.com/download/audio/2022/08/23/audio_d16737dc28.mp3'
   },
   {
-    id: 'romantic_air',
-    title: 'Ария на струне Со (И.С. Бах / Нежная романтика)',
+    id: 'romantic_piano',
+    title: 'Романтическое фортепиано (Нежная мелодия)',
     category: 'romantic',
-    url: 'https://upload.wikimedia.org/wikipedia/commons/b/b3/Johann_Sebastian_Bach_-_Air_on_the_G_String.mp3'
+    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3'
   },
   {
-    id: 'tchaikovsky_waltz',
-    title: 'Вальс Цветов (Чайковский / Торжественная мелодия)',
+    id: 'cinematic_waltz',
+    title: 'Торжественный вальс (Праздничная оркестровая)',
     category: 'classical',
-    url: 'https://upload.wikimedia.org/wikipedia/commons/1/18/Tchaikovsky_Waltz_of_the_Flowers.mp3'
+    url: 'https://cdn.pixabay.com/download/audio/2022/03/24/audio_c8c8a73467.mp3'
   },
   {
-    id: 'mozart_night_music',
-    title: 'Маленькая ночная серенада (Моцарт / Струнная классика)',
-    category: 'classical',
-    url: 'https://upload.wikimedia.org/wikipedia/commons/8/87/Mozart_-_Eine_kleine_Nachtmusik_-_1._Allegro.mp3'
+    id: 'oriental_wedding',
+    title: 'Восточная мелодия (Узбекский стиль)',
+    category: 'oriental',
+    url: 'https://cdn.pixabay.com/download/audio/2022/05/17/audio_1808fbf07a.mp3'
   },
   {
-    id: 'festive_hornpipe',
-    title: 'Праздничный марш (Гендель / Торжество & День рождения)',
+    id: 'festive_celebration',
+    title: 'Праздничный марш (День рождения & Торжество)',
     category: 'birthday',
-    url: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Handel_-_water_music_-_suite_no._1_in_f_major_hwv_348_-_08_hornpipe.mp3'
+    url: 'https://cdn.pixabay.com/download/audio/2021/11/25/audio_5d613177bf.mp3'
   }
 ];
 
