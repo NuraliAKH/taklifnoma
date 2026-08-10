@@ -621,45 +621,48 @@ END:VCALENDAR`;
           {/* ------------------------------------------------------ */}
           {/* SECTION 6: EVENT PROGRAM SCHEDULE */}
           {/* ------------------------------------------------------ */}
-          <section className="space-y-5">
-            <div className="text-center space-y-0.5">
-              <span className="text-[9px] font-sans tracking-[0.2em] text-amber-800/60 uppercase">
-                KUN TARTIBI
-              </span>
-              <h2 className="text-2xl font-serif text-stone-900">
-                Marosim dasturi
-              </h2>
-            </div>
+          {isSectionVisible('schedule') && (
+            <section className="space-y-5">
+              <div className="text-center space-y-0.5">
+                <span className="text-[9px] font-sans tracking-[0.2em] text-amber-800/60 uppercase">
+                  KUN TARTIBI
+                </span>
+                <h2 className="text-2xl font-serif text-stone-900">
+                  Marosim dasturi
+                </h2>
+              </div>
 
-            <div className="grid grid-cols-1 gap-2.5">
-              {[
-                { time: '18:00', icon: Heart, label: 'Mehmonlarni kutib olish' },
-                { time: '19:00', icon: Crown, label: 'Nikoh marosimi' },
-                { time: '20:00', icon: Crown, label: 'Ziyofat boshlanishi' },
-                { time: '22:00', icon: Music, label: 'Marosim yakuni' },
-              ].map((item, idx) => {
-                const IconComp = item.icon;
-                return (
-                  <div 
-                    key={idx}
-                    className="p-3.5 rounded-2xl bg-white/80 border border-amber-200/60 shadow-sm flex items-center gap-3.5"
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-amber-100/80 border border-amber-300/60 flex items-center justify-center text-amber-800 shrink-0">
-                      <IconComp className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-sans font-bold text-amber-900 block">
+              <div className="grid grid-cols-1 gap-2.5">
+                {(Array.isArray(data.schedule) && data.schedule.length > 0 ? data.schedule : (Array.isArray(data.scheduleItems) && data.scheduleItems.length > 0 ? data.scheduleItems : [
+                  { time: '18:00', title: 'Mehmonlarni kutib olish' },
+                  { time: '19:00', title: 'Nikoh marosimi' },
+                  { time: '20:00', title: 'Ziyofat boshlanishi' },
+                  { time: '22:00', title: 'Marosim yakuni' },
+                ])).map((item: any, idx: number) => {
+                  return (
+                    <div 
+                      key={idx}
+                      className="p-3.5 rounded-2xl bg-white/80 border border-amber-200/60 shadow-sm flex items-center gap-3.5"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-amber-100/80 border border-amber-300/60 flex items-center justify-center text-amber-800 shrink-0 font-bold text-xs">
                         {item.time}
-                      </span>
-                      <span className="text-xs font-serif text-stone-700">
-                        {item.label}
-                      </span>
+                      </div>
+                      <div>
+                        <span className="text-xs font-serif text-stone-900 font-bold block">
+                          {item.title || item.label}
+                        </span>
+                        {item.desc && (
+                          <span className="text-[11px] font-sans text-stone-600 block">
+                            {item.desc}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {/* ------------------------------------------------------ */}
           {/* SECTION 7: PHOTO GALLERY & UPLOAD COUNTER (NO PUBLIC INPUTS) */}

@@ -1034,7 +1034,7 @@ export const MarmarWeddingSite: React.FC<WebsiteTemplateProps> = ({
               </div>
 
               <div className="w-full flex flex-col gap-4 text-left relative before:absolute before:left-6 before:top-2 before:bottom-2 before:w-[2px] before:bg-amber-200">
-                {t.scheduleItems.map((item: any, i: number) => (
+                {((Array.isArray(data.schedule) && data.schedule.length > 0 ? data.schedule : (Array.isArray(data.scheduleItems) && data.scheduleItems.length > 0 ? data.scheduleItems : t.scheduleItems))).map((item: any, i: number) => (
                   <motion.div 
                     key={i}
                     initial={{ opacity: 0, x: -15 }}
@@ -1047,8 +1047,8 @@ export const MarmarWeddingSite: React.FC<WebsiteTemplateProps> = ({
                       {item.time}
                     </div>
                     <div className="flex flex-col pt-1">
-                      <h4 className="text-xs font-bold text-stone-900">{item.title}</h4>
-                      <p className="text-[11px] text-stone-500">{item.desc}</p>
+                      <h4 className="text-xs font-bold text-stone-900">{item.title || item.label}</h4>
+                      {item.desc && <p className="text-[11px] text-stone-500">{item.desc}</p>}
                     </div>
                   </motion.div>
                 ))}

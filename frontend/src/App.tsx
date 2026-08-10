@@ -48,7 +48,8 @@ import {
   MessageSquare,
   Tag,
   Menu,
-  RefreshCw
+  RefreshCw,
+  Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WebsiteTemplateDispatcher } from './templates/sites';
@@ -429,6 +430,7 @@ const getTemplateSections = (templateId: number | string | undefined) => {
       return [
         { id: 'hero', label: 'Главный баннер / Конверт' },
         { id: 'quran', label: 'Коранический аят / Bismillah' },
+        { id: 'schedule', label: 'Программа вечера' },
         { id: 'countdown', label: 'Обратный отсчет' },
         { id: 'calendar', label: 'Дата и время' },
         { id: 'gallery', label: 'Фотогалерея' },
@@ -442,6 +444,7 @@ const getTemplateSections = (templateId: number | string | undefined) => {
         { id: 'couple', label: 'Молодожены / Текст' },
         { id: 'gallery', label: 'Фотогалерея' },
         { id: 'calendar', label: 'Календарь' },
+        { id: 'schedule', label: 'Программа вечера' },
         { id: 'countdown', label: 'Таймер отсчета' },
         { id: 'venue', label: 'Место проведения' },
         { id: 'wish', label: 'Пожелания' },
@@ -453,6 +456,7 @@ const getTemplateSections = (templateId: number | string | undefined) => {
         { id: 'hero', label: 'Обложка конверта' },
         { id: 'couple', label: 'Блок приглашения' },
         { id: 'parents', label: 'Имена родителей' },
+        { id: 'schedule', label: 'Программа вечера' },
         { id: 'countdown', label: 'Таймер отсчета' },
         { id: 'loveStory', label: 'История любви' },
         { id: 'gallery', label: 'Фотогалерея' },
@@ -497,12 +501,24 @@ const getTemplateSections = (templateId: number | string | undefined) => {
         { id: 'video', label: 'Видео-ролик' },
         { id: 'loveStory', label: 'Наша история' },
         { id: 'dateVenue', label: 'Дата и место' },
+        { id: 'schedule', label: 'Программа вечера' },
         { id: 'countdown', label: 'Таймер отсчета' },
         { id: 'gallery', label: 'Фотогалерея' },
         { id: 'rsvp', label: 'Анкета гостей' },
         { id: 'giftCard', label: 'Подарки и карта' },
       ];
   }
+};
+
+const formatNextScheduleTime = (lastTimeStr?: string): string => {
+  if (!lastTimeStr || typeof lastTimeStr !== 'string') return '18:00';
+  const parts = lastTimeStr.split(':');
+  if (parts.length < 2) return '18:00';
+  let hours = parseInt(parts[0], 10);
+  let minutes = parseInt(parts[1], 10);
+  if (isNaN(hours) || isNaN(minutes)) return '18:00';
+  hours = (hours + 1) % 24;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 };
 
 const getEditorFieldsForTemplate = (template: any): any[] => {
@@ -519,6 +535,7 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
       details: 'Текст блока «Детали»',
       phone: 'Телефон организатора — внизу сайта',
       dressColors: 'Цвета дресс-кода',
+      schedule: 'Программа вечера / Этапы',
     };
     const result = fields.map((field: any) => ({
       ...field,
@@ -536,6 +553,16 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
       });
     }
 
+    if (!result.some((f: any) => f.id === 'schedule')) {
+      const venueIdx = result.findIndex((f: any) => f.id === 'venue');
+      const insertIdx = venueIdx !== -1 ? venueIdx + 1 : result.length;
+      result.splice(insertIdx, 0, {
+        id: 'schedule',
+        label: 'Программа вечера / Этапы',
+        type: 'schedule',
+      });
+    }
+
     return result;
   }
 
@@ -548,6 +575,7 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
     time: { id: 'time', label: 'Время торжества', placeholder: '18:00' },
     venue: { id: 'venue', label: 'Название ресторана / площадки', placeholder: 'Versal Saroyi' },
     address: { id: 'address', label: 'Адрес и локация', placeholder: 'г. Ташкент, ул. Бобура, 45' },
+    schedule: { id: 'schedule', label: 'Программа вечера / Этапы', type: 'schedule' },
     photoUrl: { id: 'photoUrl', label: 'Главное фото молодоженов (Surat)', type: 'image', placeholder: '' },
     photos: { id: 'photos', label: 'Галерея фотографий (Suratlar)', type: 'gallery', max: family === 'malika' ? 6 : 10 },
     videoUrl: { id: 'videoUrl', label: 'Видео-ролик / Заставка', type: 'video', placeholder: '' },
@@ -561,23 +589,23 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
 
   switch (family) {
     case 'hilal':
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
       break;
     case 'envelope':
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
       break;
     case 'malika':
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
       break;
     case 'marmar':
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner', 'phone'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner', 'phone'];
       break;
     case 'anor':
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner'];
       break;
     case 'simple':
     default:
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner'];
       break;
   }
 
@@ -1590,9 +1618,18 @@ function EditorPage() {
           setFormData(parsed);
           sessionStorage.removeItem(`draft_order_${id}`);
         } else {
-          const initialForm: Record<string, string> = {};
+          const initialForm: Record<string, any> = {};
           fields.forEach((f: any) => {
-            initialForm[f.id] = f.placeholder;
+            if (f.id === 'schedule') {
+              initialForm[f.id] = [
+                { time: '17:00', title: 'Сбор гостей & Welcome Drink', desc: 'Живая музыка, фотозона и приветственные напитки' },
+                { time: '18:00', title: 'Торжественный Вход & Регистрация', desc: 'Официальная церемония и никоҳ' },
+                { time: '19:00', title: 'Праздничный Банкет & Шоу', desc: 'Поздравления, танцы и шоу-программа' },
+                { time: '21:30', title: 'Свадебный Торт & Салют', desc: 'Сладкий финал сказочного вечера' },
+              ];
+            } else {
+              initialForm[f.id] = f.placeholder || '';
+            }
           });
           setFormData(initialForm);
         }

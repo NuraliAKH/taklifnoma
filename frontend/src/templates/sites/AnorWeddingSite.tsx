@@ -738,14 +738,14 @@ export const AnorWeddingSite: React.FC<WebsiteTemplateProps> = ({
               <span className="text-[10px] uppercase tracking-[0.3em] text-amber-400 font-bold">{t.programTitle}</span>
 
               <div className="w-full flex flex-col gap-4 text-left relative before:absolute before:left-5 before:top-2 before:bottom-2 before:w-[1px] before:bg-amber-500/30">
-                {t.scheduleItems.map((item: any, i: number) => (
+                {((Array.isArray(data.schedule) && data.schedule.length > 0 ? data.schedule : (Array.isArray(data.scheduleItems) && data.scheduleItems.length > 0 ? data.scheduleItems : t.scheduleItems))).map((item: any, i: number) => (
                   <div key={i} className="flex items-start gap-4 relative z-10">
                     <div className="w-10 h-10 rounded-full bg-stone-950 border border-amber-500/50 flex items-center justify-center text-amber-400 font-bold text-xs shrink-0 shadow-md">
                       {item.time}
                     </div>
                     <div className="flex flex-col pt-0.5">
-                      <h4 className="text-xs font-bold text-amber-100">{item.title}</h4>
-                      <p className="text-[11px] text-stone-400">{item.desc}</p>
+                      <h4 className="text-xs font-bold text-amber-100">{item.title || item.label}</h4>
+                      {item.desc && <p className="text-[11px] text-stone-400">{item.desc}</p>}
                     </div>
                   </div>
                 ))}

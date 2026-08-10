@@ -884,6 +884,55 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
         )}
 
         {/* ----------------------------------------------------------------------- */}
+        {/* SECTION 5.5: PROGRAM SCHEDULE ("PROGRAMMA VECHERA")                     */}
+        {/* ----------------------------------------------------------------------- */}
+        {isSectionVisible('schedule') && (
+          <motion.section
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="p-6 rounded-3xl bg-white/80 border border-purple-200 shadow-xl text-center space-y-4 font-sans relative"
+          >
+            {isPreview && (
+              <button
+                onClick={() => toggleHideSection('schedule')}
+                title={t.hideSectionHint || 'Скрыть раздел'}
+                className="absolute top-4 right-4 z-30 w-7 h-7 rounded-full bg-purple-900/30 hover:bg-rose-600 text-white flex items-center justify-center transition-all shadow-md"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-[#7E22CE] font-bold">
+                KUN TARTIBI
+              </span>
+              <h3 className="text-2xl font-serif font-bold text-[#581C87]">Программа вечера</h3>
+            </div>
+
+            <div className="flex flex-col gap-3.5 text-left pt-2 relative before:absolute before:left-5 before:top-2 before:bottom-2 before:w-[2px] before:bg-purple-200">
+              {(Array.isArray(data.schedule) && data.schedule.length > 0 ? data.schedule : (Array.isArray(data.scheduleItems) && data.scheduleItems.length > 0 ? data.scheduleItems : [
+                { time: '17:00', title: 'Сбор гостей & Welcome Drink', desc: 'Живая музыка и фотозона' },
+                { time: '18:00', title: 'Торжественная часть & Никоҳ', desc: 'Официальная регистрация' },
+                { time: '19:00', title: 'Праздничный Банкет & Шоу', desc: 'Танцы и поздравления' },
+                { time: '21:30', title: 'Свадебный Торт & Салют', desc: 'Финал вечера' },
+              ])).map((item: any, i: number) => (
+                <div key={i} className="flex items-start gap-3.5 relative z-10">
+                  <div className="w-10 h-10 rounded-full bg-purple-100 border border-purple-300 flex items-center justify-center text-[#581C87] font-bold text-xs shrink-0 shadow-sm">
+                    {item.time}
+                  </div>
+                  <div className="flex flex-col pt-0.5">
+                    <h4 className="text-xs font-bold text-[#581C87]">{item.title || item.label}</h4>
+                    {item.desc && <p className="text-[11px] text-purple-900/70">{item.desc}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        {/* ----------------------------------------------------------------------- */}
         {/* SECTION 6: RECEPTION VENUE CARD ("BAXT TO'YXONASI")                    */}
         {/* ----------------------------------------------------------------------- */}
         {isSectionVisible('venue') && (

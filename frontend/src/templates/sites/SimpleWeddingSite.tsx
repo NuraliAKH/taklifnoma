@@ -594,6 +594,49 @@ export const SimpleWeddingSite: React.FC<WebsiteTemplateProps> = ({
           </div>
         )}
 
+        {/* SCHEDULE PROGRAM */}
+        {isSectionVisible('schedule') && (
+          <div className={sectionWrapperClass}>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="w-full bg-stone-900/80 border border-stone-800 rounded-2xl p-5 shadow-lg flex flex-col items-center gap-4 relative overflow-hidden"
+            >
+              {isPreview && (
+                <button
+                  onClick={() => toggleHideSection('schedule')}
+                  title={t.hideSectionHint || 'Скрыть раздел'}
+                  className="absolute top-4 right-4 z-30 w-7 h-7 rounded-full bg-stone-950/60 hover:bg-rose-600 text-stone-200 border border-white/20 flex items-center justify-center transition-all shadow-md"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+
+              <span className="text-[10px] uppercase tracking-[0.3em] text-amber-400 font-bold">Программа вечера</span>
+
+              <div className="w-full flex flex-col gap-3 text-left relative before:absolute before:left-5 before:top-2 before:bottom-2 before:w-[1px] before:bg-amber-500/30">
+                {(Array.isArray(data.schedule) && data.schedule.length > 0 ? data.schedule : (Array.isArray(data.scheduleItems) && data.scheduleItems.length > 0 ? data.scheduleItems : [
+                  { time: '17:00', title: 'Сбор гостей & Welcome Drink', desc: 'Приветственные напитки' },
+                  { time: '18:00', title: 'Торжественный Вход & Регистрация', desc: 'Официальная часть' },
+                  { time: '19:00', title: 'Праздничный Банкет & Шоу', desc: 'Танцы и поздравления' },
+                  { time: '21:30', title: 'Свадебный Торт & Салют', desc: 'Завершение вечера' },
+                ])).map((item: any, i: number) => (
+                  <div key={i} className="flex items-start gap-3.5 relative z-10">
+                    <div className="w-10 h-10 rounded-full bg-stone-950 border border-amber-500/50 flex items-center justify-center text-amber-400 font-bold text-xs shrink-0 shadow-md">
+                      {item.time}
+                    </div>
+                    <div className="flex flex-col pt-0.5">
+                      <h4 className="text-xs font-bold text-amber-100">{item.title || item.label}</h4>
+                      {item.desc && <p className="text-[11px] text-stone-400">{item.desc}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        )}
+
         {/* COUNTDOWN */}
         {isSectionVisible('countdown') && timeLeft && (
           <div className={sectionWrapperClass}>

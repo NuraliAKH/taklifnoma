@@ -1,5 +1,13 @@
 import React from 'react';
 
+export interface ScheduleItem {
+  time?: string;
+  title?: string;
+  desc?: string;
+  label?: string;
+  icon?: any;
+}
+
 export interface SiteData {
   groomName?: string;
   brideName?: string;
@@ -14,6 +22,8 @@ export interface SiteData {
   photoUrl?: string;
   photos?: string[];
   videoUrl?: string;
+  schedule?: ScheduleItem[];
+  scheduleItems?: ScheduleItem[];
   hiddenSections?: string[];
   showHeroPhoto?: boolean;
   showGallery?: boolean;

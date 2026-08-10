@@ -191,13 +191,15 @@ export const OliveEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = ({
 
   const schedule = Array.isArray(data.schedule) && data.schedule.length
     ? data.schedule
-    : [
-        { time, title: 'Welcome' },
-        { time: addMinutes(time, 30), title: copy.ceremony },
-        { time: addMinutes(time, 60), title: copy.dinner },
-        { time: addMinutes(time, 300), title: copy.cake },
-        { time: addMinutes(time, 360), title: copy.finale },
-      ];
+    : (Array.isArray(data.scheduleItems) && data.scheduleItems.length
+        ? data.scheduleItems
+        : [
+            { time, title: 'Welcome' },
+            { time: addMinutes(time, 30), title: copy.ceremony },
+            { time: addMinutes(time, 60), title: copy.dinner },
+            { time: addMinutes(time, 300), title: copy.cake },
+            { time: addMinutes(time, 360), title: copy.finale },
+          ]);
 
   const openEnvelope = () => {
     setLocalOpened(true);
@@ -450,8 +452,9 @@ export const OliveEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = ({
                       transition={{ duration: 0.65, delay: index * 0.06 }}
                     >
                       <div className={`w-[44%] ${index % 2 ? 'pl-2' : 'pr-2'}`}>
-                        <p className="olive-script text-[clamp(1.9rem,9.5cqi,2.65rem)] leading-[.92]">{item.title}</p>
+                        <p className="olive-script text-[clamp(1.9rem,9.5cqi,2.65rem)] leading-[.92]">{item.title || item.label}</p>
                         <p className="mt-1 font-sans text-[13px] tracking-wide text-[#4f5540]">{item.time}</p>
+                        {item.desc && <p className="mt-0.5 text-[11px] text-[#737b55]">{item.desc}</p>}
                       </div>
                       <motion.span
                         className="olive-heart absolute -ml-[10px]"
