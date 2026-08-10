@@ -10,7 +10,15 @@ export class TemplatesService implements OnModuleInit {
     await this.seed();
   }
 
-  async findAll(): Promise<Template[]> {
+  async findAll(page?: number, limit?: number): Promise<any> {
+    if (page && limit) {
+      const skip = (page - 1) * limit;
+      const [data, total] = await Promise.all([
+        this.prisma.template.findMany({ skip, take: limit }),
+        this.prisma.template.count(),
+      ]);
+      return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+    }
     return this.prisma.template.findMany();
   }
 

@@ -6,6 +6,7 @@ import {
   Delete, 
   Body, 
   Param, 
+  Query,
   ParseIntPipe,
   UseGuards
 } from '@nestjs/common';
@@ -21,8 +22,11 @@ export class PromocodesController {
   }
 
   @Get()
-  async findAll() {
-    return this.promocodesService.findAll();
+  async findAll(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.promocodesService.findAll(
+      page ? parseInt(page, 10) : undefined,
+      limit ? parseInt(limit, 10) : undefined,
+    );
   }
 
   @Post()

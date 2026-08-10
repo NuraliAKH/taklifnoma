@@ -46,11 +46,16 @@ export class OrdersController {
     return this.ordersService.addRsvp(id, { name, attending, guestCount, wishes });
   }
 
-  // Admin orders listing
   @Get('admin/list')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  async findAll(): Promise<Order[]> {
-    return this.ordersService.findAll();
+  async findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<any> {
+    return this.ordersService.findAll(
+      page ? parseInt(page, 10) : undefined,
+      limit ? parseInt(limit, 10) : undefined,
+    );
   }
 }

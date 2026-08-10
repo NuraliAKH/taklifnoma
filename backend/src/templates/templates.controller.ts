@@ -6,6 +6,7 @@ import {
   Delete, 
   Body, 
   Param, 
+  Query,
   NotFoundException, 
   ParseIntPipe, 
   UseGuards, 
@@ -30,8 +31,14 @@ export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}
 
   @Get()
-  async findAll(): Promise<Template[]> {
-    return this.templatesService.findAll();
+  async findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<any> {
+    return this.templatesService.findAll(
+      page ? parseInt(page, 10) : undefined,
+      limit ? parseInt(limit, 10) : undefined,
+    );
   }
 
   @Get('seed')

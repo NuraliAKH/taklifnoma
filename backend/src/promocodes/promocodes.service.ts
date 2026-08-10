@@ -87,7 +87,32 @@ export class PromocodesService {
     };
   }
 
-  async findAll() {
+  async findAll(page?: number, limit?: number) {
+    if (page && limit) {
+      const skip = (page - 1) * limit;
+      const [promocodes, total] = await Promise.all([
+        this.prisma.promocode.findMany({
+          skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            _count: {
+              select: { orders: true },
+            },
+          },
+        }),
+        this.prisma.promocode.count(),
+      ]);
+
+      const data = promocodes.map(p => ({
+        ...p,
+        discount_value: Number(p.discount_value),
+        min_order_amount: Number(p.min_order_amount),
+      }));
+
+      return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+    }
+
     const promocodes = await this.prisma.promocode.findMany({
       orderBy: { createdAt: 'desc' },
       include: {

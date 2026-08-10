@@ -978,6 +978,89 @@ export default function App() {
   );
 }
 
+// ----------------- PAGINATION BAR COMPONENT -----------------
+function PaginationBar({
+  currentPage,
+  totalPages,
+  onPageChange,
+  totalItems,
+  itemsPerPage,
+  isDark = true,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  totalItems?: number;
+  itemsPerPage?: number;
+  isDark?: boolean;
+}) {
+  if (totalPages <= 1) return null;
+
+  const startItem = itemsPerPage ? (currentPage - 1) * itemsPerPage + 1 : undefined;
+  const endItem = itemsPerPage && totalItems ? Math.min(currentPage * itemsPerPage, totalItems) : undefined;
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/10 pt-5 mt-4 w-full">
+      {startItem && endItem && totalItems ? (
+        <span className={`text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+          Показано {startItem}–{endItem} из {totalItems} элементов
+        </span>
+      ) : <div />}
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+            currentPage === 1
+              ? 'opacity-40 cursor-not-allowed text-slate-500 border-white/5 bg-white/5'
+              : isDark
+              ? 'border-white/10 bg-white/5 hover:bg-white/10 text-slate-200'
+              : 'border-slate-200 bg-white hover:bg-slate-100 text-slate-800'
+          }`}
+        >
+          ← Назад
+        </button>
+
+        <div className="flex items-center gap-1">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            <button
+              key={page}
+              type="button"
+              onClick={() => onPageChange(page)}
+              className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
+                currentPage === page
+                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                  : isDark
+                  ? 'border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300'
+                  : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+            currentPage === totalPages
+              ? 'opacity-40 cursor-not-allowed text-slate-500 border-white/5 bg-white/5'
+              : isDark
+              ? 'border-white/10 bg-white/5 hover:bg-white/10 text-slate-200'
+              : 'border-slate-200 bg-white hover:bg-slate-100 text-slate-800'
+          }`}
+        >
+          Вперед →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ----------------- CATALOG PAGE -----------------
 function CatalogPage() {
   const navigate = useNavigate();
@@ -985,6 +1068,8 @@ function CatalogPage() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('website');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
   const { theme } = useTheme();
   const { t, lang } = useLanguage();
   const isDark = theme === 'dark';
@@ -992,7 +1077,10 @@ function CatalogPage() {
   useEffect(() => {
     fetch(`${API_URL}/templates`)
       .then(res => res.json())
-      .then(data => setTemplates(data))
+      .then(data => {
+        const list = Array.isArray(data) ? data : data?.data || [];
+        setTemplates(list);
+      })
       .catch(err => console.error(err));
   }, []);
 
@@ -1147,7 +1235,12 @@ function CatalogPage() {
                 <button 
                   key={item.id}
                   disabled={item.disabled}
-                  onClick={() => !item.disabled && setTypeFilter(item.id)}
+                  onClick={() => {
+                    if (!item.disabled) {
+                      setTypeFilter(item.id);
+                      setCurrentPage(1);
+                    }
+                  }}
                   className={`px-3 sm:px-4 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all flex items-center gap-1.5 whitespace-nowrap flex-1 sm:flex-none justify-center ${
                     item.disabled
                       ? 'opacity-40 cursor-not-allowed text-slate-500 bg-slate-500/10 border border-slate-500/20'
@@ -1177,7 +1270,10 @@ function CatalogPage() {
               ].map(item => (
                 <button 
                   key={item.id}
-                  onClick={() => setCategoryFilter(item.id)}
+                  onClick={() => {
+                    setCategoryFilter(item.id);
+                    setCurrentPage(1);
+                  }}
                   className={`px-3 sm:px-4 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all cursor-pointer whitespace-nowrap flex-1 sm:flex-none ${
                     categoryFilter === item.id 
                       ? 'bg-amber-500 text-slate-950 shadow-md font-bold' 
@@ -1193,99 +1289,110 @@ function CatalogPage() {
 
         {/* Template Grid */}
         {filteredTemplates.length > 0 ? (
-          <div className="flex flex-wrap justify-center gap-6">
-            {filteredTemplates.map(template => (
-              <div
-                key={template.id}
-                onClick={() => navigate(`/editor/${template.id}`)}
-                className="group w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] max-w-[410px] min-w-0 rounded-2xl overflow-hidden glass-panel-interactive flex flex-col cursor-pointer"
-              >
-                <div className="h-[440px] sm:h-[400px] md:h-[470px] lg:h-[390px] xl:h-[460px] w-full bg-slate-900/40 relative overflow-hidden border-b border-white/5">
-                  {/* Transparent Overlay */}
-                  <div className="absolute inset-0 z-20 cursor-pointer" />
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-wrap justify-center gap-6">
+              {filteredTemplates.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(template => (
+                <div
+                  key={template.id}
+                  onClick={() => navigate(`/editor/${template.id}`)}
+                  className="group w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] max-w-[410px] min-w-0 rounded-2xl overflow-hidden glass-panel-interactive flex flex-col cursor-pointer"
+                >
+                  <div className="h-[440px] sm:h-[400px] md:h-[470px] lg:h-[390px] xl:h-[460px] w-full bg-slate-900/40 relative overflow-hidden border-b border-white/5">
+                    {/* Transparent Overlay */}
+                    <div className="absolute inset-0 z-20 cursor-pointer" />
 
-                  {template.type === 'website' ? (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="origin-center scale-[0.62] sm:scale-[0.56] md:scale-[0.66] lg:scale-[0.54] xl:scale-[0.65]">
-                        <TemplatePreview
-                          template={template}
-                          formData={{}}
-                          autoScrollOnHover={true}
-                          catalogMode={true}
-                        />
+                    {template.type === 'website' ? (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="origin-center scale-[0.62] sm:scale-[0.56] md:scale-[0.66] lg:scale-[0.54] xl:scale-[0.65]">
+                          <TemplatePreview
+                            template={template}
+                            formData={{}}
+                            autoScrollOnHover={true}
+                            catalogMode={true}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <img
-                      src={getMediaUrl(template.media_url)}
-                      alt={template.category}
-                      className="w-full h-full object-cover scale-100 group-hover:scale-[1.04] transition-all duration-500"
-                    />
-                  )}
-
-                  <div className="absolute top-4 left-4 z-30 pointer-events-none">
-                    {template.type === 'website' ? (
-                      <span className="flex items-center gap-1 bg-teal-500/90 text-teal-950 text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full border border-teal-400/30 backdrop-blur-md shadow-md">
-                        <Globe className="w-3 h-3" /> Web-Сайт
-                      </span>
-                    ) : template.type === 'physical' ? (
-                      <span className="flex items-center gap-1 bg-pink-500/90 text-pink-950 text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full border border-pink-400/30 backdrop-blur-md shadow-md">
-                        <Printer className="w-3 h-3" /> Печать (A5)
-                      </span>
                     ) : (
-                      <span className="flex items-center gap-1 bg-amber-500/90 text-amber-950 text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full border border-amber-400/30 backdrop-blur-md shadow-md">
-                        <ImageIcon className="w-3 h-3" /> Фото-карточка
-                      </span>
+                      <img
+                        src={getMediaUrl(template.media_url)}
+                        alt={template.category}
+                        className="w-full h-full object-cover scale-100 group-hover:scale-[1.04] transition-all duration-500"
+                      />
                     )}
-                  </div>
-                </div>
 
-                <div className="p-4 sm:p-5 flex flex-col gap-3 flex-1 justify-between bg-gradient-to-b from-transparent to-black/10 min-w-0">
-                  <div className="min-w-0">
-                    <div className="flex justify-between items-start gap-3 min-w-0">
-                      <h3 className={`font-bold text-base tracking-wide leading-snug transition-colors line-clamp-2 min-w-0 ${
-                        isDark ? 'text-slate-100 group-hover:text-amber-400' : 'text-slate-900 group-hover:text-amber-600'
-                      }`}>
-                        {getTemplateName(template)}
-                      </h3>
-                      <span className={`text-[10px] border px-2 py-0.5 rounded-full tracking-wider capitalize shrink-0 ${
-                        isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'
-                      }`}>
-                        {template.category === 'wedding' ? t('catWedding') : template.category === 'birthday' ? t('catBirthday') : template.category}
-                      </span>
-                    </div>
-                    {template.type === 'website' ? (
-                      <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Формат: Адаптивный веб-сайт</p>
-                    ) : (
-                      <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Размер: {template.text_config.dimensions?.width}x{template.text_config.dimensions?.height} px</p>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap items-end justify-between gap-3 border-t border-white/5 pt-4 mt-2">
-                    <div className="flex flex-col min-w-0">
-                      {template.discount_price !== null && template.discount_price !== undefined ? (
-                        <>
-                          <span className="text-[10px] text-slate-500 line-through font-mono">
-                            {Number(template.price).toLocaleString('ru-RU')} {t('cardPriceCurrency')}
-                          </span>
-                          <span className="text-sm font-bold font-mono text-amber-400">
-                            {Number(template.discount_price).toLocaleString('ru-RU')} {t('cardPriceCurrency')}
-                          </span>
-                        </>
+                    <div className="absolute top-4 left-4 z-30 pointer-events-none">
+                      {template.type === 'website' ? (
+                        <span className="flex items-center gap-1 bg-teal-500/90 text-teal-950 text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full border border-teal-400/30 backdrop-blur-md shadow-md">
+                          <Globe className="w-3 h-3" /> Web-Сайт
+                        </span>
+                      ) : template.type === 'physical' ? (
+                        <span className="flex items-center gap-1 bg-pink-500/90 text-pink-950 text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full border border-pink-400/30 backdrop-blur-md shadow-md">
+                          <Printer className="w-3 h-3" /> Печать (A5)
+                        </span>
                       ) : (
-                        <span className="text-sm font-bold font-mono text-amber-400">
-                          {Number(template.price || 0).toLocaleString('ru-RU')} {t('cardPriceCurrency')}
+                        <span className="flex items-center gap-1 bg-amber-500/90 text-amber-950 text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full border border-amber-400/30 backdrop-blur-md shadow-md">
+                          <ImageIcon className="w-3 h-3" /> Фото-карточка
                         </span>
                       )}
                     </div>
+                  </div>
 
-                    <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-2 rounded-lg font-bold flex items-center gap-1 shrink-0 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all">
-                      {t('cardCreate')} <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                    </span>
+                  <div className="p-4 sm:p-5 flex flex-col gap-3 flex-1 justify-between bg-gradient-to-b from-transparent to-black/10 min-w-0">
+                    <div className="min-w-0">
+                      <div className="flex justify-between items-start gap-3 min-w-0">
+                        <h3 className={`font-bold text-base tracking-wide leading-snug transition-colors line-clamp-2 min-w-0 ${
+                          isDark ? 'text-slate-100 group-hover:text-amber-400' : 'text-slate-900 group-hover:text-amber-600'
+                        }`}>
+                          {getTemplateName(template)}
+                        </h3>
+                        <span className={`text-[10px] border px-2 py-0.5 rounded-full tracking-wider capitalize shrink-0 ${
+                          isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'
+                        }`}>
+                          {template.category === 'wedding' ? t('catWedding') : template.category === 'birthday' ? t('catBirthday') : template.category}
+                        </span>
+                      </div>
+                      {template.type === 'website' ? (
+                        <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Формат: Адаптивный веб-сайт</p>
+                      ) : (
+                        <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Размер: {template.text_config.dimensions?.width}x{template.text_config.dimensions?.height} px</p>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-end justify-between gap-3 border-t border-white/5 pt-4 mt-2">
+                      <div className="flex flex-col min-w-0">
+                        {template.discount_price !== null && template.discount_price !== undefined ? (
+                          <>
+                            <span className="text-[10px] text-slate-500 line-through font-mono">
+                              {Number(template.price).toLocaleString('ru-RU')} {t('cardPriceCurrency')}
+                            </span>
+                            <span className="text-sm font-bold font-mono text-amber-400">
+                              {Number(template.discount_price).toLocaleString('ru-RU')} {t('cardPriceCurrency')}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-sm font-bold font-mono text-amber-400">
+                            {Number(template.price || 0).toLocaleString('ru-RU')} {t('cardPriceCurrency')}
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-2 rounded-lg font-bold flex items-center gap-1 shrink-0 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all">
+                        {t('cardCreate')} <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <PaginationBar
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredTemplates.length / itemsPerPage) || 1}
+              onPageChange={setCurrentPage}
+              totalItems={filteredTemplates.length}
+              itemsPerPage={itemsPerPage}
+              isDark={isDark}
+            />
           </div>
         ) : (
           <div className="text-center py-20 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center justify-center gap-3">
@@ -3513,14 +3620,21 @@ function AdminPage() {
   // Orders State
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [ordersPage, setOrdersPage] = useState(1);
+  const ordersPerPage = 10;
 
   // Templates State
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
+  const [templatesPage, setTemplatesPage] = useState(1);
+  const templatesPerPage = 10;
 
   // Promocodes State
   const [promocodes, setPromocodes] = useState<any[]>([]);
   const [loadingPromocodes, setLoadingPromocodes] = useState(false);
+  const [promocodesPage, setPromocodesPage] = useState(1);
+  const promocodesPerPage = 10;
+
   const [isPromoModalOpen, setIsPromoModalOpen] = useState(false);
   const [newPromoCode, setNewPromoCode] = useState('');
   const [newPromoType, setNewPromoType] = useState<'percentage' | 'fixed'>('percentage');
@@ -3534,7 +3648,8 @@ function AdminPage() {
     fetch(`${API_URL}/promocodes`)
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) setPromocodes(data);
+        const list = Array.isArray(data) ? data : data?.data || [];
+        setPromocodes(list);
         setLoadingPromocodes(false);
       })
       .catch(() => setLoadingPromocodes(false));
@@ -3605,9 +3720,8 @@ function AdminPage() {
     })
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) {
-          setOrders(data);
-        }
+        const list = Array.isArray(data) ? data : data?.data || [];
+        setOrders(list);
         setLoadingOrders(false);
       })
       .catch(err => {
@@ -3621,9 +3735,8 @@ function AdminPage() {
     fetch(`${API_URL}/templates`)
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) {
-          setTemplates(data);
-        }
+        const list = Array.isArray(data) ? data : data?.data || [];
+        setTemplates(list);
         setLoadingTemplates(false);
       })
       .catch(err => {
@@ -3929,7 +4042,7 @@ function AdminPage() {
                       </td>
                     </tr>
                   ) : orders.length > 0 ? (
-                    orders.map(order => (
+                    orders.slice((ordersPage - 1) * ordersPerPage, ordersPage * ordersPerPage).map(order => (
                       <tr key={order.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                         <td className="py-4 px-6 font-mono text-xs text-slate-400">
                           {order.id.slice(0, 8)}...
@@ -4018,6 +4131,16 @@ function AdminPage() {
                 </tbody>
               </table>
             </div>
+            <div className="p-4 border-t border-white/5 bg-white/[0.02]">
+              <PaginationBar
+                currentPage={ordersPage}
+                totalPages={Math.ceil(orders.length / ordersPerPage) || 1}
+                onPageChange={setOrdersPage}
+                totalItems={orders.length}
+                itemsPerPage={ordersPerPage}
+                isDark={true}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -4057,7 +4180,7 @@ function AdminPage() {
                       </td>
                     </tr>
                   ) : templates.length > 0 ? (
-                    templates.map(tpl => (
+                    templates.slice((templatesPage - 1) * templatesPerPage, templatesPage * templatesPerPage).map(tpl => (
                       <tr key={tpl.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                         <td className="py-4 px-6 font-mono text-xs text-slate-400">
                           {tpl.id}
@@ -4130,6 +4253,16 @@ function AdminPage() {
                 </tbody>
               </table>
             </div>
+            <div className="p-4 border-t border-white/5 bg-white/[0.02]">
+              <PaginationBar
+                currentPage={templatesPage}
+                totalPages={Math.ceil(templates.length / templatesPerPage) || 1}
+                onPageChange={setTemplatesPage}
+                totalItems={templates.length}
+                itemsPerPage={templatesPerPage}
+                isDark={true}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -4178,7 +4311,7 @@ function AdminPage() {
                       </td>
                     </tr>
                   ) : promocodes.length > 0 ? (
-                    promocodes.map(promo => (
+                    promocodes.slice((promocodesPage - 1) * promocodesPerPage, promocodesPage * promocodesPerPage).map(promo => (
                       <tr key={promo.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                         <td className="py-4 px-6 font-mono text-xs font-bold text-amber-400">
                           {promo.code}
@@ -4234,6 +4367,16 @@ function AdminPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+            <div className="p-4 border-t border-white/5 bg-white/[0.02]">
+              <PaginationBar
+                currentPage={promocodesPage}
+                totalPages={Math.ceil(promocodes.length / promocodesPerPage) || 1}
+                onPageChange={setPromocodesPage}
+                totalItems={promocodes.length}
+                itemsPerPage={promocodesPerPage}
+                isDark={true}
+              />
             </div>
           </div>
         </div>

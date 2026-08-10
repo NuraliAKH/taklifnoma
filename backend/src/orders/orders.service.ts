@@ -185,7 +185,23 @@ export class OrdersService {
     return order;
   }
 
-  async findAll(): Promise<Order[]> {
+  async findAll(page?: number, limit?: number): Promise<any> {
+    if (page && limit) {
+      const skip = (page - 1) * limit;
+      const [data, total] = await Promise.all([
+        this.prisma.order.findMany({
+          skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            template: true,
+            user: true,
+          },
+        }),
+        this.prisma.order.count(),
+      ]);
+      return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+    }
     return this.prisma.order.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
