@@ -2069,7 +2069,11 @@ function EditorPage() {
                 const isGalleryField = field.type === 'gallery' || field.id === 'photos';
                 const isVideoField = field.type === 'video' || field.id === 'videoUrl';
                 const isColorPaletteField = field.id === 'dressColors' || field.id === 'dressCode' || field.type === 'color_palette';
-                const isScheduleField = field.type === 'schedule' || field.id === 'schedule';
+                const isScheduleField = field.type === 'schedule' || 
+                  field.id === 'schedule' || 
+                  field.id === 'scheduleItems' || 
+                  (typeof field.label === 'string' && (field.label.includes('Программа') || field.label.includes('Этапы'))) ||
+                  Array.isArray(formData[field.id]);
                 const oliveGroupTitle = isOliveEditorialTemplate(template.id)
                   ? ({
                       groomName: 'Пара и дата',
@@ -2341,40 +2345,51 @@ function EditorPage() {
                   return (
                     <div key={field.id} className="flex flex-col gap-3 relative">
                       {groupHeading}
-                      <div className="flex justify-between items-center">
-                        <label className="text-xs font-semibold text-slate-300 tracking-wide flex items-center gap-2">
-                          <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                      <div className="flex justify-between items-center bg-white/5 border border-white/10 p-3 rounded-xl">
+                        <label className="text-xs font-bold text-amber-300 tracking-wide flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-amber-400" />
                           <span>{field.label || 'Программа вечера / Этапы'}</span>
                         </label>
-                        {!isOliveEditorialTemplate(template.id) && (
+                        <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => handleRemoveUserField(field.id)}
-                            className="text-slate-500 hover:text-rose-500 transition-colors p-1"
-                            title="Удалить поле"
+                            onClick={handleAddScheduleItem}
+                            className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-xs font-bold flex items-center gap-1 transition-all shadow-md shadow-amber-500/10"
+                            title="Добавить новый этап в программу"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Plus className="w-3.5 h-3.5" /> Добавить этап
                           </button>
-                        )}
+                          {!isOliveEditorialTemplate(template.id) && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveUserField(field.id)}
+                              className="text-slate-500 hover:text-rose-500 transition-colors p-1"
+                              title="Удалить секцию"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       <div className="flex flex-col gap-2.5">
                         {scheduleItems.map((item: any, idx: number) => (
-                          <div key={idx} className="p-3 bg-white/5 border border-white/10 rounded-xl flex flex-col gap-2 relative group hover:border-white/20 transition-all">
+                          <div key={idx} className="p-3 bg-slate-900/90 border border-white/10 rounded-xl flex flex-col gap-2 relative group hover:border-amber-400/40 transition-all shadow-lg">
                             <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-500 w-4">{idx + 1}.</span>
                               <input
                                 type="text"
                                 value={item.time || ''}
-                                placeholder="18:00"
+                                placeholder="Время (18:00)"
                                 onChange={(e) => handleUpdateScheduleItem(idx, 'time', e.target.value)}
-                                className="w-20 px-2.5 py-1.5 bg-slate-900/80 border border-white/10 rounded-lg text-xs font-mono font-bold text-amber-400 focus:border-amber-400 outline-none"
+                                className="w-24 px-2.5 py-1.5 bg-black/50 border border-white/15 focus:border-amber-400 rounded-lg text-xs font-mono font-bold text-amber-400 outline-none"
                               />
                               <input
                                 type="text"
                                 value={item.title || ''}
-                                placeholder="Заголовок этапа"
+                                placeholder="Название этапа (Title)"
                                 onChange={(e) => handleUpdateScheduleItem(idx, 'title', e.target.value)}
-                                className="flex-1 px-3 py-1.5 bg-slate-900/80 border border-white/10 rounded-lg text-xs font-semibold text-slate-200 focus:border-amber-400 outline-none"
+                                className="flex-1 px-3 py-1.5 bg-black/50 border border-white/15 focus:border-amber-400 rounded-lg text-xs font-semibold text-slate-100 outline-none"
                               />
                               {scheduleItems.length > 1 && (
                                 <button
@@ -2390,9 +2405,9 @@ function EditorPage() {
                             <input
                               type="text"
                               value={item.desc || ''}
-                              placeholder="Краткое описание (необязательно)"
+                              placeholder="Описание этапа (Description)"
                               onChange={(e) => handleUpdateScheduleItem(idx, 'desc', e.target.value)}
-                              className="w-full px-3 py-1.5 bg-slate-900/40 border border-white/5 rounded-lg text-[11px] text-slate-400 focus:border-amber-400/50 outline-none"
+                              className="w-full px-3 py-1.5 bg-black/30 border border-white/5 focus:border-amber-400/50 rounded-lg text-[11px] text-slate-300 outline-none"
                             />
                           </div>
                         ))}
@@ -2400,14 +2415,17 @@ function EditorPage() {
                         <button
                           type="button"
                           onClick={handleAddScheduleItem}
-                          className="py-2.5 px-3 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl text-xs font-semibold text-amber-400 flex items-center justify-center gap-1.5 transition-all mt-1"
+                          className="py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-dashed border-white/20 hover:border-amber-400 rounded-xl text-xs font-semibold text-amber-400 flex items-center justify-center gap-1.5 transition-all mt-1"
                         >
-                          <Plus className="w-4 h-4" /> Добавить этап в программу
+                          <Plus className="w-4 h-4" /> Добавить еще этап (Время, Название, Описание)
                         </button>
                       </div>
                     </div>
                   );
                 }
+
+                const rawVal = formData[field.id];
+                const safeVal = typeof rawVal === 'string' ? rawVal : (Array.isArray(rawVal) ? '' : (rawVal ? String(rawVal) : ''));
 
                 return (
                   <div key={field.id} className="flex flex-col gap-2 relative">
@@ -2417,7 +2435,7 @@ function EditorPage() {
                       <div className="flex items-center gap-2">
                         {field.maxLength && (
                           <span className="text-[10px] text-slate-500">
-                            {(formData[field.id] || '').length}/{field.maxLength}
+                            {safeVal.length}/{field.maxLength}
                           </span>
                         )}
                         {!isOliveEditorialTemplate(template.id) && (
@@ -2438,7 +2456,7 @@ function EditorPage() {
                         rows={3}
                         className="w-full px-4 py-3 bg-white/5 border border-white/10 hover:border-white/20 focus:border-amber-500 focus:bg-white/10 rounded-xl outline-none text-sm transition-all placeholder:text-slate-600 resize-none font-sans"
                         placeholder={field.placeholder}
-                        value={formData[field.id] || ''}
+                        value={safeVal}
                         maxLength={field.maxLength}
                         onChange={(e) => handleInputChange(field.id, e.target.value)}
                       />
@@ -2447,7 +2465,7 @@ function EditorPage() {
                         type="text"
                         className="w-full px-4 py-3 bg-white/5 border border-white/10 hover:border-white/20 focus:border-amber-500 focus:bg-white/10 rounded-xl outline-none text-sm transition-all placeholder:text-slate-600"
                         placeholder={field.placeholder}
-                        value={formData[field.id] || ''}
+                        value={safeVal}
                         maxLength={field.maxLength}
                         onChange={(e) => handleInputChange(field.id, e.target.value)}
                       />
