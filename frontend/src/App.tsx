@@ -1069,7 +1069,7 @@ function CatalogPage() {
   const [typeFilter, setTypeFilter] = useState('website');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 6;
   const { theme } = useTheme();
   const { t, lang } = useLanguage();
   const isDark = theme === 'dark';
@@ -3629,7 +3629,7 @@ function AdminPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [templatesPage, setTemplatesPage] = useState(1);
-  const templatesPerPage = 10;
+  const templatesPerPage = 6;
 
   // Promocodes State
   const [promocodes, setPromocodes] = useState<any[]>([]);
