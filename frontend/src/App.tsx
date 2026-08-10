@@ -49,7 +49,8 @@ import {
   Tag,
   Menu,
   RefreshCw,
-  Clock
+  Clock,
+  Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WebsiteTemplateDispatcher } from './templates/sites';
@@ -576,6 +577,7 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
     venue: { id: 'venue', label: 'Название ресторана / площадки', placeholder: 'Versal Saroyi' },
     address: { id: 'address', label: 'Адрес и локация', placeholder: 'г. Ташкент, ул. Бобура, 45' },
     schedule: { id: 'schedule', label: 'Программа вечера / Этапы', type: 'schedule' },
+    dressColors: { id: 'dressColors', label: 'Цвета дресс-кода & палитра', type: 'color_palette' },
     photoUrl: { id: 'photoUrl', label: 'Главное фото молодоженов (Surat)', type: 'image', placeholder: '' },
     photos: { id: 'photos', label: 'Галерея фотографий (Suratlar)', type: 'gallery', max: family === 'malika' ? 6 : 10 },
     videoUrl: { id: 'videoUrl', label: 'Видео-ролик / Заставка', type: 'video', placeholder: '' },
@@ -589,23 +591,23 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
 
   switch (family) {
     case 'hilal':
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'dressColors', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
       break;
     case 'envelope':
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'dressColors', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
       break;
     case 'malika':
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'dressColors', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
       break;
     case 'marmar':
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner', 'phone'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'dressColors', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner', 'phone'];
       break;
     case 'anor':
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'dressColors', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner'];
       break;
     case 'simple':
     default:
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'dressColors', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner'];
       break;
   }
 
