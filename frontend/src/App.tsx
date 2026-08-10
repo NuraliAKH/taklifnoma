@@ -978,6 +978,21 @@ export default function App() {
   );
 }
 
+// ----------------- USE IS MOBILE HOOK -----------------
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 640 : false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return isMobile;
+}
+
 // ----------------- PAGINATION BAR COMPONENT -----------------
 function PaginationBar({
   currentPage,
@@ -1064,12 +1079,15 @@ function PaginationBar({
 // ----------------- CATALOG PAGE -----------------
 function CatalogPage() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('website');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
   const itemsPerPage = 6;
+  const mobileSentinelRef = useRef<HTMLDivElement | null>(null);
   const { theme } = useTheme();
   const { t, lang } = useLanguage();
   const isDark = theme === 'dark';
@@ -1084,6 +1102,11 @@ function CatalogPage() {
       .catch(err => console.error(err));
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+    setMobileVisibleCount(6);
+  }, [categoryFilter, typeFilter]);
+
   const filteredTemplates = templates.filter(t => {
     // Exclude video templates completely
     if (t.media_url?.endsWith('.mp4')) return false;
@@ -1096,6 +1119,34 @@ function CatalogPage() {
       (typeFilter === 'website' && t.type === 'website');
     return matchCategory && matchType;
   });
+
+  // Mobile Infinite Scroll Observer
+  useEffect(() => {
+    if (!isMobile) return;
+    const sentinel = mobileSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setMobileVisibleCount(prev => {
+            if (prev < filteredTemplates.length) {
+              return Math.min(prev + 6, filteredTemplates.length);
+            }
+            return prev;
+          });
+        }
+      },
+      { rootMargin: '250px' }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [isMobile, filteredTemplates.length, mobileVisibleCount]);
+
+  const displayedTemplates = isMobile
+    ? filteredTemplates.slice(0, mobileVisibleCount)
+    : filteredTemplates.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const faqItems = [
     {
@@ -1291,7 +1342,7 @@ function CatalogPage() {
         {filteredTemplates.length > 0 ? (
           <div className="flex flex-col gap-6">
             <div className="flex flex-wrap justify-center gap-6">
-              {filteredTemplates.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(template => (
+              {displayedTemplates.map(template => (
                 <div
                   key={template.id}
                   onClick={() => navigate(`/editor/${template.id}`)}
@@ -1385,14 +1436,22 @@ function CatalogPage() {
               ))}
             </div>
 
-            <PaginationBar
-              currentPage={currentPage}
-              totalPages={Math.ceil(filteredTemplates.length / itemsPerPage) || 1}
-              onPageChange={setCurrentPage}
-              totalItems={filteredTemplates.length}
-              itemsPerPage={itemsPerPage}
-              isDark={isDark}
-            />
+            {!isMobile && (
+              <PaginationBar
+                currentPage={currentPage}
+                totalPages={Math.ceil(filteredTemplates.length / itemsPerPage) || 1}
+                onPageChange={setCurrentPage}
+                totalItems={filteredTemplates.length}
+                itemsPerPage={itemsPerPage}
+                isDark={isDark}
+              />
+            )}
+
+            {isMobile && mobileVisibleCount < filteredTemplates.length && (
+              <div ref={mobileSentinelRef} className="py-6 flex justify-center items-center w-full">
+                <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center py-20 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center justify-center gap-3">
@@ -3276,13 +3335,39 @@ function RegisterPage() {
 function CabinetPage() {
   const { token, user, logout } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [ordersList, setOrdersList] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRsvpOrderId, setSelectedRsvpOrderId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
   const itemsPerPage = 6;
+  const mobileSentinelRef = useRef<HTMLDivElement | null>(null);
   const totalPages = Math.ceil(ordersList.length / itemsPerPage) || 1;
+
+  // Mobile Infinite Scroll Observer
+  useEffect(() => {
+    if (!isMobile) return;
+    const sentinel = mobileSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setMobileVisibleCount(prev => Math.min(prev + 6, ordersList.length));
+        }
+      },
+      { rootMargin: '250px' }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [isMobile, ordersList.length, mobileVisibleCount]);
+
+  const displayedOrders = isMobile
+    ? ordersList.slice(0, mobileVisibleCount)
+    : ordersList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   useEffect(() => {
     if (!selectedRsvpOrderId) return;
@@ -3357,7 +3442,7 @@ function CabinetPage() {
       ) : ordersList.length > 0 ? (
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ordersList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((order) => (
+            {displayedOrders.map((order) => (
               <div 
                 key={order.id}
                 className="glass-panel rounded-2xl overflow-hidden border border-white/10 flex flex-col justify-between group hover:border-amber-500/30 transition-all duration-300 shadow-lg"
@@ -3542,15 +3627,23 @@ function CabinetPage() {
           ))}
         </div>
 
-        <PaginationBar
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          totalItems={ordersList.length}
-          itemsPerPage={itemsPerPage}
-          isDark={true}
-        />
-      </div>
+          {!isMobile && (
+            <PaginationBar
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              totalItems={ordersList.length}
+              itemsPerPage={itemsPerPage}
+              isDark={true}
+            />
+          )}
+
+          {isMobile && mobileVisibleCount < ordersList.length && (
+            <div ref={mobileSentinelRef} className="py-6 flex justify-center items-center w-full">
+              <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />
+            </div>
+          )}
+        </div>
     ) : (
         <div className="text-center py-20 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center justify-center gap-3">
           <p className="text-slate-400 text-sm">У вас пока нет оформленных приглашений</p>
