@@ -2069,6 +2069,7 @@ function EditorPage() {
                 const isGalleryField = field.type === 'gallery' || field.id === 'photos';
                 const isVideoField = field.type === 'video' || field.id === 'videoUrl';
                 const isColorPaletteField = field.id === 'dressColors' || field.id === 'dressCode' || field.type === 'color_palette';
+                const isScheduleField = field.type === 'schedule' || field.id === 'schedule';
                 const oliveGroupTitle = isOliveEditorialTemplate(template.id)
                   ? ({
                       groomName: 'Пара и дата',
@@ -2297,6 +2298,113 @@ function EditorPage() {
                         <span>{formData.videoUrl ? 'Заменить видео-файл' : 'Загрузить видео (MP4 / WebM)'}</span>
                         <input type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
                       </label>
+                    </div>
+                  );
+                }
+
+                if (isScheduleField) {
+                  const scheduleItems: any[] = Array.isArray(formData.schedule) && formData.schedule.length > 0
+                    ? formData.schedule
+                    : Array.isArray(formData.scheduleItems) && formData.scheduleItems.length > 0
+                      ? formData.scheduleItems
+                      : [
+                          { time: '17:00', title: 'Сбор гостей & Welcome Drink', desc: 'Живая музыка, фотозона и приветственные напитки' },
+                          { time: '18:00', title: 'Торжественный Вход & Регистрация', desc: 'Официальная церемония и никоҳ' },
+                          { time: '19:00', title: 'Праздничный Банкет & Шоу', desc: 'Поздравления, танцы и шоу-программа' },
+                          { time: '21:30', title: 'Свадебный Торт & Салют', desc: 'Сладкий финал сказочного вечера' },
+                        ];
+
+                  const handleUpdateScheduleItem = (index: number, key: string, val: string) => {
+                    const updated = scheduleItems.map((item, i) => {
+                      if (i === index) {
+                        return { ...item, [key]: val };
+                      }
+                      return item;
+                    });
+                    setFormData(prev => ({ ...prev, schedule: updated, scheduleItems: updated }));
+                  };
+
+                  const handleAddScheduleItem = () => {
+                    const lastItem = scheduleItems[scheduleItems.length - 1];
+                    const nextTime = formatNextScheduleTime(lastItem?.time);
+                    const newItem = { time: nextTime, title: 'Новый этап', desc: '' };
+                    const updated = [...scheduleItems, newItem];
+                    setFormData(prev => ({ ...prev, schedule: updated, scheduleItems: updated }));
+                  };
+
+                  const handleRemoveScheduleItem = (index: number) => {
+                    if (scheduleItems.length <= 1) return;
+                    const updated = scheduleItems.filter((_, i) => i !== index);
+                    setFormData(prev => ({ ...prev, schedule: updated, scheduleItems: updated }));
+                  };
+
+                  return (
+                    <div key={field.id} className="flex flex-col gap-3 relative">
+                      {groupHeading}
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs font-semibold text-slate-300 tracking-wide flex items-center gap-2">
+                          <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                          <span>{field.label || 'Программа вечера / Этапы'}</span>
+                        </label>
+                        {!isOliveEditorialTemplate(template.id) && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveUserField(field.id)}
+                            className="text-slate-500 hover:text-rose-500 transition-colors p-1"
+                            title="Удалить поле"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2.5">
+                        {scheduleItems.map((item: any, idx: number) => (
+                          <div key={idx} className="p-3 bg-white/5 border border-white/10 rounded-xl flex flex-col gap-2 relative group hover:border-white/20 transition-all">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={item.time || ''}
+                                placeholder="18:00"
+                                onChange={(e) => handleUpdateScheduleItem(idx, 'time', e.target.value)}
+                                className="w-20 px-2.5 py-1.5 bg-slate-900/80 border border-white/10 rounded-lg text-xs font-mono font-bold text-amber-400 focus:border-amber-400 outline-none"
+                              />
+                              <input
+                                type="text"
+                                value={item.title || ''}
+                                placeholder="Заголовок этапа"
+                                onChange={(e) => handleUpdateScheduleItem(idx, 'title', e.target.value)}
+                                className="flex-1 px-3 py-1.5 bg-slate-900/80 border border-white/10 rounded-lg text-xs font-semibold text-slate-200 focus:border-amber-400 outline-none"
+                              />
+                              {scheduleItems.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveScheduleItem(idx)}
+                                  className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
+                                  title="Удалить этап"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                            <input
+                              type="text"
+                              value={item.desc || ''}
+                              placeholder="Краткое описание (необязательно)"
+                              onChange={(e) => handleUpdateScheduleItem(idx, 'desc', e.target.value)}
+                              className="w-full px-3 py-1.5 bg-slate-900/40 border border-white/5 rounded-lg text-[11px] text-slate-400 focus:border-amber-400/50 outline-none"
+                            />
+                          </div>
+                        ))}
+
+                        <button
+                          type="button"
+                          onClick={handleAddScheduleItem}
+                          className="py-2.5 px-3 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl text-xs font-semibold text-amber-400 flex items-center justify-center gap-1.5 transition-all mt-1"
+                        >
+                          <Plus className="w-4 h-4" /> Добавить этап в программу
+                        </button>
+                      </div>
                     </div>
                   );
                 }
@@ -3527,7 +3635,7 @@ function CabinetPage() {
                     {/* Config texts preview */}
                     <div className="mt-3 bg-white/5 border border-white/5 rounded-lg p-2.5 text-[10px] text-slate-400 max-h-24 overflow-y-auto">
                       {Object.entries(order.user_data)
-                        .filter(([k, v]) => k !== 'rsvps' && k !== '_customFields' && typeof v === 'string' && (v as string).trim() !== '')
+                        .filter(([k, v]) => k !== 'rsvps' && k !== '_customFields' && v !== null && v !== undefined && (typeof v !== 'string' || v.trim() !== ''))
                         .map(([k, v]) => {
                           const fieldLabels: Record<string, string> = {
                             groomName: 'Жених',
@@ -3541,21 +3649,53 @@ function CabinetPage() {
                             names: 'Имена',
                             title: 'Заголовок',
                             details: 'Детали',
+                            schedule: 'Программа',
+                            scheduleItems: 'Программа',
                           };
+
+                          let displayVal = '';
+                          if (Array.isArray(v)) {
+                            if (k === 'schedule' || k === 'scheduleItems') {
+                              displayVal = `${v.length} этапа(ов)`;
+                            } else if (typeof v[0] === 'string') {
+                              displayVal = v.join(', ');
+                            } else {
+                              displayVal = `${v.length} элем.`;
+                            }
+                          } else if (typeof v === 'object') {
+                            displayVal = JSON.stringify(v);
+                          } else {
+                            displayVal = String(v);
+                          }
+
                           return (
                             <div key={k} className="flex justify-between py-0.5 border-b border-white/5 last:border-0 gap-2">
                               <span className="text-slate-400 shrink-0 font-medium">{fieldLabels[k] || k}:</span>
-                              <span className="text-[#f8fafc] font-medium truncate max-w-[170px]">{String(v)}</span>
+                              <span className="text-[#f8fafc] font-medium truncate max-w-[170px]">{displayVal}</span>
                             </div>
                           );
                         })}
                       {Array.isArray(order.user_data?._customFields) && order.user_data._customFields.map((cf: any) => {
                         const val = order.user_data[cf.id];
-                        if (!val) return null;
+                        if (val === null || val === undefined) return null;
+                        let displayVal = '';
+                        if (Array.isArray(val)) {
+                          if (cf.id === 'schedule' || cf.id === 'scheduleItems') {
+                            displayVal = `${val.length} этапа(ов)`;
+                          } else if (typeof val[0] === 'string') {
+                            displayVal = val.join(', ');
+                          } else {
+                            displayVal = `${val.length} элем.`;
+                          }
+                        } else if (typeof val === 'object') {
+                          displayVal = JSON.stringify(val);
+                        } else {
+                          displayVal = String(val);
+                        }
                         return (
                           <div key={cf.id} className="flex justify-between py-0.5 border-b border-white/5 last:border-0 gap-2">
                             <span className="text-slate-400 shrink-0 font-medium">{cf.label}:</span>
-                            <span className="text-[#f8fafc] font-medium truncate max-w-[170px]">{String(val)}</span>
+                            <span className="text-[#f8fafc] font-medium truncate max-w-[170px]">{displayVal}</span>
                           </div>
                         );
                       })}
