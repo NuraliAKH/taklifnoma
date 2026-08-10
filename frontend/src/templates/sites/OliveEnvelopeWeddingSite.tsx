@@ -615,7 +615,7 @@ export const OliveEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = ({
           </footer>
         </main>
 
-        {opened && onToggleAudio && !isPreview && (
+        {opened && onToggleAudio && (
           <motion.button
             type="button"
             className="olive-floating-music fixed bottom-5 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full text-white"

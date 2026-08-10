@@ -624,7 +624,7 @@ export const MarmarWeddingSite: React.FC<WebsiteTemplateProps> = ({
             </button>
           )}
 
-          {!isPreview && onToggleAudio && (
+          {onToggleAudio && (
             <button
               onClick={onToggleAudio}
               className="w-10 h-10 rounded-full bg-stone-900/85 border border-amber-400/60 text-amber-300 flex items-center justify-center shadow-xl backdrop-blur-md hover:bg-stone-800 transition-all"

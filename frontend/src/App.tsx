@@ -2030,8 +2030,17 @@ function EditorPage() {
               template={template} 
               formData={formData} 
               isOpened={previewTab === 'opened'}
-              onOpenEnvelope={() => setPreviewTab('opened')}
+              onOpenEnvelope={() => {
+                setPreviewTab('opened');
+                if (!editorMusicPlaying && editorAudioRef.current) {
+                  editorAudioRef.current.play()
+                    .then(() => setEditorMusicPlaying(true))
+                    .catch(() => {});
+                }
+              }}
               onToggleSection={handleToggleSection} 
+              isPlaying={editorMusicPlaying}
+              onToggleAudio={toggleEditorMusic}
             />
           </div>
           <div className="text-center text-xs text-slate-500 flex items-center justify-center gap-1.5">
@@ -2897,7 +2906,9 @@ function TemplatePreview({
   catalogMode = false,
   isOpened = false,
   onOpenEnvelope,
-  onToggleSection
+  onToggleSection,
+  isPlaying,
+  onToggleAudio
 }: { 
   template: Template; 
   formData: Record<string, any>; 
@@ -2906,6 +2917,8 @@ function TemplatePreview({
   isOpened?: boolean;
   onOpenEnvelope?: () => void;
   onToggleSection?: (sectionKey: string) => void;
+  isPlaying?: boolean;
+  onToggleAudio?: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -3052,6 +3065,8 @@ function TemplatePreview({
             isOpened={isOpened}
             onOpenEnvelope={onOpenEnvelope}
             onToggleSection={onToggleSection}
+            isPlaying={isPlaying}
+            onToggleAudio={onToggleAudio}
             timeLeft={previewTimeLeft}
           />
         </div>

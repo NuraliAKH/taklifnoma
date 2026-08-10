@@ -381,7 +381,7 @@ export const AnorWeddingSite: React.FC<WebsiteTemplateProps> = ({
             </button>
           )}
 
-          {!isPreview && onToggleAudio && (
+          {onToggleAudio && (
             <button
               onClick={onToggleAudio}
               className="w-10 h-10 rounded-full bg-stone-950/90 border border-amber-500/40 text-amber-400 flex items-center justify-center shadow-xl backdrop-blur-md hover:bg-stone-900 transition-all"
