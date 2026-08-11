@@ -2347,12 +2347,12 @@ function EditorPage() {
                   return (
                     <div key={field.id} className="flex flex-col gap-3 relative">
                       {groupHeading}
-                      <div className="flex justify-between items-center bg-white/5 border border-white/10 p-3 rounded-xl">
-                        <label className="text-xs font-bold text-amber-300 tracking-wide flex items-center gap-2">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-white/5 border border-white/10 p-3 rounded-xl">
+                        <label className="min-w-0 text-xs font-bold text-amber-300 tracking-wide flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-amber-400" />
                           <span>{field.label || 'Программа вечера / Этапы'}</span>
                         </label>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 self-end sm:self-auto">
                           <button
                             type="button"
                             onClick={handleAddScheduleItem}
@@ -2377,27 +2377,27 @@ function EditorPage() {
                       <div className="flex flex-col gap-2.5">
                         {scheduleItems.map((item: any, idx: number) => (
                           <div key={idx} className="p-3 bg-slate-900/90 border border-white/10 rounded-xl flex flex-col gap-2 relative group hover:border-amber-400/40 transition-all shadow-lg">
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-bold text-slate-500 w-4">{idx + 1}.</span>
+                            <div className="grid grid-cols-[1rem_minmax(0,1fr)_auto] sm:grid-cols-[1rem_6rem_minmax(0,1fr)_auto] items-center gap-2 min-w-0">
+                              <span className="text-[10px] font-bold text-slate-500 w-4 row-start-1">{idx + 1}.</span>
                               <input
                                 type="text"
                                 value={item.time || ''}
                                 placeholder="Время (18:00)"
                                 onChange={(e) => handleUpdateScheduleItem(idx, 'time', e.target.value)}
-                                className="w-24 px-2.5 py-1.5 bg-black/50 border border-white/15 focus:border-amber-400 rounded-lg text-xs font-mono font-bold text-amber-400 outline-none"
+                                className="w-full min-w-0 px-2.5 py-1.5 bg-black/50 border border-white/15 focus:border-amber-400 rounded-lg text-xs font-mono font-bold text-amber-400 outline-none"
                               />
                               <input
                                 type="text"
                                 value={item.title || ''}
                                 placeholder="Название этапа (Title)"
                                 onChange={(e) => handleUpdateScheduleItem(idx, 'title', e.target.value)}
-                                className="flex-1 px-3 py-1.5 bg-black/50 border border-white/15 focus:border-amber-400 rounded-lg text-xs font-semibold text-slate-100 outline-none"
+                                className="col-start-2 col-span-2 row-start-2 sm:col-start-3 sm:col-span-1 sm:row-start-1 w-full min-w-0 px-3 py-1.5 bg-black/50 border border-white/15 focus:border-amber-400 rounded-lg text-xs font-semibold text-slate-100 outline-none"
                               />
                               {scheduleItems.length > 1 && (
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveScheduleItem(idx)}
-                                  className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
+                                  className="col-start-3 row-start-1 sm:col-start-4 p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
                                   title="Удалить этап"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -2512,7 +2512,7 @@ function EditorPage() {
                         {getMusicTrackTitle(formData.musicUrl)}
                       </span>
                       <span className="text-[10px] text-slate-400">
-                        {formData.musicUrl ? 'Выбранный трек' : 'По умолчанию: Свадебный марш'}
+                        {formData.musicUrl ? 'Выбранный трек' : `По умолчанию: ${DEFAULT_MUSIC_TRACK.title}`}
                       </span>
                     </div>
                   </div>

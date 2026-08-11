@@ -8,12 +8,6 @@ export interface MusicTrack {
 // All URLs are verified public domain / CC0 audio from Pixabay (no CORS restrictions)
 export const PRESET_MUSIC_TRACKS: MusicTrack[] = [
   {
-    id: 'wedding_march',
-    title: 'Марш Мендельсона (Классический свадебный)',
-    category: 'wedding',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_3bba10ef2c.mp3'
-  },
-  {
     id: 'canon_in_d',
     title: 'Канон в Ре мажор (Романтическая классика)',
     category: 'romantic',
@@ -24,24 +18,6 @@ export const PRESET_MUSIC_TRACKS: MusicTrack[] = [
     title: 'Романтическое фортепиано (Нежная мелодия)',
     category: 'romantic',
     url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3'
-  },
-  {
-    id: 'cinematic_waltz',
-    title: 'Торжественный вальс (Праздничная оркестровая)',
-    category: 'classical',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/24/audio_c8c8a73467.mp3'
-  },
-  {
-    id: 'oriental_wedding',
-    title: 'Восточная мелодия (Узбекский стиль)',
-    category: 'oriental',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/17/audio_1808fbf07a.mp3'
-  },
-  {
-    id: 'festive_celebration',
-    title: 'Праздничный марш (День рождения & Торжество)',
-    category: 'birthday',
-    url: 'https://cdn.pixabay.com/download/audio/2021/11/25/audio_5d613177bf.mp3'
   }
 ];
 
