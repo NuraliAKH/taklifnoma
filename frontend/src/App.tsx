@@ -7,6 +7,7 @@ import {
   useNavigate, 
   useParams, 
   useSearchParams,
+  useLocation,
   Navigate
 } from 'react-router-dom';
 import { 
@@ -60,10 +61,26 @@ import { ClickPayButtons } from './components/ClickPayButtons';
 import { GoogleLoginButton } from './components/GoogleLoginButton';
 import { AuthCallbackPage } from './components/AuthCallbackPage';
 import { parseEventDateTime, calculateTimeLeft, useCountdownTimer } from './utils/timer';
+import { initAnalytics, reachGoal, trackPageView } from './utils/analytics';
 import { PRESET_MUSIC_TRACKS, DEFAULT_MUSIC_TRACK, getMusicTrackTitle } from './constants/musicTracks';
 import { translations, type Language, type TranslationKey } from './i18n/translations';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
+
+function MetrikaTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
+  useEffect(() => {
+    initAnalytics();
+    trackPageView(`${location.pathname}${location.search}${location.hash}`);
+  }, [location.pathname, location.search, location.hash]);
+
+  return null;
+}
 
 // ----------------- THEME CONTEXT -----------------
 type ThemeMode = 'dark' | 'light';
@@ -686,7 +703,7 @@ function Layout({ children }: { children: React.ReactNode }) {
         isDark ? 'bg-[#090d16]/80 border-white/5 text-slate-100' : 'bg-white/80 border-slate-200 text-slate-900 shadow-sm'
       }`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-10 xl:px-0 h-[68px] sm:h-[72px] flex items-center justify-between gap-2 sm:gap-4">
-          <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 sm:gap-3 group min-w-0">
+          <Link to="/" onClick={() => { reachGoal('HEADER_LOGO_CLICK'); setMobileMenuOpen(false); }} className="flex items-center gap-2 sm:gap-3 group min-w-0">
             <img
               src="/logo_icon.png"
               alt="Web-Taklifnoma"
@@ -700,7 +717,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-2 lg:gap-3" aria-label="Основная навигация">
-            <Link to="/" className={`px-3 py-2 text-sm font-semibold rounded-xl transition-colors ${
+            <Link to="/" onClick={() => reachGoal('HEADER_CATALOG_CLICK')} className={`px-3 py-2 text-sm font-semibold rounded-xl transition-colors ${
               isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
             }`}>
               {t('navCatalog')}
@@ -773,6 +790,7 @@ function Layout({ children }: { children: React.ReactNode }) {
             ) : (
               <Link
                 to="/login"
+                onClick={() => reachGoal('HEADER_LOGIN_CLICK')}
                 className="px-5 py-2.5 bg-amber-500 text-slate-950 text-sm font-extrabold rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-amber-500/15 hover:bg-amber-400"
               >
                 {t('navLogin')}
@@ -837,7 +855,7 @@ function Layout({ children }: { children: React.ReactNode }) {
               aria-label="Мобильная навигация"
             >
               <div className="px-4 sm:px-6 py-3 flex flex-col gap-1">
-                <Link onClick={() => setMobileMenuOpen(false)} to="/" className="px-4 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500/10">
+                <Link onClick={() => { reachGoal('HEADER_CATALOG_CLICK'); setMobileMenuOpen(false); }} to="/" className="px-4 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500/10">
                   {t('navCatalog')}
                 </Link>
                 {user ? (
@@ -855,7 +873,7 @@ function Layout({ children }: { children: React.ReactNode }) {
                     </button>
                   </>
                 ) : (
-                  <Link onClick={() => setMobileMenuOpen(false)} to="/login" className="mt-1 px-4 py-3 bg-amber-500 text-slate-950 text-sm font-extrabold rounded-xl text-center">
+                  <Link onClick={() => { reachGoal('HEADER_LOGIN_CLICK'); setMobileMenuOpen(false); }} to="/login" className="mt-1 px-4 py-3 bg-amber-500 text-slate-950 text-sm font-extrabold rounded-xl text-center">
                     {t('loginAccount')}
                   </Link>
                 )}
@@ -928,6 +946,8 @@ function Layout({ children }: { children: React.ReactNode }) {
 // ----------------- APPLICATION CONTAINER -----------------
 export function AppContent() {
   return (
+    <>
+    <MetrikaTracker />
     <Routes>
       <Route path="/" element={<Layout><CatalogPage /></Layout>} />
       <Route path="/editor/:id" element={<Layout><EditorPage /></Layout>} />
@@ -963,6 +983,7 @@ export function AppContent() {
       {/* Redirect fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   );
 }
 
@@ -1916,6 +1937,7 @@ function EditorPage() {
 
       const orderData = await res.json();
       if (!res.ok) throw new Error(orderData.message || 'Ошибка генерации');
+      reachGoal('INVITATION_CREATED', { template_id: template.id, order_id: orderData.id });
       
       // Calculate elapsed time and add a minimum of 1.2s delay for photo templates,
       // so the scanning animation is visible and looks high-quality.
@@ -3281,6 +3303,7 @@ function LoginPage() {
     e.preventDefault();
     try {
       await login(email, password);
+      reachGoal('LOGIN_SUCCESS');
       navigate(redirect, { replace: true });
     } catch (err) {}
   };
@@ -3384,6 +3407,7 @@ function RegisterPage() {
     e.preventDefault();
     try {
       await register(email, password);
+      reachGoal('REGISTER_SUCCESS');
       navigate(redirect, { replace: true });
     } catch (err) {}
   };
@@ -5249,6 +5273,7 @@ export function InvitationPage() {
       if (!res.ok) throw new Error();
       
       setRsvpSuccess(true);
+      reachGoal('RSVP_SUBMITTED', { attending: rsvpAttending, guest_count: rsvpAttending ? rsvpGuestCount : 0 });
       fetchOrder();
     } catch (err) {
       alert('Ошибка при отправке ответа. Попробуйте еще раз.');
