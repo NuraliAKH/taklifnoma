@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
 import { useCountdownTimer } from '../../utils/timer';
+import { PrivacyConsentCheckbox } from '../../components/PrivacyConsentCheckbox';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -707,7 +708,7 @@ export const SimpleWeddingSite: React.FC<WebsiteTemplateProps> = ({
                     onClick={() => setActiveModalPhoto(getMediaUrl(url))}
                     className="relative aspect-square rounded-xl overflow-hidden border border-stone-800 cursor-pointer"
                   >
-                    <img src={getMediaUrl(url)} alt="" className="w-full h-full object-cover" />
+                    <img src={getMediaUrl(url)} alt={`Фото свадебной галереи ${idx + 1}`} className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>
@@ -803,6 +804,7 @@ export const SimpleWeddingSite: React.FC<WebsiteTemplateProps> = ({
                     className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-100 outline-none"
                   />
 
+                  <PrivacyConsentCheckbox />
                   <button
                     type="submit"
                     disabled={rsvpState.isSubmitting || rsvpState.attending === null}

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
 import { useCountdownTimer, parseEventDateTime } from '../../utils/timer';
+import { PrivacyConsentCheckbox } from '../../components/PrivacyConsentCheckbox';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -1105,6 +1106,7 @@ export const TaklifetPinkSite: React.FC<WebsiteTemplateProps> = ({
                   </div>
                 )}
 
+                <PrivacyConsentCheckbox />
                 <button
                   type="submit"
                   disabled={rsvpState?.isSubmitting || !rsvpName.trim() || rsvpAttending === null}

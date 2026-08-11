@@ -61,7 +61,7 @@ import { ClickPayButtons } from './components/ClickPayButtons';
 import { GoogleLoginButton } from './components/GoogleLoginButton';
 import { AuthCallbackPage } from './components/AuthCallbackPage';
 import { parseEventDateTime, calculateTimeLeft, useCountdownTimer } from './utils/timer';
-import { initAnalytics, reachGoal, trackPageView } from './utils/analytics';
+import { ANALYTICS_CONSENT_KEY, initAnalytics, reachGoal, trackPageView } from './utils/analytics';
 import { PRESET_MUSIC_TRACKS, DEFAULT_MUSIC_TRACK, getMusicTrackTitle } from './constants/musicTracks';
 import { translations, type Language, type TranslationKey } from './i18n/translations';
 
@@ -69,17 +69,96 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 function MetrikaTracker() {
   const location = useLocation();
+  const [consentVersion, setConsentVersion] = useState(0);
 
   useEffect(() => {
-    initAnalytics();
+    const handleConsent = () => setConsentVersion(value => value + 1);
+    window.addEventListener('analytics-consent-change', handleConsent);
+    return () => window.removeEventListener('analytics-consent-change', handleConsent);
   }, []);
 
   useEffect(() => {
     initAnalytics();
     trackPageView(`${location.pathname}${location.search}${location.hash}`);
-  }, [location.pathname, location.search, location.hash]);
+  }, [location.pathname, location.search, location.hash, consentVersion]);
 
   return null;
+}
+
+const SITE_URL = 'https://web-taklifnoma.uz';
+
+function upsertMeta(selector: string, attributes: Record<string, string>) {
+  let element = document.head.querySelector<HTMLMetaElement>(selector);
+  if (!element) {
+    element = document.createElement('meta');
+    document.head.appendChild(element);
+  }
+  Object.entries(attributes).forEach(([name, value]) => element!.setAttribute(name, value));
+}
+
+function SeoManager() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const isHome = location.pathname === '/';
+    const title = isHome
+      ? 'Web-Taklifnoma — электронные приглашения в Узбекистане'
+      : location.pathname === '/login'
+        ? 'Вход — Web-Taklifnoma'
+        : location.pathname === '/register'
+          ? 'Регистрация — Web-Taklifnoma'
+          : location.pathname === '/privacy'
+            ? 'Политика конфиденциальности — Web-Taklifnoma'
+          : 'Web-Taklifnoma';
+    const description = isHome
+      ? 'Создайте персональный сайт-приглашение на свадьбу или торжество с RSVP, картой, таймером и музыкой.'
+      : 'Сервис электронных сайтов-приглашений Web-Taklifnoma.';
+    const canonicalPath = isHome ? '/' : location.pathname;
+    const canonical = `${SITE_URL}${canonicalPath}`;
+    const shouldIndex = isHome;
+
+    document.title = title;
+    upsertMeta('meta[name="description"]', { name: 'description', content: description });
+    upsertMeta('meta[name="robots"]', { name: 'robots', content: shouldIndex ? 'index, follow' : 'noindex, nofollow' });
+    upsertMeta('meta[property="og:title"]', { property: 'og:title', content: title });
+    upsertMeta('meta[property="og:description"]', { property: 'og:description', content: description });
+    upsertMeta('meta[property="og:url"]', { property: 'og:url', content: canonical });
+
+    let canonicalLink = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.rel = 'canonical';
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.href = canonical;
+  }, [location.pathname]);
+
+  return null;
+}
+
+function CookieBanner() {
+  const [visible, setVisible] = useState(() => !localStorage.getItem(ANALYTICS_CONSENT_KEY));
+
+  if (!visible) return null;
+
+  const saveConsent = (value: 'accepted' | 'declined') => {
+    localStorage.setItem(ANALYTICS_CONSENT_KEY, value);
+    setVisible(false);
+    window.dispatchEvent(new Event('analytics-consent-change'));
+  };
+
+  return (
+    <div className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-3xl rounded-2xl border border-white/15 bg-slate-950/95 p-4 text-slate-100 shadow-2xl backdrop-blur-xl sm:p-5" role="dialog" aria-label="Настройки файлов cookie">
+      <p className="text-sm font-bold">Мы используем файлы cookie</p>
+      <p className="mt-1 text-xs leading-relaxed text-slate-300">
+        С вашего согласия Яндекс.Метрика и Google Analytics помогают нам анализировать посещаемость и улучшать сайт.
+      </p>
+      <div className="mt-4 flex flex-wrap justify-end gap-2">
+        <button type="button" onClick={() => saveConsent('declined')} className="rounded-xl border border-white/15 px-4 py-2 text-xs font-semibold hover:bg-white/5">Отклонить</button>
+        <button type="button" onClick={() => saveConsent('accepted')} className="rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400">Принять</button>
+      </div>
+    </div>
+  );
 }
 
 // ----------------- THEME CONTEXT -----------------
@@ -687,9 +766,23 @@ function Layout({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme } = useTheme();
   const { lang, setLang, t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isDark = theme === 'dark';
+  const logoContent = (
+    <>
+      <img
+        src="/logo_icon.png"
+        alt="Web-Taklifnoma"
+        className="h-8 sm:h-11 w-auto max-w-[36px] sm:max-w-[48px] object-contain drop-shadow-md group-hover:scale-105 transition-transform"
+      />
+      <div className="min-w-0">
+        <span className="block text-xs sm:text-lg font-extrabold tracking-[0.1em] sm:tracking-[0.12em] gold-gradient-text whitespace-nowrap">WEB-TAKLIFNOMA</span>
+        <span className="hidden sm:block text-[9px] text-amber-500/70 tracking-[0.22em] font-semibold uppercase">Приглашения нового формата</span>
+      </div>
+    </>
+  );
 
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 selection:bg-amber-500 selection:text-slate-900 relative ${
@@ -703,17 +796,15 @@ function Layout({ children }: { children: React.ReactNode }) {
         isDark ? 'bg-[#090d16]/80 border-white/5 text-slate-100' : 'bg-white/80 border-slate-200 text-slate-900 shadow-sm'
       }`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-10 xl:px-0 h-[68px] sm:h-[72px] flex items-center justify-between gap-2 sm:gap-4">
-          <Link to="/" onClick={() => { reachGoal('HEADER_LOGO_CLICK'); setMobileMenuOpen(false); }} className="flex items-center gap-2 sm:gap-3 group min-w-0">
-            <img
-              src="/logo_icon.png"
-              alt="Web-Taklifnoma"
-              className="h-8 sm:h-11 w-auto max-w-[36px] sm:max-w-[48px] object-contain drop-shadow-md group-hover:scale-105 transition-transform"
-            />
-            <div className="min-w-0">
-              <h1 className="text-xs sm:text-lg font-extrabold tracking-[0.1em] sm:tracking-[0.12em] gold-gradient-text whitespace-nowrap">WEB-TAKLIFNOMA</h1>
-              <p className="hidden sm:block text-[9px] text-amber-500/70 tracking-[0.22em] font-semibold uppercase">Приглашения нового формата</p>
+          {location.pathname === '/' ? (
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0" aria-label="Web-Taklifnoma">
+              {logoContent}
             </div>
-          </Link>
+          ) : (
+            <Link to="/" onClick={() => { reachGoal('HEADER_LOGO_CLICK'); setMobileMenuOpen(false); }} className="flex items-center gap-2 sm:gap-3 group min-w-0">
+              {logoContent}
+            </Link>
+          )}
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-2 lg:gap-3" aria-label="Основная навигация">
@@ -944,15 +1035,51 @@ function Layout({ children }: { children: React.ReactNode }) {
 }
 
 // ----------------- APPLICATION CONTAINER -----------------
+function NotFoundPage() {
+  return (
+    <Layout>
+      <div className="flex flex-1 flex-col items-center justify-center py-20 text-center">
+        <span className="text-7xl font-black text-amber-400">404</span>
+        <h1 className="mt-4 text-2xl font-bold">Страница не найдена</h1>
+        <p className="mt-2 max-w-md text-sm text-slate-400">Возможно, адрес изменился или страница была удалена.</p>
+        <Link to="/" className="mt-6 rounded-xl bg-amber-500 px-5 py-3 text-sm font-bold text-slate-950 hover:bg-amber-400">Вернуться на главную</Link>
+      </div>
+    </Layout>
+  );
+}
+
+function PrivacyPage() {
+  return (
+    <Layout>
+      <article className="mx-auto max-w-3xl rounded-3xl border border-white/10 bg-slate-950/75 p-6 text-sm leading-relaxed text-slate-300 shadow-xl sm:p-10">
+        <h1 className="text-2xl font-bold text-white">Политика конфиденциальности</h1>
+        <p className="mt-4">Администрация Web-Taklifnoma обрабатывает данные, которые пользователь добровольно указывает при регистрации, создании приглашения и отправке RSVP.</p>
+        <h2 className="mt-6 text-lg font-bold text-white">Какие данные обрабатываются</h2>
+        <p className="mt-2">Email, имя, телефон, сведения о мероприятии, ответы гостей, технические данные браузера, IP-адрес и файлы cookie.</p>
+        <h2 className="mt-6 text-lg font-bold text-white">Цели обработки</h2>
+        <p className="mt-2">Предоставление сервиса, авторизация, создание приглашений, обработка RSVP, безопасность, поддержка и анализ работы сайта.</p>
+        <h2 className="mt-6 text-lg font-bold text-white">Аналитика</h2>
+        <p className="mt-2">Только после согласия посетителя сайт подключает Яндекс.Метрику и Google Analytics. Согласие можно изменить, очистив данные сайта в настройках браузера.</p>
+        <h2 className="mt-6 text-lg font-bold text-white">Хранение и удаление</h2>
+        <p className="mt-2">Данные хранятся в объёме и в течение срока, необходимых для работы сервиса. Пользователь может обратиться к администрации сайта для уточнения или удаления своих данных.</p>
+        <p className="mt-8 text-xs text-slate-500">Дата обновления: 11 августа 2026 года.</p>
+      </article>
+    </Layout>
+  );
+}
+
 export function AppContent() {
   return (
     <>
     <MetrikaTracker />
+    <SeoManager />
+    <CookieBanner />
     <Routes>
       <Route path="/" element={<Layout><CatalogPage /></Layout>} />
       <Route path="/editor/:id" element={<Layout><EditorPage /></Layout>} />
       <Route path="/login" element={<Layout><LoginPage /></Layout>} />
       <Route path="/register" element={<Layout><RegisterPage /></Layout>} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/invite/:id" element={<InvitationPage />} />
       
@@ -981,7 +1108,7 @@ export function AppContent() {
       />
 
       {/* Redirect fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
     </>
   );
@@ -1211,7 +1338,7 @@ function CatalogPage() {
                 ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' 
                 : 'bg-amber-100 text-amber-800 border-amber-400/50'
             }`}>
-              <img src="/logo_icon.png" alt="" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain shrink-0" /> 
+              <img src="/logo_icon.png" alt="Web-Taklifnoma" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain shrink-0" />
               <span>{t('heroBadge')}</span>
             </span>
           </div>
@@ -2266,7 +2393,7 @@ function EditorPage() {
                         <div className="grid grid-cols-4 gap-2 my-1">
                           {formData.photos.map((pUrl: string, idx: number) => (
                             <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group">
-                              <img src={getMediaUrl(pUrl)} alt="" className="w-full h-full object-cover" />
+                              <img src={getMediaUrl(pUrl)} alt={`Фото приглашения ${idx + 1}`} className="w-full h-full object-cover" />
                               <button
                                 type="button"
                                 onClick={() => {
@@ -2486,7 +2613,9 @@ function EditorPage() {
                       />
                     ) : (
                       <input 
-                        type="text"
+                        type={field.id === 'phone' ? 'tel' : field.id === 'email' ? 'email' : 'text'}
+                        inputMode={field.id === 'phone' ? 'tel' : undefined}
+                        autoComplete={field.id === 'phone' ? 'tel' : field.id === 'email' ? 'email' : undefined}
                         className="w-full px-4 py-3 bg-white/5 border border-white/10 hover:border-white/20 focus:border-amber-500 focus:bg-white/10 rounded-xl outline-none text-sm transition-all placeholder:text-slate-600"
                         placeholder={field.placeholder}
                         value={safeVal}
@@ -3344,6 +3473,7 @@ function LoginPage() {
               <Mail className="w-4 h-4 text-slate-500 absolute left-4 top-3.5" />
               <input 
                 type="email"
+                autoComplete="email"
                 required
                 className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 focus:border-amber-500 focus:bg-white/10 rounded-xl outline-none text-sm transition-all"
                 placeholder="email@example.com"
@@ -3359,6 +3489,7 @@ function LoginPage() {
               <Lock className="w-4 h-4 text-slate-500 absolute left-4 top-3.5" />
               <input 
                 type="password"
+                autoComplete="current-password"
                 required
                 className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 focus:border-amber-500 focus:bg-white/10 rounded-xl outline-none text-sm transition-all"
                 placeholder="••••••••"
@@ -3458,6 +3589,7 @@ function RegisterPage() {
               <Mail className="w-4 h-4 text-slate-500 absolute left-4 top-3.5" />
               <input 
                 type="email"
+                autoComplete="email"
                 required
                 className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 focus:border-amber-500 focus:bg-white/10 rounded-xl outline-none text-sm transition-all"
                 placeholder="email@example.com"
@@ -3473,6 +3605,7 @@ function RegisterPage() {
               <Lock className="w-4 h-4 text-slate-500 absolute left-4 top-3.5" />
               <input 
                 type="password"
+                autoComplete="new-password"
                 required
                 className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 focus:border-amber-500 focus:bg-white/10 rounded-xl outline-none text-sm transition-all"
                 placeholder="минимум 6 символов"
@@ -4488,7 +4621,7 @@ function AdminPage() {
                             {tpl.media_url.endsWith('.mp4') ? (
                               <video src={getMediaUrl(tpl.media_url)} className="w-full h-full object-cover" muted />
                             ) : (
-                              <img src={getMediaUrl(tpl.media_url)} className="w-full h-full object-cover" alt="" />
+                              <img src={getMediaUrl(tpl.media_url)} className="w-full h-full object-cover" alt={`Шаблон приглашения ${tpl.id}`} />
                             )}
                           </div>
                         </td>

@@ -1,0 +1,36 @@
+User-agent: Yandex
+Allow: /
+Disallow: /admin
+Disallow: /cabinet
+Disallow: /editor/
+Disallow: /invite/
+Disallow: /login
+Disallow: /register
+Disallow: /privacy
+Disallow: /auth/
+Clean-param: page&category&type /
+
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /cabinet
+Disallow: /editor/
+Disallow: /invite/
+Disallow: /login
+Disallow: /register
+Disallow: /privacy
+Disallow: /auth/
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /cabinet
+Disallow: /editor/
+Disallow: /invite/
+Disallow: /login
+Disallow: /register
+Disallow: /privacy
+Disallow: /auth/
+
+Host: web-taklifnoma.uz
+Sitemap: https://web-taklifnoma.uz/sitemap.xml

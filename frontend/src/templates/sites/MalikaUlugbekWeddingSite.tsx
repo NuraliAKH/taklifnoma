@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
 import { useCountdownTimer } from '../../utils/timer';
+import { PrivacyConsentCheckbox } from '../../components/PrivacyConsentCheckbox';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -930,6 +931,7 @@ END:VCALENDAR`;
                     />
                   </div>
 
+                  <PrivacyConsentCheckbox />
                   <button
                     type="submit"
                     className="w-full py-2.5 rounded-xl bg-amber-500 text-stone-950 font-sans font-bold text-xs uppercase tracking-wider hover:bg-amber-400 transition-colors shadow-md cursor-pointer"

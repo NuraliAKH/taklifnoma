@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
 import { useCountdownTimer } from '../../utils/timer';
+import { PrivacyConsentCheckbox } from '../../components/PrivacyConsentCheckbox';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -1293,6 +1294,7 @@ export const MarmarWeddingSite: React.FC<WebsiteTemplateProps> = ({
                     />
                   </div>
 
+                  <PrivacyConsentCheckbox />
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}

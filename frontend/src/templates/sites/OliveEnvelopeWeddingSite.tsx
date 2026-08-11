@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import type { WebsiteTemplateProps } from './types';
 import { useCountdownTimer } from '../../utils/timer';
+import { PrivacyConsentCheckbox } from '../../components/PrivacyConsentCheckbox';
 import './OliveEnvelopeWeddingSite.css';
 
 const DEFAULT_HERO = '/olive-editorial-hero.webp';
@@ -595,6 +596,7 @@ export const OliveEnvelopeWeddingSite: React.FC<WebsiteTemplateProps> = ({
                       onChange={(event) => rsvpState ? rsvpState.setWishes(event.target.value) : setLocalWishes(event.target.value)}
                       placeholder={copy.wishesPlaceholder}
                     />
+                    <PrivacyConsentCheckbox />
                     <button type="submit" disabled={rsvpState?.isSubmitting || attending === null} className="olive-label flex w-full items-center justify-center gap-2 rounded-full bg-[#3f4630] px-5 py-3.5 text-[8px] font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-40">
                       {rsvpState?.isSubmitting ? <Clock3 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                       {copy.send}
