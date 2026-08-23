@@ -181,7 +181,7 @@ const EnvelopeEntranceAnimation = ({
               }}
             >
               <img 
-                src="/wedding_doves.png" 
+                src="/wedding_doves.webp"
                 alt="Wedding Doves" 
                 className="w-full h-full object-cover scale-110 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
               />

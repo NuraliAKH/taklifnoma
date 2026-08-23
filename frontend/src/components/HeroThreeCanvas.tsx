@@ -47,7 +47,7 @@ export const HeroThreeCanvas: React.FC<HeroThreeCanvasProps> = ({ isDark = true 
     scene.add(mouseLight);
 
     // 3. Interactive Golden/Celestial Constellation Particles & Lines (NO 3D shape/mesh)
-    const particleCount = isCompactScreen ? 280 : 750;
+    const particleCount = isCompactScreen ? 120 : 750;
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
 
@@ -84,7 +84,7 @@ export const HeroThreeCanvas: React.FC<HeroThreeCanvasProps> = ({ isDark = true 
     scene.add(particleSystem);
 
     // Constellation lines geometry
-    const maxLineConnections = isCompactScreen ? 120 : 350;
+    const maxLineConnections = isCompactScreen ? 40 : 350;
     const linePositions = new Float32Array(maxLineConnections * 6);
     const lineGeo = new THREE.BufferGeometry();
     lineGeo.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
@@ -186,7 +186,9 @@ export const HeroThreeCanvas: React.FC<HeroThreeCanvasProps> = ({ isDark = true 
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    if (prefersReducedMotion) {
+    // A static frame preserves the visual style on phones without keeping the
+    // GPU busy throughout the visit.
+    if (prefersReducedMotion || isCompactScreen) {
       renderer.render(scene, camera);
     } else {
       animate();

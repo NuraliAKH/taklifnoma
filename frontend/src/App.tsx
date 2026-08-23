@@ -773,7 +773,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   const logoContent = (
     <>
       <img
-        src="/logo_icon.png"
+        src="/logo_icon.webp"
         alt="Web-Taklifnoma"
         className="h-8 sm:h-11 w-auto max-w-[36px] sm:max-w-[48px] object-contain drop-shadow-md group-hover:scale-105 transition-transform"
       />
@@ -987,7 +987,9 @@ function Layout({ children }: { children: React.ReactNode }) {
           {/* Large Logo with text */}
           <Link to="/" className="group flex flex-col items-center gap-2">
             <img 
-              src="/logo_text.png" 
+              src="/logo_text.webp"
+              loading="lazy"
+              decoding="async"
               alt="Web-Taklifnoma Logo" 
               className="h-20 sm:h-24 md:h-32 max-w-[280px] sm:max-w-[320px] md:max-w-[420px] object-contain group-hover:scale-[1.02] transition-transform drop-shadow-lg" 
             />
@@ -1338,7 +1340,7 @@ function CatalogPage() {
                 ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' 
                 : 'bg-amber-100 text-amber-800 border-amber-400/50'
             }`}>
-              <img src="/logo_icon.png" alt="Web-Taklifnoma" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain shrink-0" />
+              <img src="/logo_icon.webp" alt="Web-Taklifnoma" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain shrink-0" />
               <span>{t('heroBadge')}</span>
             </span>
           </div>
