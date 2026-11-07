@@ -25,3 +25,23 @@ deploy.log
 Thumbs.db
 .idea/
 .vscode/
+.claude/
+.playwright-mcp/
+
+# Temporary test & capture scripts
+capture_*.js
+capture_*.cjs
+test-envelope.*
+**/test-envelope.*
+
+# Personal documents, spreadsheets & local media drops
+*.pdf
+*.xlsx
+*.xls
+*.doc
+*.docx
+frontend/src/templates/video/*.pdf
+frontend/src/templates/video/*.xlsx
+frontend/src/templates/video/*.MOV
+frontend/src/templates/video/*.mov
+frontend/src/templates/video/SaveVid_Net_AQMUX*.mp4

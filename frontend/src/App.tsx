@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import { useState, useEffect, useRef, useCallback, createContext, useContext, lazy, Suspense } from 'react';
 import { 
   BrowserRouter, 
   Routes, 
@@ -12,8 +12,7 @@ import {
 } from 'react-router-dom';
 import { 
   Globe,
-  Heart,
-  Image as ImageIcon, 
+    Image as ImageIcon, 
   Video as VideoIcon, 
   Download, 
   Loader2, 
@@ -21,16 +20,13 @@ import {
   ArrowLeft, 
   Eye, 
   CheckCircle2, 
-  Printer,
-  ChevronRight,
   User as UserIcon,
   LogOut,
   Shield,
   KeyRound,
   Mail,
   Lock,
-  History,
-  AlertCircle,
+    AlertCircle,
   Plus,
   Trash2,
   Edit,
@@ -39,24 +35,19 @@ import {
   Sun,
   Moon,
   Sparkles,
-  Zap,
-  MapPin,
   Music,
   Play,
   Pause,
-  ChevronDown,
-  Star,
-  MessageSquare,
   Tag,
   Menu,
-  RefreshCw,
-  Clock,
-  Calendar
+      Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WebsiteTemplateDispatcher } from './templates/sites';
-import { DRESS_PALETTES } from './templates/sites/OliveEnvelopeWeddingSite';
-import { HeroThreeCanvas } from './components/HeroThreeCanvas';
+import { DRESS_PALETTES } from './templates/sites/palettes';
+// three.js is heavy: load the ambient background in its own chunk, after the page content
+const HeroThreeCanvas = lazy(() => import('./components/HeroThreeCanvas').then((m) => ({ default: m.HeroThreeCanvas })));
+const LandingPage = lazy(() => import('./pages/landing/LandingPage').then((m) => ({ default: m.LandingPage })));
 import { ClickPayButtons } from './components/ClickPayButtons';
 import { GoogleLoginButton } from './components/GoogleLoginButton';
 import { AuthCallbackPage } from './components/AuthCallbackPage';
@@ -65,7 +56,7 @@ import { ANALYTICS_CONSENT_KEY, initAnalytics, reachGoal, trackPageView } from '
 import { PRESET_MUSIC_TRACKS, DEFAULT_MUSIC_TRACK, getMusicTrackTitle } from './constants/musicTracks';
 import { translations, type Language, type TranslationKey } from './i18n/translations';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+export const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 function MetrikaTracker() {
   const location = useLocation();
@@ -273,7 +264,7 @@ const formatPhoneNumber = (value: string): string => {
 };
 
 // Interfaces
-interface Template {
+export interface Template {
   id: number;
   type: 'virtual' | 'physical' | 'website';
   category: string;
@@ -300,7 +291,7 @@ interface Template {
 interface Order {
   id: string;
   user_data: any;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'paid';
   final_asset_url: string | null;
   total_price: number;
   createdAt: string;
@@ -479,7 +470,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 // Helper to resolve media URLs
-const getMediaUrl = (url: string) => {
+export const getMediaUrl = (url: string) => {
   if (!url) return '';
   if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
   if (url.startsWith('/olive-editorial-')) return url;
@@ -521,6 +512,8 @@ const getTemplateSections = (templateId: number | string | undefined) => {
         { id: 'dressCode', label: 'Дресс-код' },
         { id: 'details', label: 'Детали вечера' },
         { id: 'countdown', label: 'Таймер отсчёта' },
+        { id: 'gallery', label: 'Фотогалерея' },
+        { id: 'giftCard', label: 'Подарки и карта' },
         { id: 'rsvp', label: 'Анкета гостей' },
       ];
     case 'hilal':
@@ -627,17 +620,19 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
   if (family === 'olive') {
     const oliveLabels: Record<string, string> = {
       photoUrl: 'Главное фото пары — первый экран',
-      photos: 'Два фото: площадка и детали',
+      photos: 'Фото: 1-е — площадка, 2-е — детали, остальные — галерея',
       loveStory: 'Письмо гостям',
       details: 'Текст блока «Детали»',
       phone: 'Телефон организатора — внизу сайта',
       dressColors: 'Цвета дресс-кода',
       schedule: 'Программа вечера / Этапы',
+      giftCardNumber: 'Номер карты для подарков (Click/Uzcard)',
+      giftCardOwner: 'Имя получателя карты',
     };
     const result = fields.map((field: any) => ({
       ...field,
       label: oliveLabels[field.id] || field.label,
-      ...(field.id === 'photos' ? { max: 2 } : {}),
+      ...(field.id === 'photos' ? { max: 8 } : {}),
     }));
 
     if (!result.some((f: any) => f.id === 'dressColors' || f.id === 'dressCode')) {
@@ -660,6 +655,24 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
       });
     }
 
+    if (!result.some((f: any) => f.id === 'giftCardNumber')) {
+      result.push({
+        id: 'giftCardNumber',
+        label: 'Номер карты для подарков (Click/Uzcard)',
+        placeholder: '8600 7710 4420 8911',
+        maxLength: 30,
+      });
+    }
+
+    if (!result.some((f: any) => f.id === 'giftCardOwner')) {
+      result.push({
+        id: 'giftCardOwner',
+        label: 'Имя получателя карты',
+        placeholder: 'Сардор С.',
+        maxLength: 30,
+      });
+    }
+
     return result;
   }
 
@@ -668,11 +681,17 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
   const standardFieldsMap: Record<string, any> = {
     groomName: { id: 'groomName', label: 'Имя жениха / Заголовок', placeholder: 'Даврон' },
     brideName: { id: 'brideName', label: 'Имя невесты', placeholder: 'Севинч' },
+    brideParents: { id: 'brideParents', label: 'Родители невесты', placeholder: 'Akmal va Dilbar' },
+    brideFamily: { id: 'brideFamily', label: 'Фамилия семьи невесты', placeholder: 'Karimovlar' },
+    groomParents: { id: 'groomParents', label: 'Родители жениха', placeholder: 'Rustam va Nodira' },
+    groomFamily: { id: 'groomFamily', label: 'Фамилия семьи жениха', placeholder: 'Soliyevlar' },
     date: { id: 'date', label: 'Дата события', placeholder: '2026-10-10' },
     time: { id: 'time', label: 'Время торжества', placeholder: '18:00' },
     venue: { id: 'venue', label: 'Название ресторана / площадки', placeholder: 'Versal Saroyi' },
     address: { id: 'address', label: 'Адрес и локация', placeholder: 'г. Ташкент, ул. Бобура, 45' },
     schedule: { id: 'schedule', label: 'Программа вечера / Этапы', type: 'schedule' },
+    loveStoryItems: { id: 'loveStoryItems', label: 'История любви — этапы', type: 'schedule' },
+    wishText: { id: 'wishText', label: 'Текст пожелания гостям', type: 'textarea', placeholder: "Gulday ochilgan bu baxt kunida siz bilan birga bo'lishni istardik. Kelishingizni intizorlik bilan kutamiz." },
     dressColors: { id: 'dressColors', label: 'Цвета дресс-кода & палитра', type: 'color_palette' },
     photoUrl: { id: 'photoUrl', label: 'Главное фото молодоженов (Surat)', type: 'image', placeholder: '' },
     photos: { id: 'photos', label: 'Галерея фотографий (Suratlar)', type: 'gallery', max: family === 'malika' ? 6 : 10 },
@@ -690,10 +709,18 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
       familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'dressColors', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
       break;
     case 'envelope':
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'dressColors', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
+      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'dressColors', 'photoUrl', 'photos', 'wishText', 'giftCardNumber', 'giftCardOwner'];
       break;
     case 'malika':
-      familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'dressColors', 'photoUrl', 'photos', 'giftCardNumber', 'giftCardOwner'];
+      familyFieldIds = [
+        'groomName', 'brideName',
+        'brideParents', 'brideFamily',
+        'groomParents', 'groomFamily',
+        'date', 'time', 'venue', 'address',
+        'schedule', 'loveStoryItems',
+        'dressColors', 'photoUrl', 'photos',
+        'giftCardNumber', 'giftCardOwner'
+      ];
       break;
     case 'marmar':
       familyFieldIds = ['groomName', 'brideName', 'date', 'time', 'venue', 'address', 'schedule', 'dressColors', 'photoUrl', 'photos', 'videoUrl', 'loveStory', 'giftCardNumber', 'giftCardOwner', 'phone'];
@@ -708,23 +735,30 @@ const getEditorFieldsForTemplate = (template: any): any[] => {
   }
 
   const result: any[] = [];
-  
+  const fieldsMap = new Map<string, any>();
   fields.forEach(f => {
-    if (familyFieldIds.includes(f.id) || (!standardFieldsMap[f.id] && f.id)) {
-      result.push(f);
-    }
+    if (f && f.id) fieldsMap.set(f.id, f);
   });
 
   familyFieldIds.forEach(id => {
-    if (!result.some(f => f.id === id)) {
+    const existing = fieldsMap.get(id);
+    if (existing) {
+      result.push({ ...standardFieldsMap[id], ...existing });
+    } else if (standardFieldsMap[id]) {
       result.push(standardFieldsMap[id]);
+    }
+  });
+
+  fields.forEach(f => {
+    if (f && f.id && !familyFieldIds.includes(f.id) && !standardFieldsMap[f.id]) {
+      result.push(f);
     }
   });
 
   return result;
 };
 
-const getTemplateName = (t: Template) => {
+export const getTemplateName = (t: Template) => {
   if (t.id === 1) return 'Классическое Золото';
   if (t.id === 2) return 'Праздничный Розовый';
   if (t.id === 3) return 'Минималистичное Видео';
@@ -770,6 +804,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isDark = theme === 'dark';
+  const isLanding = location.pathname === '/';
   const logoContent = (
     <>
       <img
@@ -788,8 +823,8 @@ function Layout({ children }: { children: React.ReactNode }) {
     <div className={`min-h-screen flex flex-col transition-colors duration-300 selection:bg-amber-500 selection:text-slate-900 relative ${
       isDark ? 'bg-[#090d16] text-slate-100' : 'bg-slate-50 text-slate-900'
     }`}>
-      {/* Full Page WebGL 3D Interactive Background */}
-      <HeroThreeCanvas isDark={isDark} />
+      {/* Full Page WebGL 3D Interactive Background (the landing has its own scene) */}
+      {!isLanding && <Suspense fallback={null}><HeroThreeCanvas isDark={isDark} /></Suspense>}
 
       {/* Header */}
       <header className={`sticky top-0 z-40 border-b transition-colors duration-300 backdrop-blur-xl ${
@@ -975,7 +1010,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Page Content */}
-      <main className="flex-1 px-3 sm:px-6 lg:px-10 xl:px-0 py-4 sm:py-6 md:py-10 max-w-7xl mx-auto w-full flex flex-col z-10 relative">
+      <main className={isLanding ? 'flex-1 w-full flex flex-col z-10 relative' : 'flex-1 px-3 sm:px-6 lg:px-10 xl:px-0 py-4 sm:py-6 md:py-10 max-w-7xl mx-auto w-full flex flex-col z-10 relative'}>
         {children}
       </main>
 
@@ -1077,7 +1112,7 @@ export function AppContent() {
     <SeoManager />
     <CookieBanner />
     <Routes>
-      <Route path="/" element={<Layout><CatalogPage /></Layout>} />
+      <Route path="/" element={<Layout><Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center"><Loader2 className="w-8 h-8 text-amber-500 animate-spin" /></div>}><LandingPage /></Suspense></Layout>} />
       <Route path="/editor/:id" element={<Layout><EditorPage /></Layout>} />
       <Route path="/login" element={<Layout><LoginPage /></Layout>} />
       <Route path="/register" element={<Layout><RegisterPage /></Layout>} />
@@ -1131,7 +1166,7 @@ export default function App() {
 }
 
 // ----------------- USE IS MOBILE HOOK -----------------
-function useIsMobile() {
+export function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 640 : false);
 
   useEffect(() => {
@@ -1146,7 +1181,7 @@ function useIsMobile() {
 }
 
 // ----------------- PAGINATION BAR COMPONENT -----------------
-function PaginationBar({
+export function PaginationBar({
   currentPage,
   totalPages,
   onPageChange,
@@ -1224,534 +1259,6 @@ function PaginationBar({
           Вперед →
         </button>
       </div>
-    </div>
-  );
-}
-
-// ----------------- CATALOG PAGE -----------------
-function CatalogPage() {
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('website');
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
-  const itemsPerPage = 6;
-  const mobileSentinelRef = useRef<HTMLDivElement | null>(null);
-  const { theme } = useTheme();
-  const { t, lang } = useLanguage();
-  const isDark = theme === 'dark';
-
-  useEffect(() => {
-    fetch(`${API_URL}/templates`)
-      .then(res => res.json())
-      .then(data => {
-        const list = Array.isArray(data) ? data : data?.data || [];
-        setTemplates(list);
-      })
-      .catch(err => console.error(err));
-  }, []);
-
-  useEffect(() => {
-    setCurrentPage(1);
-    setMobileVisibleCount(6);
-  }, [categoryFilter, typeFilter]);
-
-  const filteredTemplates = templates.filter(t => {
-    // Exclude video templates completely
-    if (t.media_url?.endsWith('.mp4')) return false;
-
-    const matchCategory = categoryFilter === 'all' || t.category === categoryFilter || t.type === 'website';
-    const matchType = 
-      typeFilter === 'all' || 
-      (typeFilter === 'virtual_photo' && t.type === 'virtual') ||
-      (typeFilter === 'physical' && t.type === 'physical') ||
-      (typeFilter === 'website' && t.type === 'website');
-    return matchCategory && matchType;
-  });
-
-  // Mobile Infinite Scroll Observer
-  useEffect(() => {
-    if (!isMobile) return;
-    const sentinel = mobileSentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setMobileVisibleCount(prev => {
-            if (prev < filteredTemplates.length) {
-              return Math.min(prev + 6, filteredTemplates.length);
-            }
-            return prev;
-          });
-        }
-      },
-      { rootMargin: '250px' }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [isMobile, filteredTemplates.length, mobileVisibleCount]);
-
-  const displayedTemplates = isMobile
-    ? filteredTemplates.slice(0, mobileVisibleCount)
-    : filteredTemplates.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  const faqItems = [
-    {
-      q: t('faqQ1'),
-      a: t('faqA1')
-    },
-    {
-      q: t('faqQ2'),
-      a: t('faqA2')
-    },
-    {
-      q: t('faqQ3'),
-      a: t('faqA3')
-    },
-    {
-      q: t('faqQ4'),
-      a: t('faqA4')
-    }
-  ];
-
-  return (
-    <div className="flex flex-col gap-10 sm:gap-14 md:gap-20 flex-1 relative">
-      {/* Glow background highlight */}
-      <div className="glow-ambient w-96 h-96 bg-amber-500 top-0 left-1/4 -z-10" />
-
-      {/* Hero Header Section */}
-      <section className={`relative overflow-hidden rounded-2xl sm:rounded-[2rem] border px-4 py-8 sm:px-8 md:px-12 md:py-14 flex flex-col lg:flex-row justify-between items-center gap-8 lg:gap-14 ${
-        isDark
-          ? 'bg-[linear-gradient(145deg,rgba(30,41,59,.78),rgba(9,13,22,.92))] border-white/10 shadow-2xl shadow-black/20'
-          : 'bg-[linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,247,237,.9))] border-amber-900/10 shadow-xl shadow-amber-900/5'
-      }`}>
-        <div className="absolute -top-24 -right-20 w-72 h-72 rounded-full bg-amber-400/20 blur-[90px] pointer-events-none" />
-        <div className="absolute -bottom-32 left-1/3 w-80 h-80 rounded-full bg-teal-400/10 blur-[100px] pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col gap-4 sm:gap-5 max-w-2xl text-center lg:text-left">
-          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-            <span className={`border text-[10px] sm:text-xs px-3 sm:px-4 py-1.5 rounded-full font-bold uppercase tracking-wider sm:tracking-widest backdrop-blur-md shadow-lg flex items-center gap-2 ${
-              isDark 
-                ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' 
-                : 'bg-amber-100 text-amber-800 border-amber-400/50'
-            }`}>
-              <img src="/logo_icon.webp" alt="Web-Taklifnoma" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain shrink-0" />
-              <span>{t('heroBadge')}</span>
-            </span>
-          </div>
-
-          <h1 className={`text-2xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold tracking-[-0.035em] leading-[1.1] transition-colors ${
-            isDark ? 'text-slate-100' : 'text-slate-900'
-          }`}>
-            {t('heroTitlePart1')} <span className="gold-gradient-text">{t('heroTitleHighlight')}</span>
-          </h1>
-
-          <p className={`text-sm sm:text-base md:text-lg leading-relaxed max-w-xl transition-colors ${
-            isDark ? 'text-slate-300' : 'text-slate-600'
-          }`}>
-            {t('heroSubtitle')}
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 pt-1">
-            <a href="#catalog" className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-extrabold shadow-lg shadow-amber-500/20 transition-all active:scale-[0.98]">
-              {t('heroChooseDesign')} <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            </a>
-            <a href="#how-it-works" className={`inline-flex items-center justify-center px-6 py-3.5 rounded-xl border text-sm font-bold transition-all ${
-              isDark ? 'border-white/10 bg-white/5 hover:bg-white/10 text-slate-200' : 'border-slate-200 bg-white/70 hover:bg-white text-slate-700'
-            }`}>
-              {t('heroHowItWorks')}
-            </a>
-          </div>
-
-          {/* Feature Badges */}
-          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-3 pt-2 text-[11px] sm:text-xs font-semibold">
-            <span className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border ${
-              isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
-            }`}>
-              <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" /> {t('heroFeatureEditor')}
-            </span>
-            <span className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border ${
-              isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
-            }`}>
-              <MapPin className="w-3.5 h-3.5 text-teal-400 shrink-0" /> {t('heroFeatureMap')}
-            </span>
-            <span className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border ${
-              isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
-            }`}>
-              <Music className="w-3.5 h-3.5 text-rose-400 shrink-0" /> {t('heroFeatureMusic')}
-            </span>
-          </div>
-        </div>
-
-        {/* Stats Card */}
-        <div className={`relative z-10 w-full lg:w-auto grid grid-cols-3 gap-0 items-stretch p-2 sm:p-3 rounded-2xl backdrop-blur-xl shadow-2xl shrink-0 transition-all border ${
-          isDark 
-            ? 'bg-slate-900/70 border-amber-500/20 text-slate-100' 
-            : 'bg-white/90 border-amber-500/30 text-slate-900'
-        }`}>
-          <div className="flex flex-col items-center justify-center border-r border-slate-500/20 px-2 sm:px-6 py-3 sm:py-4 text-center">
-            <span className="text-lg sm:text-2xl md:text-3xl font-extrabold text-amber-500 font-mono whitespace-nowrap">{t('heroStat1Value')}</span>
-            <span className={`text-[8px] sm:text-[10px] md:text-[11px] font-semibold uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('heroStat1Label')}</span>
-          </div>
-          <div className="flex flex-col items-center justify-center px-2 sm:px-6 py-3 sm:py-4 border-r border-slate-500/20 text-center">
-            <span className="text-lg sm:text-2xl md:text-3xl font-extrabold text-amber-500 font-mono">{t('heroStat2Value')}</span>
-            <span className={`text-[8px] sm:text-[10px] md:text-[11px] font-semibold uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('heroStat2Label')}</span>
-          </div>
-          <div className="flex flex-col items-center justify-center px-2 sm:px-6 py-3 sm:py-4 text-center">
-            <div className="flex items-center gap-1 text-amber-400">
-              <Star className="w-3.5 h-3.5 sm:w-5 sm:h-5 fill-amber-400 shrink-0" />
-              <span className="text-lg sm:text-2xl font-bold font-mono">{t('heroStat3Value')}</span>
-            </div>
-            <span className={`text-[8px] sm:text-[10px] md:text-[11px] font-semibold uppercase tracking-wider mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('heroStat3Label')}</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Catalog Filters Section */}
-      <section id="catalog" className="flex flex-col gap-6 scroll-mt-28">
-        <div className={`flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b pb-6 transition-colors ${
-          isDark ? 'border-white/10' : 'border-slate-200'
-        }`}>
-          <div className="flex flex-col gap-1">
-            <h2 className={`text-xl font-bold tracking-wide ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-              {t('catalogTitle')}
-            </h2>
-            <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              {t('catalogSubtitle')}
-            </p>
-          </div>
-
-          <div className="w-full lg:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div className={`flex overflow-x-auto scrollbar-none p-1 rounded-xl border gap-1 transition-colors max-w-full ${
-              isDark ? 'bg-white/5 border-white/10' : 'bg-slate-200/70 border-slate-300/80'
-            }`}>
-              {[
-                { id: 'virtual_photo', label: t('filterTypePhoto'), disabled: false },
-                { id: 'website', label: t('filterTypeWebsite'), disabled: false },
-                { id: 'physical', label: t('filterTypePhysical'), disabled: true }
-              ].map(item => (
-                <button 
-                  key={item.id}
-                  disabled={item.disabled}
-                  onClick={() => {
-                    if (!item.disabled) {
-                      setTypeFilter(item.id);
-                      setCurrentPage(1);
-                    }
-                  }}
-                  className={`px-3 sm:px-4 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all flex items-center gap-1.5 whitespace-nowrap flex-1 sm:flex-none justify-center ${
-                    item.disabled
-                      ? 'opacity-40 cursor-not-allowed text-slate-500 bg-slate-500/10 border border-slate-500/20'
-                      : typeFilter === item.id 
-                        ? 'bg-amber-500 text-slate-950 shadow-md font-bold cursor-pointer' 
-                        : isDark ? 'text-slate-400 hover:text-slate-200 cursor-pointer' : 'text-slate-600 hover:text-slate-900 cursor-pointer'
-                  }`}
-                  title={item.disabled ? t('disabledNotice') : undefined}
-                >
-                  {item.label}
-                  {item.disabled && (
-                    <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30">
-                      {t('badgeSoon')}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-
-            <div className={`flex overflow-x-auto scrollbar-none p-1 rounded-xl border gap-1 transition-colors max-w-full ${
-              isDark ? 'bg-white/5 border-white/10' : 'bg-slate-200/70 border-slate-300/80'
-            }`}>
-              {[
-                { id: 'all', label: t('catAll') },
-                { id: 'wedding', label: t('catWedding') },
-                { id: 'birthday', label: t('catBirthday') }
-              ].map(item => (
-                <button 
-                  key={item.id}
-                  onClick={() => {
-                    setCategoryFilter(item.id);
-                    setCurrentPage(1);
-                  }}
-                  className={`px-3 sm:px-4 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all cursor-pointer whitespace-nowrap flex-1 sm:flex-none ${
-                    categoryFilter === item.id 
-                      ? 'bg-amber-500 text-slate-950 shadow-md font-bold' 
-                      : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Template Grid */}
-        {filteredTemplates.length > 0 ? (
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-wrap justify-center gap-6">
-              {displayedTemplates.map(template => (
-                <div
-                  key={template.id}
-                  onClick={() => navigate(`/editor/${template.id}`)}
-                  className="group w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] max-w-[410px] min-w-0 rounded-2xl overflow-hidden glass-panel-interactive flex flex-col cursor-pointer"
-                >
-                  <div className="h-[440px] sm:h-[400px] md:h-[470px] lg:h-[390px] xl:h-[460px] w-full bg-slate-900/40 relative overflow-hidden border-b border-white/5">
-                    {/* Transparent Overlay */}
-                    <div className="absolute inset-0 z-20 cursor-pointer" />
-
-                    {template.type === 'website' ? (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="origin-center scale-[0.62] sm:scale-[0.56] md:scale-[0.66] lg:scale-[0.54] xl:scale-[0.65]">
-                          <TemplatePreview
-                            template={template}
-                            formData={{}}
-                            autoScrollOnHover={true}
-                            catalogMode={true}
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <img
-                        src={getMediaUrl(template.media_url)}
-                        alt={template.category}
-                        className="w-full h-full object-cover scale-100 group-hover:scale-[1.04] transition-all duration-500"
-                      />
-                    )}
-
-                    <div className="absolute top-4 left-4 z-30 pointer-events-none">
-                      {template.type === 'website' ? (
-                        <span className="flex items-center gap-1 bg-teal-500/90 text-teal-950 text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full border border-teal-400/30 backdrop-blur-md shadow-md">
-                          <Globe className="w-3 h-3" /> Web-Сайт
-                        </span>
-                      ) : template.type === 'physical' ? (
-                        <span className="flex items-center gap-1 bg-pink-500/90 text-pink-950 text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full border border-pink-400/30 backdrop-blur-md shadow-md">
-                          <Printer className="w-3 h-3" /> Печать (A5)
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 bg-amber-500/90 text-amber-950 text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full border border-amber-400/30 backdrop-blur-md shadow-md">
-                          <ImageIcon className="w-3 h-3" /> Фото-карточка
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="p-4 sm:p-5 flex flex-col gap-3 flex-1 justify-between bg-gradient-to-b from-transparent to-black/10 min-w-0">
-                    <div className="min-w-0">
-                      <div className="flex justify-between items-start gap-3 min-w-0">
-                        <h3 className={`font-bold text-base tracking-wide leading-snug transition-colors line-clamp-2 min-w-0 ${
-                          isDark ? 'text-slate-100 group-hover:text-amber-400' : 'text-slate-900 group-hover:text-amber-600'
-                        }`}>
-                          {getTemplateName(template)}
-                        </h3>
-                        <span className={`text-[10px] border px-2 py-0.5 rounded-full tracking-wider capitalize shrink-0 ${
-                          isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'
-                        }`}>
-                          {template.category === 'wedding' ? t('catWedding') : template.category === 'birthday' ? t('catBirthday') : template.category}
-                        </span>
-                      </div>
-                      {template.type === 'website' ? (
-                        <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Формат: Адаптивный веб-сайт</p>
-                      ) : (
-                        <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Размер: {template.text_config.dimensions?.width}x{template.text_config.dimensions?.height} px</p>
-                      )}
-                    </div>
-
-                    <div className="flex flex-wrap items-end justify-between gap-3 border-t border-white/5 pt-4 mt-2">
-                      <div className="flex flex-col min-w-0">
-                        {template.discount_price !== null && template.discount_price !== undefined ? (
-                          <>
-                            <span className="text-[10px] text-slate-500 line-through font-mono">
-                              {Number(template.price).toLocaleString('ru-RU')} {t('cardPriceCurrency')}
-                            </span>
-                            <span className="text-sm font-bold font-mono text-amber-400">
-                              {Number(template.discount_price).toLocaleString('ru-RU')} {t('cardPriceCurrency')}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-sm font-bold font-mono text-amber-400">
-                            {Number(template.price || 0).toLocaleString('ru-RU')} {t('cardPriceCurrency')}
-                          </span>
-                        )}
-                      </div>
-
-                      <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-2 rounded-lg font-bold flex items-center gap-1 shrink-0 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all">
-                        {t('cardCreate')} <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {!isMobile && (
-              <PaginationBar
-                currentPage={currentPage}
-                totalPages={Math.ceil(filteredTemplates.length / itemsPerPage) || 1}
-                onPageChange={setCurrentPage}
-                totalItems={filteredTemplates.length}
-                itemsPerPage={itemsPerPage}
-                isDark={isDark}
-              />
-            )}
-
-            {isMobile && mobileVisibleCount < filteredTemplates.length && (
-              <div ref={mobileSentinelRef} className="py-6 flex justify-center items-center w-full">
-                <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-20 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center justify-center gap-3">
-            <p className="text-slate-400 text-sm">{t('noTemplatesFound')}</p>
-            <p className="text-slate-500 text-xs">{t('tryChangingFilter')}</p>
-          </div>
-        )}
-      </section>
-
-      {/* Advantages Section */}
-      <section id="how-it-works" className="py-8 flex flex-col gap-8 border-t border-white/10 pt-12 scroll-mt-28">
-        <div className="text-center max-w-2xl mx-auto flex flex-col gap-2">
-          <h2 className={`text-2xl sm:text-3xl font-extrabold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-            {t('whyTitlePart1')} <span className="gold-gradient-text">{t('whyTitleHighlight')}</span>
-          </h2>
-          <p className={`text-xs sm:text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            {t('whySubtitle')}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            {
-              icon: <Zap className="w-6 h-6 text-amber-400" />,
-              title: t('adv1Title'),
-              desc: t('adv1Desc')
-            },
-            {
-              icon: <MessageSquare className="w-6 h-6 text-teal-400" />,
-              title: t('adv2Title'),
-              desc: t('adv2Desc')
-            },
-            {
-              icon: <MapPin className="w-6 h-6 text-rose-400" />,
-              title: t('adv3Title'),
-              desc: t('adv3Desc')
-            },
-            {
-              icon: <Music className="w-6 h-6 text-indigo-400" />,
-              title: t('adv4Title'),
-              desc: t('adv4Desc')
-            }
-          ].map((item, idx) => (
-            <div 
-              key={idx}
-              className={`p-6 rounded-2xl border flex flex-col gap-3 transition-all ${
-                isDark 
-                  ? 'bg-slate-900/50 border-white/5 hover:border-amber-500/30' 
-                  : 'bg-white/80 border-slate-200 hover:border-amber-500/40 shadow-sm'
-              }`}
-            >
-              <div className="p-3 bg-white/5 rounded-xl w-fit border border-white/10">
-                {item.icon}
-              </div>
-              <h3 className={`font-bold text-base ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-                {item.title}
-              </h3>
-              <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                {item.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Step by Step Section */}
-      <section className="py-8 flex flex-col gap-8 border-t border-white/10 pt-12">
-        <div className="text-center max-w-2xl mx-auto flex flex-col gap-2">
-          <h2 className={`text-2xl sm:text-3xl font-extrabold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-            {t('stepsTitlePart1')} <span className="gold-gradient-text">{t('stepsTitleHighlight')}</span>
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              step: '01',
-              title: t('step1Title'),
-              desc: t('step1Desc')
-            },
-            {
-              step: '02',
-              title: t('step2Title'),
-              desc: t('step2Desc')
-            },
-            {
-              step: '03',
-              title: t('step3Title'),
-              desc: t('step3Desc')
-            }
-          ].map((item, idx) => (
-            <div 
-              key={idx}
-              className={`p-6 rounded-2xl border flex flex-col gap-3 relative overflow-hidden ${
-                isDark ? 'bg-slate-900/40 border-white/5' : 'bg-slate-50 border-slate-200'
-              }`}
-            >
-              <span className="text-4xl font-extrabold font-mono text-amber-500/20 absolute top-4 right-4">
-                {item.step}
-              </span>
-              <h3 className={`font-bold text-lg ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-                {item.title}
-              </h3>
-              <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                {item.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* FAQ Accordion Section */}
-      <section className="py-8 flex flex-col gap-8 border-t border-white/10 pt-12">
-        <div className="text-center max-w-2xl mx-auto flex flex-col gap-2">
-          <h2 className={`text-2xl sm:text-3xl font-extrabold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-            {t('faqTitle')}
-          </h2>
-          <p className={`text-xs sm:text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            {t('faqSubtitle')}
-          </p>
-        </div>
-
-        <div className="max-w-3xl mx-auto w-full flex flex-col gap-3">
-          {faqItems.map((faq, idx) => (
-            <div 
-              key={idx}
-              className={`rounded-xl border transition-all overflow-hidden ${
-                isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-slate-200 shadow-sm'
-              }`}
-            >
-              <button 
-                onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                className="w-full p-4 md:p-5 text-left flex justify-between items-center gap-4 cursor-pointer font-bold text-sm md:text-base text-slate-100"
-              >
-                <span className={isDark ? 'text-slate-200' : 'text-slate-800'}>{faq.q}</span>
-                <ChevronDown className={`w-5 h-5 shrink-0 text-amber-500 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />
-              </button>
-              {openFaq === idx && (
-                <div className={`px-4 pb-5 md:px-5 text-xs md:text-sm leading-relaxed border-t pt-3 ${
-                  isDark ? 'border-white/5 text-slate-400' : 'border-slate-100 text-slate-600'
-                }`}>
-                  {faq.a}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
@@ -1945,6 +1452,12 @@ function EditorPage() {
                 { time: '19:00', title: 'Праздничный Банкет & Шоу', desc: 'Поздравления, танцы и шоу-программа' },
                 { time: '21:30', title: 'Свадебный Торт & Салют', desc: 'Сладкий финал сказочного вечера' },
               ];
+            } else if (f.id === 'loveStoryItems') {
+              initialForm[f.id] = [
+                { year: '2022', title: 'Ilk uchrashuv', desc: "Taqdir bizi bir kurs shahar bog'ida uchrashatirdi." },
+                { year: '2023', title: 'Sevgi izhori', desc: "Bir yil do'stlikdan so'ng yuraklarimiz birga bog'lendi." },
+                { year: '2024', title: 'Unashtiruv', desc: 'Oilalarimiz duosi bilan unashtirildik, kelajakni rejalashtirdik.' },
+              ];
             } else {
               initialForm[f.id] = f.placeholder || '';
             }
@@ -1974,6 +1487,7 @@ function EditorPage() {
     setFormData(prev => ({ ...prev, [fieldId]: finalVal }));
   };
 
+  // @ts-ignore
   const handleAddUserField = () => {
     const label = window.prompt('Введите название нового поля (например, Дресс-код):');
     if (!label || !label.trim()) return;
@@ -2225,6 +1739,7 @@ function EditorPage() {
                 const isScheduleField = field.type === 'schedule' || 
                   field.id === 'schedule' || 
                   field.id === 'scheduleItems' || 
+                  field.id === 'loveStoryItems' ||
                   (typeof field.label === 'string' && (field.label.includes('Программа') || field.label.includes('Этапы'))) ||
                   Array.isArray(formData[field.id]);
                 const oliveGroupTitle = isOliveEditorialTemplate(template.id)
@@ -2245,12 +1760,12 @@ function EditorPage() {
                 ) : null;
 
                 if (isColorPaletteField) {
-                  const variantKey = template.id === 26 || template.id === '26' ? 'olive-emerald'
-                    : template.id === 27 || template.id === '27' ? 'olive-champagne'
-                    : template.id === 28 || template.id === '28' ? 'olive-dusty-rose'
-                    : template.id === 29 || template.id === '29' ? 'olive-dusty-blue'
-                    : template.id === 30 || template.id === '30' ? 'olive-navy'
-                    : template.id === 31 || template.id === '31' ? 'olive-burgundy'
+                  const variantKey = Number(template.id) === 26 ? 'olive-emerald'
+                    : Number(template.id) === 27 ? 'olive-champagne'
+                    : Number(template.id) === 28 ? 'olive-dusty-rose'
+                    : Number(template.id) === 29 ? 'olive-dusty-blue'
+                    : Number(template.id) === 30 ? 'olive-navy'
+                    : Number(template.id) === 31 ? 'olive-burgundy'
                     : 'default';
 
                   const defaultPalette = DRESS_PALETTES[variantKey] || DRESS_PALETTES.default;
@@ -2376,7 +1891,7 @@ function EditorPage() {
                 }
 
                 if (isGalleryField) {
-                  const maxCount = field.max || ((template?.id === 9 || template?.id === '9') ? 6 : 10);
+                  const maxCount = field.max || (Number(template?.id) === 9 ? 6 : 10);
                   return (
                     <div key={field.id} className="flex flex-col gap-2 relative">
                       {groupHeading}
@@ -2460,16 +1975,25 @@ function EditorPage() {
                 }
 
                 if (isScheduleField) {
-                  const scheduleItems: any[] = Array.isArray(formData.schedule) && formData.schedule.length > 0
-                    ? formData.schedule
-                    : Array.isArray(formData.scheduleItems) && formData.scheduleItems.length > 0
-                      ? formData.scheduleItems
-                      : [
-                          { time: '17:00', title: 'Сбор гостей & Welcome Drink', desc: 'Живая музыка, фотозона и приветственные напитки' },
-                          { time: '18:00', title: 'Торжественный Вход & Регистрация', desc: 'Официальная церемония и никоҳ' },
-                          { time: '19:00', title: 'Праздничный Банкет & Шоу', desc: 'Поздравления, танцы и шоу-программа' },
-                          { time: '21:30', title: 'Свадебный Торт & Салют', desc: 'Сладкий финал сказочного вечера' },
-                        ];
+                  const isLoveStory = field.id === 'loveStoryItems';
+                  const scheduleItems: any[] = Array.isArray(formData[field.id]) && formData[field.id].length > 0
+                    ? formData[field.id]
+                    : !isLoveStory && Array.isArray(formData.schedule) && formData.schedule.length > 0
+                      ? formData.schedule
+                      : !isLoveStory && Array.isArray(formData.scheduleItems) && formData.scheduleItems.length > 0
+                        ? formData.scheduleItems
+                        : isLoveStory
+                          ? [
+                              { year: '2022', title: 'Ilk uchrashuv', desc: "Taqdir bizi bir kurs shahar bog'ida uchrashatirdi." },
+                              { year: '2023', title: 'Sevgi izhori', desc: "Bir yil do'stlikdan so'ng yuraklarimiz birga bog'lendi." },
+                              { year: '2024', title: 'Unashtiruv', desc: 'Oilalarimiz duosi bilan unashtirildik, kelajakni rejalashtirdik.' },
+                            ]
+                          : [
+                              { time: '17:00', title: 'Сбор гостей & Welcome Drink', desc: 'Живая музыка, фотозона и приветственные напитки' },
+                              { time: '18:00', title: 'Торжественный Вход & Регистрация', desc: 'Официальная церемония и никоҳ' },
+                              { time: '19:00', title: 'Праздничный Банкет & Шоу', desc: 'Поздравления, танцы и шоу-программа' },
+                              { time: '21:30', title: 'Свадебный Торт & Салют', desc: 'Сладкий финал сказочного вечера' },
+                            ];
 
                   const handleUpdateScheduleItem = (index: number, key: string, val: string) => {
                     const updated = scheduleItems.map((item, i) => {
@@ -2478,21 +2002,40 @@ function EditorPage() {
                       }
                       return item;
                     });
-                    setFormData(prev => ({ ...prev, schedule: updated, scheduleItems: updated }));
+                    if (isLoveStory) {
+                      setFormData(prev => ({ ...prev, [field.id]: updated }));
+                    } else {
+                      setFormData(prev => ({ ...prev, [field.id]: updated, schedule: updated, scheduleItems: updated }));
+                    }
                   };
 
                   const handleAddScheduleItem = () => {
                     const lastItem = scheduleItems[scheduleItems.length - 1];
-                    const nextTime = formatNextScheduleTime(lastItem?.time);
-                    const newItem = { time: nextTime, title: 'Новый этап', desc: '' };
+                    let newItem: any;
+                    if (isLoveStory) {
+                      const lastYear = parseInt(lastItem?.year || '', 10);
+                      const nextYear = !isNaN(lastYear) ? String(lastYear + 1) : '2025';
+                      newItem = { year: nextYear, title: 'Новый этап', desc: '' };
+                    } else {
+                      const nextTime = formatNextScheduleTime(lastItem?.time);
+                      newItem = { time: nextTime, title: 'Новый этап', desc: '' };
+                    }
                     const updated = [...scheduleItems, newItem];
-                    setFormData(prev => ({ ...prev, schedule: updated, scheduleItems: updated }));
+                    if (isLoveStory) {
+                      setFormData(prev => ({ ...prev, [field.id]: updated }));
+                    } else {
+                      setFormData(prev => ({ ...prev, [field.id]: updated, schedule: updated, scheduleItems: updated }));
+                    }
                   };
 
                   const handleRemoveScheduleItem = (index: number) => {
                     if (scheduleItems.length <= 1) return;
                     const updated = scheduleItems.filter((_, i) => i !== index);
-                    setFormData(prev => ({ ...prev, schedule: updated, scheduleItems: updated }));
+                    if (isLoveStory) {
+                      setFormData(prev => ({ ...prev, [field.id]: updated }));
+                    } else {
+                      setFormData(prev => ({ ...prev, [field.id]: updated, schedule: updated, scheduleItems: updated }));
+                    }
                   };
 
                   return (
@@ -2500,15 +2043,19 @@ function EditorPage() {
                       {groupHeading}
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-white/5 border border-white/10 p-3 rounded-xl">
                         <label className="min-w-0 text-xs font-bold text-amber-300 tracking-wide flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-amber-400" />
-                          <span>{field.label || 'Программа вечера / Этапы'}</span>
+                          {isLoveStory ? (
+                            <Sparkles className="w-4 h-4 text-amber-400" />
+                          ) : (
+                            <Calendar className="w-4 h-4 text-amber-400" />
+                          )}
+                          <span>{field.label || (isLoveStory ? 'История любви — этапы' : 'Программа вечера / Этапы')}</span>
                         </label>
                         <div className="flex items-center gap-2 self-end sm:self-auto">
                           <button
                             type="button"
                             onClick={handleAddScheduleItem}
                             className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-xs font-bold flex items-center gap-1 transition-all shadow-md shadow-amber-500/10"
-                            title="Добавить новый этап в программу"
+                            title={isLoveStory ? 'Добавить новый этап в историю' : 'Добавить новый этап в программу'}
                           >
                             <Plus className="w-3.5 h-3.5" /> Добавить этап
                           </button>
@@ -2532,9 +2079,9 @@ function EditorPage() {
                               <span className="text-[10px] font-bold text-slate-500 w-4 row-start-1">{idx + 1}.</span>
                               <input
                                 type="text"
-                                value={item.time || ''}
-                                placeholder="Время (18:00)"
-                                onChange={(e) => handleUpdateScheduleItem(idx, 'time', e.target.value)}
+                                value={(isLoveStory ? item.year : item.time) || ''}
+                                placeholder={isLoveStory ? 'Год (2024)' : 'Время (18:00)'}
+                                onChange={(e) => handleUpdateScheduleItem(idx, isLoveStory ? 'year' : 'time', e.target.value)}
                                 className="w-full min-w-0 px-2.5 py-1.5 bg-black/50 border border-white/15 focus:border-amber-400 rounded-lg text-xs font-mono font-bold text-amber-400 outline-none"
                               />
                               <input
@@ -2570,7 +2117,7 @@ function EditorPage() {
                           onClick={handleAddScheduleItem}
                           className="py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-dashed border-white/20 hover:border-amber-400 rounded-xl text-xs font-semibold text-amber-400 flex items-center justify-center gap-1.5 transition-all mt-1"
                         >
-                          <Plus className="w-4 h-4" /> Добавить еще этап (Время, Название, Описание)
+                          <Plus className="w-4 h-4" /> {isLoveStory ? 'Добавить еще этап (Год, Название, Описание)' : 'Добавить еще этап (Время, Название, Описание)'}
                         </button>
                       </div>
                     </div>
@@ -2991,7 +2538,7 @@ function EditorPage() {
                     </p>
                   </div>
 
-                  {currentOrder.status !== 'paid' && Number(currentOrder.total_price || 0) > 0 && (
+                  {(currentOrder.status as any) !== 'paid' && Number(currentOrder.total_price || 0) > 0 && (
                     <div className="w-full mt-2">
                       <ClickPayButtons
                         orderId={currentOrder.id}
@@ -3000,14 +2547,14 @@ function EditorPage() {
                     </div>
                   )}
 
-                  {(currentOrder.status === 'paid' || Number(currentOrder.total_price || 0) === 0) && (
+                  {((currentOrder.status as any) === 'paid' || Number(currentOrder.total_price || 0) === 0) && (
                     <div className="w-full p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center justify-center gap-2">
                       <CheckCircle2 className="w-4 h-4" />
                       <span>{Number(currentOrder.total_price || 0) === 0 ? 'Бесплатное приглашение' : 'Заказ успешно оплачен через Click!'}</span>
                     </div>
                   )}
 
-                  {(currentOrder.status === 'paid' || Number(currentOrder.total_price || template.price || 0) === 0) ? (
+                  {((currentOrder.status as any) === 'paid' || Number(currentOrder.total_price || template.price || 0) === 0) ? (
                     <div className="flex flex-col gap-2.5 w-full mt-2">
                       {template.type === 'website' ? (
                         <>
@@ -3184,7 +2731,7 @@ function EditorPage() {
 
 
 // Preview Engine Component
-function TemplatePreview({ 
+export function TemplatePreview({ 
   template, 
   formData,
   autoScrollOnHover = false,
@@ -3639,7 +3186,7 @@ function RegisterPage() {
 
 // ----------------- USER CABINET PAGE -----------------
 function CabinetPage() {
-  const { token, user, logout } = useAuth();
+  const { token, logout } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [ordersList, setOrdersList] = useState<Order[]>([]);
@@ -3823,12 +3370,18 @@ function CabinetPage() {
                           const fieldLabels: Record<string, string> = {
                             groomName: 'Жених',
                             brideName: 'Невеста',
+                            brideParents: 'Родители невесты',
+                            brideFamily: 'Фамилия невесты',
+                            groomParents: 'Родители жениха',
+                            groomFamily: 'Фамилия жениха',
                             date: 'Дата',
                             time: 'Время',
                             venue: 'Зал',
                             address: 'Адрес',
-                            loveStory: 'История',
                             phone: 'Телефон',
+                            wishText: 'Пожелание',
+                            loveStory: 'История',
+                            loveStoryItems: 'История любви',
                             names: 'Имена',
                             title: 'Заголовок',
                             details: 'Детали',
@@ -3838,7 +3391,7 @@ function CabinetPage() {
 
                           let displayVal = '';
                           if (Array.isArray(v)) {
-                            if (k === 'schedule' || k === 'scheduleItems') {
+                            if (k === 'schedule' || k === 'scheduleItems' || k === 'loveStoryItems') {
                               displayVal = `${v.length} этапа(ов)`;
                             } else if (typeof v[0] === 'string') {
                               displayVal = v.join(', ');
@@ -3863,7 +3416,7 @@ function CabinetPage() {
                         if (val === null || val === undefined) return null;
                         let displayVal = '';
                         if (Array.isArray(val)) {
-                          if (cf.id === 'schedule' || cf.id === 'scheduleItems') {
+                          if (cf.id === 'schedule' || cf.id === 'scheduleItems' || cf.id === 'loveStoryItems') {
                             displayVal = `${val.length} этапа(ов)`;
                           } else if (typeof val[0] === 'string') {
                             displayVal = val.join(', ');
@@ -5345,6 +4898,7 @@ export function InvitationPage() {
   const [rsvpWishes, setRsvpWishes] = useState('');
   const [isSubmittingRsvp, setIsSubmittingRsvp] = useState(false);
   const [rsvpSuccess, setRsvpSuccess] = useState(false);
+  const [rsvpError, setRsvpError] = useState<string | null>(null);
 
   // Countdown timer state
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, isPassed: false });
@@ -5405,13 +4959,15 @@ export function InvitationPage() {
         })
       });
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error('RSVP_SUBMIT_FAILED');
       
       setRsvpSuccess(true);
+      setRsvpError(null);
       reachGoal('RSVP_SUBMITTED', { attending: rsvpAttending, guest_count: rsvpAttending ? rsvpGuestCount : 0 });
       fetchOrder();
-    } catch (err) {
-      alert('Ошибка при отправке ответа. Попробуйте еще раз.');
+    } catch (err: any) {
+      setRsvpError(err?.message || 'RSVP_ERROR');
+      throw err;
     } finally {
       setIsSubmittingRsvp(false);
     }
@@ -5516,15 +5072,16 @@ export function InvitationPage() {
         timeLeft={timeLeft}
         rsvpState={{
           name: rsvpName,
-          setName: setRsvpName,
+          setName: (val) => { setRsvpName(val); setRsvpError(null); },
           attending: rsvpAttending,
-          setAttending: setRsvpAttending,
+          setAttending: (val) => { setRsvpAttending(val); setRsvpError(null); },
           guestCount: rsvpGuestCount,
           setGuestCount: setRsvpGuestCount,
           wishes: rsvpWishes,
           setWishes: setRsvpWishes,
           isSubmitting: isSubmittingRsvp,
           isSuccess: rsvpSuccess,
+          error: rsvpError,
           onSubmit: handleRsvpSubmit,
         }}
         isPreview={false}
