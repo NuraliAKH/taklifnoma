@@ -1,12 +1,28 @@
-import React from 'react';
-import { SimpleWeddingSite } from './SimpleWeddingSite';
-import { MarmarWeddingSite } from './MarmarWeddingSite';
-import { AnorWeddingSite } from './AnorWeddingSite';
-import { HilalWeddingSite } from './HilalWeddingSite';
-import { TaklifetPinkSite } from './TaklifetPinkSite';
-import { MalikaUlugbekWeddingSite } from './MalikaUlugbekWeddingSite';
-import { OliveEnvelopeWeddingSite } from './OliveEnvelopeWeddingSite';
+import React, { lazy, Suspense } from 'react';
 import type { WebsiteTemplateProps } from './types';
+import { Loader2 } from 'lucide-react';
+
+const SimpleWeddingSite = lazy(() =>
+  import('./SimpleWeddingSite').then((m) => ({ default: m.SimpleWeddingSite }))
+);
+const MarmarWeddingSite = lazy(() =>
+  import('./MarmarWeddingSite').then((m) => ({ default: m.MarmarWeddingSite }))
+);
+const AnorWeddingSite = lazy(() =>
+  import('./AnorWeddingSite').then((m) => ({ default: m.AnorWeddingSite }))
+);
+const HilalWeddingSite = lazy(() =>
+  import('./HilalWeddingSite').then((m) => ({ default: m.HilalWeddingSite }))
+);
+const TaklifetPinkSite = lazy(() =>
+  import('./TaklifetPinkSite').then((m) => ({ default: m.TaklifetPinkSite }))
+);
+const MalikaUlugbekWeddingSite = lazy(() =>
+  import('./MalikaUlugbekWeddingSite').then((m) => ({ default: m.MalikaUlugbekWeddingSite }))
+);
+const OliveEnvelopeWeddingSite = lazy(() =>
+  import('./OliveEnvelopeWeddingSite').then((m) => ({ default: m.OliveEnvelopeWeddingSite }))
+);
 
 const BirthdayCelebrationSite: React.FC<WebsiteTemplateProps> = (props) =>
   React.createElement(SimpleWeddingSite, { ...props, visualVariant: 'birthday' });
@@ -143,7 +159,6 @@ export const siteTemplatesRegistry: Record<string | number, React.ComponentType<
   'gold-silk': MalikaUlugbekWeddingSite,
   'silk': MalikaUlugbekWeddingSite,
 
-
   // Template ID 25: editorial olive envelope inspired by the reference video
   25: OliveEnvelopeWeddingSite,
   'olive-envelope': OliveEnvelopeWeddingSite,
@@ -165,6 +180,8 @@ export const siteTemplatesRegistry: Record<string | number, React.ComponentType<
 
   simple: SimpleWeddingSite,
   default: SimpleWeddingSite,
+  birthday: BirthdayCelebrationSite,
+  'birthday-celebration': BirthdayCelebrationSite,
 };
 
 export interface DispatcherProps extends WebsiteTemplateProps {
@@ -180,14 +197,18 @@ export const WebsiteTemplateDispatcher: React.FC<DispatcherProps> = ({
       ? siteTemplatesRegistry[templateId]
       : SimpleWeddingSite;
 
-  return React.createElement(Component, props);
+  return React.createElement(
+    Suspense,
+    {
+      fallback: React.createElement(
+        'div',
+        { className: 'min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-100' },
+        React.createElement(Loader2, { className: 'w-8 h-8 text-amber-500 animate-spin' })
+      )
+    },
+    React.createElement(Component, props)
+  );
 };
 
 export * from './types';
-export * from './SimpleWeddingSite';
-export * from './MarmarWeddingSite';
-export * from './AnorWeddingSite';
-export * from './HilalWeddingSite';
-export * from './TaklifetPinkSite';
-export * from './MalikaUlugbekWeddingSite';
-export * from './OliveEnvelopeWeddingSite';
+export * from './palettes';

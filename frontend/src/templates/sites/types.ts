@@ -8,6 +8,12 @@ export interface ScheduleItem {
   icon?: any;
 }
 
+export interface LoveStoryItem {
+  year: string;
+  title: string;
+  desc?: string;
+}
+
 export interface SiteData {
   groomName?: string;
   brideName?: string;
@@ -16,6 +22,11 @@ export interface SiteData {
   venue?: string;
   address?: string;
   loveStory?: string;
+  loveStoryItems?: LoveStoryItem[];
+  brideParents?: string;
+  brideFamily?: string;
+  groomParents?: string;
+  groomFamily?: string;
   phone?: string;
   giftCardNumber?: string;
   giftCardOwner?: string;
@@ -24,6 +35,8 @@ export interface SiteData {
   videoUrl?: string;
   schedule?: ScheduleItem[];
   scheduleItems?: ScheduleItem[];
+  wishText?: string;
+  wishFrom?: string;
   hiddenSections?: string[];
   showHeroPhoto?: boolean;
   showGallery?: boolean;
@@ -64,7 +77,8 @@ export interface RsvpState {
   setWishes: (val: string) => void;
   isSubmitting: boolean;
   isSuccess: boolean;
-  onSubmit: (e: React.FormEvent) => void;
+  error?: string | null;
+  onSubmit: (e: React.FormEvent) => void | Promise<void>;
 }
 
 export interface WebsiteTemplateProps {

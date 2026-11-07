@@ -1,25 +1,25 @@
 .olive-invite {
-  --olive: #737b55;
-  --olive-dark: #3f4630;
+  --olive: #565e3d;
+  --olive-dark: #383e2b;
   --olive-soft: #aeb493;
   --olive-line: #626a49;
-  --olive-rgb: 115 123 85;
-  --dark-rgb: 63 70 48;
+  --olive-rgb: 86 94 61;
+  --dark-rgb: 56 62 43;
   --paper: #f4eedf;
   --paper-alt: #f7f1e4;
   --ink: #26291f;
-  --muted: #606555;
-  --outer: #343a2b;
-  --envelope-top: #7d8560;
-  --envelope-left: #6f7851;
-  --envelope-right: #687149;
-  --envelope-bottom: #778059;
+  --muted: #525845;
+  --outer: #2c3224;
+  --envelope-top: #5c6443;
+  --envelope-left: #515939;
+  --envelope-right: #495133;
+  --envelope-bottom: #565e3d;
   --seal-core: #d9aa78;
   --seal-dark: #9a5b3e;
   --seal-ring: #edc9a1;
   --seal-mid: #b4754f;
   --seal-outer: #c58a5f;
-  --seal-text: #633f2d;
+  --seal-text: #4a2211;
   background: var(--outer);
   color: var(--ink);
   font-family: "Cormorant Garamond", Georgia, serif;
@@ -68,139 +68,139 @@
   --dark-rgb: 18 63 50;
   --paper: #fdfbf7;
   --paper-alt: #fffdf8;
-  --ink: #183027;
-  --muted: #5f6c66;
-  --outer: #082e25;
+  --ink: #142921;
+  --muted: #40534b;
+  --outer: #08221b;
   --envelope-top: #1b5947;
   --envelope-left: #0f4c3a;
   --envelope-right: #0b4031;
   --envelope-bottom: #164f3d;
-  --seal-core: #e0c15a;
+  --seal-core: #dfbe53;
   --seal-mid: #b89121;
   --seal-ring: #f2dc8a;
-  --seal-dark: #806214;
+  --seal-dark: #7a5d10;
   --seal-outer: #d4af37;
-  --seal-text: #55410e;
+  --seal-text: #403006;
 }
 
 .olive-palette-champagne {
-  --olive: #a77f58;
-  --olive-dark: #806044;
+  --olive: #785635;
+  --olive-dark: #5c432d;
   --olive-soft: #d8c3a5;
-  --olive-line: #b38b62;
-  --olive-rgb: 167 127 88;
-  --dark-rgb: 128 96 68;
+  --olive-line: #9c7348;
+  --olive-rgb: 120 86 53;
+  --dark-rgb: 92 67 45;
   --paper: #faf8f5;
   --paper-alt: #fffdf9;
-  --ink: #473b32;
-  --muted: #76685d;
-  --outer: #b9a58b;
-  --envelope-top: #eadcca;
-  --envelope-left: #ddcbb5;
-  --envelope-right: #d3bea2;
-  --envelope-bottom: #e6d7c3;
-  --seal-core: #d8b98f;
-  --seal-mid: #ad7d4f;
-  --seal-ring: #efd8b7;
-  --seal-dark: #815731;
-  --seal-outer: #bd8b58;
-  --seal-text: #684625;
+  --ink: #332820;
+  --muted: #594c42;
+  --outer: #32251a;
+  --envelope-top: #6d533b;
+  --envelope-left: #604832;
+  --envelope-right: #543e2a;
+  --envelope-bottom: #654c35;
+  --seal-core: #d4b285;
+  --seal-mid: #a67746;
+  --seal-ring: #ebd0aa;
+  --seal-dark: #744e27;
+  --seal-outer: #be925f;
+  --seal-text: #4b3116;
 }
 
 .olive-palette-dusty-rose {
-  --olive: #9a5f75;
-  --olive-dark: #754457;
+  --olive: #7d4357;
+  --olive-dark: #5e3242;
   --olive-soft: #e8b4a2;
-  --olive-line: #ad7187;
-  --olive-rgb: 154 95 117;
-  --dark-rgb: 117 68 87;
+  --olive-line: #9c596e;
+  --olive-rgb: 125 67 87;
+  --dark-rgb: 94 50 66;
   --paper: #fff9fa;
   --paper-alt: #fff4f6;
-  --ink: #4c303a;
-  --muted: #7b626b;
-  --outer: #8a5268;
-  --envelope-top: #deb0ba;
-  --envelope-left: #cf98a6;
-  --envelope-right: #c48b9f;
-  --envelope-bottom: #d8a7b1;
-  --seal-core: #d79a7d;
-  --seal-mid: #aa624e;
-  --seal-ring: #efc2ac;
-  --seal-dark: #743a3e;
-  --seal-outer: #c67e65;
-  --seal-text: #5e2932;
+  --ink: #3d232c;
+  --muted: #664954;
+  --outer: #331520;
+  --envelope-top: #753d50;
+  --envelope-left: #693445;
+  --envelope-right: #5c2a3a;
+  --envelope-bottom: #6e384b;
+  --seal-core: #d59688;
+  --seal-mid: #a75a50;
+  --seal-ring: #ecc2b6;
+  --seal-dark: #74353d;
+  --seal-outer: #c2766f;
+  --seal-text: #481e25;
 }
 
 .olive-palette-dusty-blue {
-  --olive: #71806f;
-  --olive-dark: #566273;
+  --olive: #405368;
+  --olive-dark: #334155;
   --olive-soft: #aeb8c7;
-  --olive-line: #7c8a9e;
-  --olive-rgb: 113 128 111;
-  --dark-rgb: 86 98 115;
-  --paper: #fbfcfd;
-  --paper-alt: #f4f7f8;
-  --ink: #303946;
-  --muted: #687381;
-  --outer: #6f7d91;
-  --envelope-top: #aeb8c7;
-  --envelope-left: #97a4b7;
-  --envelope-right: #8795aa;
-  --envelope-bottom: #9ba9bc;
-  --seal-core: #f4f5f6;
-  --seal-mid: #c5ccd3;
+  --olive-line: #5c7088;
+  --olive-rgb: 64 83 104;
+  --dark-rgb: 51 65 85;
+  --paper: #f8fafb;
+  --paper-alt: #f1f5f8;
+  --ink: #1f2937;
+  --muted: #475569;
+  --outer: #151e28;
+  --envelope-top: #415166;
+  --envelope-left: #374558;
+  --envelope-right: #2f3a4b;
+  --envelope-bottom: #3c4a5d;
+  --seal-core: #dde3e8;
+  --seal-mid: #a9b5c0;
   --seal-ring: #ffffff;
-  --seal-dark: #939da8;
-  --seal-outer: #dce1e5;
-  --seal-text: #536071;
+  --seal-dark: #6c7a88;
+  --seal-outer: #bcc6cf;
+  --seal-text: #2b3644;
 }
 
 .olive-palette-navy {
-  --olive: #415a77;
+  --olive: #2d435e;
   --olive-dark: #0d1b2a;
   --olive-soft: #c0c0c0;
-  --olive-line: #778da9;
-  --olive-rgb: 65 90 119;
+  --olive-line: #4a6383;
+  --olive-rgb: 45 67 94;
   --dark-rgb: 13 27 42;
-  --paper: #f3f6f9;
-  --paper-alt: #edf2f7;
-  --ink: #182335;
-  --muted: #5c6878;
-  --outer: #081321;
-  --envelope-top: #24364d;
-  --envelope-left: #1b263b;
-  --envelope-right: #0d1b2a;
-  --envelope-bottom: #21334a;
-  --seal-core: #eceeef;
-  --seal-mid: #b6bdc5;
+  --paper: #f4f7fa;
+  --paper-alt: #ecf0f5;
+  --ink: #111c2a;
+  --muted: #3e4e61;
+  --outer: #070e17;
+  --envelope-top: #21334a;
+  --envelope-left: #182638;
+  --envelope-right: #101c2b;
+  --envelope-bottom: #1c2c40;
+  --seal-core: #e3e7eb;
+  --seal-mid: #adb7c2;
   --seal-ring: #ffffff;
-  --seal-dark: #7f8994;
-  --seal-outer: #c0c0c0;
-  --seal-text: #344153;
+  --seal-dark: #6d7885;
+  --seal-outer: #c2ccd6;
+  --seal-text: #1e2a38;
 }
 
 .olive-palette-burgundy {
   --olive: #6b1724;
   --olive-dark: #46101a;
   --olive-soft: #d4af37;
-  --olive-line: #9a6729;
+  --olive-line: #8c2636;
   --olive-rgb: 107 23 36;
   --dark-rgb: 70 16 26;
-  --paper: #fbf5eb;
+  --paper: #fcf7f3;
   --paper-alt: #fff9ef;
-  --ink: #40242a;
-  --muted: #755d61;
-  --outer: #350c15;
-  --envelope-top: #70243b;
-  --envelope-left: #581845;
-  --envelope-right: #521225;
-  --envelope-bottom: #6b1724;
-  --seal-core: #e0c15a;
+  --ink: #2f1017;
+  --muted: #5d3940;
+  --outer: #21050a;
+  --envelope-top: #661928;
+  --envelope-left: #53121f;
+  --envelope-right: #440c17;
+  --envelope-bottom: #5c1524;
+  --seal-core: #dfbe53;
   --seal-mid: #b89121;
   --seal-ring: #f2dc8a;
-  --seal-dark: #806214;
+  --seal-dark: #7a5d10;
   --seal-outer: #d4af37;
-  --seal-text: #55410e;
+  --seal-text: #3f1118;
 }
 
 .olive-invite [class~="text-[#737b55]"] { color: var(--olive) !important; }
@@ -243,7 +243,7 @@
 
 .olive-label {
   font-family: Montserrat, Arial, sans-serif;
-  letter-spacing: .28em;
+  letter-spacing: .18em;
   text-transform: uppercase;
 }
 
@@ -512,6 +512,12 @@
   transform: scale(1.055);
 }
 
+.olive-gift-card {
+  background: linear-gradient(135deg, var(--olive-dark) 0%, var(--outer) 100%);
+  border: 1px solid rgb(var(--olive-rgb) / .25);
+  box-shadow: 0 16px 36px rgb(var(--dark-rgb) / .25);
+}
+
 .olive-input {
   background: transparent;
   border: 0;
@@ -519,7 +525,7 @@
   border-radius: 0;
   color: var(--ink);
   font-family: Montserrat, Arial, sans-serif;
-  font-size: .72rem;
+  font-size: 0.875rem;
   outline: none;
   padding: .65rem .15rem;
   width: 100%;
@@ -577,7 +583,6 @@
     height: 92svh;
     min-height: 620px;
   }
-
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,6 +1,31 @@
-import React from 'react';
-import { renderToString } from 'react-dom/server';
+import React, { Suspense } from 'react';
+import { renderToString, renderToPipeableStream } from 'react-dom/server';
+import { Writable } from 'node:stream';
 import { createServer } from 'vite';
+
+async function renderAsync(node) {
+  return new Promise((resolve, reject) => {
+    let chunks = [];
+    const stream = new Writable({
+      write(chunk, enc, cb) {
+        chunks.push(Buffer.from(chunk));
+        cb();
+      },
+      final(cb) {
+        resolve(Buffer.concat(chunks).toString('utf8'));
+        cb();
+      }
+    });
+    const { pipe } = renderToPipeableStream(node, {
+      onAllReady() {
+        pipe(stream);
+      },
+      onError(err) {
+        reject(err);
+      }
+    });
+  });
+}
 
 const server = await createServer({
   appType: 'custom',
@@ -59,10 +84,19 @@ try {
     [30, 'olive-palette-navy'],
     [31, 'olive-palette-burgundy'],
   ];
-  const paletteHtml = paletteVariants.map(([id, className]) => {
-    const VariantComponent = siteTemplatesRegistry[id];
-    return [id, className, renderToString(React.createElement(VariantComponent, { data, isOpened: false }))];
-  });
+  const paletteHtml = await Promise.all(
+    paletteVariants.map(async ([id, className]) => {
+      const VariantComponent = siteTemplatesRegistry[id];
+      const html = await renderAsync(
+        React.createElement(
+          Suspense,
+          { fallback: null },
+          React.createElement(VariantComponent, { data, isOpened: false })
+        )
+      );
+      return [id, className, html];
+    })
+  );
 
   const checks = [
     ['closed envelope', closedHtml.includes('olive-envelope')],
@@ -91,7 +125,7 @@ try {
     ['custom organizer phone is used', customizedHtml.includes('+998 90 000 00 00')],
     ['three-language switcher', ['ru', 'uz', 'en'].every((lang) => localizedHtml.ru.includes(`>${lang}</button>`))],
     ['Russian interface is complete', ['Приглашение на свадьбу', 'До нашей встречи', 'Количество гостей', 'Церемония'].every((text) => localizedHtml.ru.includes(text))],
-    ['Uzbek interface is complete', ['To‘yga taklifnoma', 'Uchrashuvimizgacha', 'Mehmonlar soni', 'Marosim'].every((text) => localizedHtml.uz.includes(text))],
+    ['Uzbek interface is complete', ['Toʻyga taklifnoma', 'Uchrashuvimizgacha', 'Mehmonlar soni', 'Marosim'].every((text) => localizedHtml.uz.includes(text))],
     ['English interface is complete', ['Wedding invitation', 'Until we meet', 'Number of guests', 'Ceremony'].every((text) => localizedHtml.en.includes(text))],
     ...paletteHtml.map(([id, className, html]) => [`palette template ${id}`, html.includes(className)]),
   ];
